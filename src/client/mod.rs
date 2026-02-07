@@ -4,6 +4,7 @@ pub mod error;
 
 mod auth_challenge;
 mod routes;
+pub mod auth_token_request;
 
 pub struct KsefClient {
     pub base_url: String,

@@ -42,7 +42,7 @@ fn main() -> ExitCode {
 
     let _output_mode = if args.output.to_lowercase() == "file" { "file" } else { "screen" };
 
-    let _nip = if args.nip.trim().is_empty() {
+    let nip = if args.nip.trim().is_empty() {
         let rnd = generate_random_nip();
         println!("[1] Przygotowanie NIP...");
         println!("    NIP: {} (losowy)", rnd);
@@ -60,12 +60,28 @@ fn main() -> ExitCode {
     println!("    Organization: {}", &args.organization);
     println!("    CommonName: {}", &args.common_name);
 
-    println!("[1.2] Pobieranie AuthChallenge z KSeF...");
+    println!("[2] Pobieranie AuthChallenge z KSeF...");
     let client = KsefClient::new();
-    match client.get_auth_challenge() {
-        Ok(ch) => println!("    AuthChallenge: {} (timestamp: {}, ts_ms: {})", ch.challenge, ch.timestamp, ch.timestamp_ms),
-        Err(e) => println!("    Nie udało się pobrać AuthChallenge: {}", e),
-    }
+    let challenge = match client.get_auth_challenge() {
+        Ok(ch) => {
+            println!("    AuthChallenge: {} (timestamp: {}, ts_ms: {})", ch.challenge, ch.timestamp, ch.timestamp_ms);
+            ch.challenge
+        },
+        Err(e) => {
+            panic!("    Nie udało się pobrać AuthChallenge: {}", e);
+        }
+    };
+
+    println!("[3] Budowanie AuthTokenRequest (builder)...");
+    let auth_token_request = ksef_client::AuthTokenRequestBuilder::new()
+        .with_challenge(&challenge)
+        .with_context(ksef_client::ContextIdentifierType::Nip, nip)
+        .with_subject_type(ksef_client::SubjectIdentifierType::CertificateSubject)
+        .build();
+
+    println!("[4] Serializacja żądania do XML (unsigned)...");
+    let unsigned_xml = auth_token_request.expect("REASON").to_xml();
+    println!("-----XML przed podpisem-----\n{}\n-----KONIEC: XML przed podpisem-----", unsigned_xml);
 
     println!("Zakończono pomyślnie.");
     ExitCode::SUCCESS
