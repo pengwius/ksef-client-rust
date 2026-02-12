@@ -1,3 +1,5 @@
 target/
 *.pfx
 *.cer
+.direnv
+signed-auth-*.xml

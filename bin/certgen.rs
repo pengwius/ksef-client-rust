@@ -1,15 +1,26 @@
-use rand::{distributions::Uniform, Rng};
+use chrono::Utc;
 use clap::Parser;
+use ksef_client::{
+    AuthTokenRequestBuilder, ContextIdentifierType, KsefClient, SubjectIdentifierType,
+};
+use std::fs;
+use std::path::PathBuf;
 use std::process::ExitCode;
-use ksef_client::KsefClient;
+
+fn generate_random_nip() -> String {
+    use rand::{Rng, distributions::Uniform};
+    let mut rng = rand::thread_rng();
+    let digits = Uniform::from(0..10);
+    (0..10).map(|_| rng.sample(&digits).to_string()).collect()
+}
 
 #[derive(Parser, Debug)]
-#[command(author, version, about = "Generuje samopodpisany certyfikat testowy (PFX + CER)")]
+#[command(author, version, about = "Generates a self-signed test certificate")]
 struct Args {
     #[arg(long, default_value = "screen")]
     output: String,
 
-    #[arg(long, default_value = "")]
+    #[arg(long, default_value = "1234567890")]
     nip: String,
 
     #[arg(long = "given-name", default_value = "Eugeniusz")]
@@ -18,71 +29,174 @@ struct Args {
     #[arg(long = "surname", default_value = "Fakturowski")]
     surname: String,
 
-    #[arg(long = "serial-prefix", default_value = "EUGEPL")]
+    #[arg(long = "serial-prefix", default_value = "TINPL")]
     serial_prefix: String,
 
     #[arg(long = "common-name", default_value = "E F")]
     common_name: String,
 
-    #[arg(long, default_value = "EUGEPL")]
+    #[arg(long, default_value = "EUGE Sp. z o.o.")]
     organization: String,
 
     #[arg(long = "out-dir", default_value = ".")]
     out_dir: String,
 }
 
-fn generate_random_nip() -> String {
-    let mut rng = rand::thread_rng();
-    let digits = Uniform::from(0..10);
-    (0..10).map(|_| rng.sample(&digits).to_string()).collect()
-}
-
 fn main() -> ExitCode {
     let args = Args::parse();
 
-    let _output_mode = if args.output.to_lowercase() == "file" { "file" } else { "screen" };
+    let output_mode = if args.output.to_lowercase() == "file" {
+        "file"
+    } else {
+        "screen"
+    };
 
     let nip = if args.nip.trim().is_empty() {
         let rnd = generate_random_nip();
-        println!("[1] Przygotowanie NIP...");
-        println!("    NIP: {} (losowy)", rnd);
+        println!("[1] Preparing NIP...");
+        println!("    NIP: {} (random)", rnd);
         rnd
     } else {
-        println!("[1] Przygotowanie NIP...");
-        println!("    NIP: {} (z parametru)", args.nip.trim());
+        println!("[1] Preparing NIP...");
+        println!("    NIP: {} (from argument)", args.nip.trim());
         args.nip.trim().to_string()
     };
 
-    println!("[1.1] Parametry subjectu certyfikatu:");
+    println!("[1.1] Certificate subject params:");
     println!("    GivenName: {}", &args.given_name);
     println!("    Surname: {}", &args.surname);
     println!("    Serial prefix: {}", &args.serial_prefix);
     println!("    Organization: {}", &args.organization);
     println!("    CommonName: {}", &args.common_name);
 
-    println!("[2] Pobieranie AuthChallenge z KSeF...");
-    let client = KsefClient::new();
+    println!("[2] Getting AuthChallenge from KSeF...");
+    let mut client = KsefClient::new();
     let challenge = match client.get_auth_challenge() {
         Ok(ch) => {
-            println!("    AuthChallenge: {} (timestamp: {}, ts_ms: {})", ch.challenge, ch.timestamp, ch.timestamp_ms);
+            println!(
+                "    AuthChallenge: {} (timestamp: {}, ts_ms: {})",
+                ch.challenge, ch.timestamp, ch.timestamp_ms
+            );
             ch.challenge
-        },
+        }
         Err(e) => {
-            panic!("    Nie udało się pobrać AuthChallenge: {}", e);
+            eprintln!("Unable to get AuthChallenge: {}", e);
+            return ExitCode::FAILURE;
         }
     };
 
-    println!("[3] Budowanie AuthTokenRequest (builder)...");
-    let auth_token_request = ksef_client::AuthTokenRequestBuilder::new()
+    println!("[3] Building AuthTokenRequest (builder)...");
+    let built = AuthTokenRequestBuilder::new()
         .with_challenge(&challenge)
-        .with_context(ksef_client::ContextIdentifierType::Nip, nip)
-        .with_subject_type(ksef_client::SubjectIdentifierType::CertificateSubject)
+        .with_context(ContextIdentifierType::Nip, nip.clone())
+        .with_subject_type(SubjectIdentifierType::CertificateSubject)
         .build();
 
-    println!("[4] Serializacja żądania do XML (unsigned)...");
-    let unsigned_xml = auth_token_request.expect("REASON").to_xml();
-    println!("-----XML przed podpisem-----\n{}\n-----KONIEC: XML przed podpisem-----", unsigned_xml);
+    let auth_token_request = match built {
+        Ok(req) => req,
+        Err(e) => {
+            eprintln!("Unable to build AuthTokenRequest: {}", e);
+            return ExitCode::FAILURE;
+        }
+    };
 
-    println!("Zakończono pomyślnie.");
+    println!("[4] Request serialization to XML (unsigned)...");
+    let unsigned_xml = auth_token_request.to_xml();
+    println!(
+        "-----Unsigned XML-----\n{}\n-----END: Unsigned XML-----",
+        unsigned_xml
+    );
+
+    println!("[5] Generating self-signed test certificate...");
+    match client.xades.gen_selfsign_cert(
+        &args.given_name,
+        &args.surname,
+        &args.serial_prefix,
+        &nip,
+        &args.common_name,
+    ) {
+        Ok(()) => {
+            println!("    Self-signed certificate has been generated and loaded into XadesSigner.");
+        }
+        Err(e) => {
+            eprintln!("Unable to generate self-signed certificate: {}", e);
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let timestamp = Utc::now().format("%Y%m%d-%H%M%S").to_string();
+
+    println!("[6] Signing XML (XAdES)...");
+    let signed_xml = match client.xades.sign(&unsigned_xml) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("Unable to sign XML: {}", e);
+            return ExitCode::FAILURE;
+        }
+    };
+
+    if output_mode == "file" {
+        let out_dir = PathBuf::from(&args.out_dir);
+        let signed_file = out_dir.join(format!("signed-auth-{}.xml", timestamp));
+        if let Err(e) = fs::write(&signed_file, signed_xml.as_bytes()) {
+            eprintln!("Unable to write signed XML to file: {}", e);
+            return ExitCode::FAILURE;
+        }
+        println!("Saved signed XML to file: {}", signed_file.display());
+    } else {
+        println!(
+            "-----Signed XML-----\n{}\n-----END: Signed XML-----",
+            signed_xml
+        );
+    }
+
+    println!("[7] Sending signed XML to KSeF...");
+    match client.submit_xades_auth_request(signed_xml) {
+        Ok(()) => {}
+        Err(e) => {
+            eprintln!("Unable to submit signed XML for authentication: {}", e);
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let auth_tokens = client.auth_token();
+
+    println!(
+        "    AuthenticationToken: {}",
+        auth_tokens.authentication_token
+    );
+    println!("    ReferenceNumber: {}", auth_tokens.reference_number);
+
+    println!("[8] Requesting authentication status (polling)...");
+    let is_authenticated: bool = match client.get_auth_status() {
+        Ok(status) => status,
+        Err(e) => {
+            eprintln!("Unable to get authentication status: {}", e);
+            return ExitCode::FAILURE;
+        }
+    };
+
+    if is_authenticated {
+        println!("    Status: Authentication completed successfully.");
+    } else {
+        println!("    Status: Authentication still in progress or failed.");
+        return ExitCode::FAILURE;
+    }
+
+    println!("[9] Getting access token...");
+    match client.get_access_token() {
+        Ok(()) => {}
+        Err(e) => {
+            eprintln!("Unable to get access token: {}", e);
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let access_tokens = client.access_token();
+
+    println!("    AccessToken: {}", access_tokens.access_token);
+    println!("    RefreshToken: {}", access_tokens.refresh_token);
+
+    println!("Finished successfully.");
     ExitCode::SUCCESS
 }

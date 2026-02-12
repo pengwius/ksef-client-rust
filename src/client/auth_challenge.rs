@@ -27,8 +27,7 @@ pub fn get_auth_challenge(client: &KsefClient) -> Result<AuthChallenge, KsefErro
             .post(&url)
             .header("Accept", "application/json")
             .send()
-            .await
-            .map_err(|e| KsefError::TransportError(e.to_string()))?;
+            .await?;
 
         let status = resp.status();
 
@@ -54,10 +53,7 @@ pub fn get_auth_challenge(client: &KsefClient) -> Result<AuthChallenge, KsefErro
             return Err(KsefError::ApiError(code, body));
         }
 
-        let parsed: AuthChallengeResponse = resp
-            .json()
-            .await
-            .map_err(|e| KsefError::DeserializeError(e.to_string()))?;
+        let parsed: AuthChallengeResponse = resp.json().await?;
 
         Ok(AuthChallenge {
             challenge: parsed.challenge,
@@ -69,8 +65,7 @@ pub fn get_auth_challenge(client: &KsefClient) -> Result<AuthChallenge, KsefErro
     match tokio::runtime::Handle::try_current() {
         Ok(handle) => handle.block_on(fut),
         Err(_) => {
-            let rt = tokio::runtime::Runtime::new()
-                .map_err(|e| KsefError::Unexpected(format!("failed to create runtime: {}", e)))?;
+            let rt = tokio::runtime::Runtime::new()?;
             rt.block_on(fut)
         }
     }
@@ -84,9 +79,19 @@ mod tests {
     fn get_auth_challenge_test() {
         let client = KsefClient::new();
         let result = get_auth_challenge(&client);
-        assert!(result.is_ok(), "Expected Ok result, got Err: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "Expected Ok result, got Err: {:?}",
+            result.err()
+        );
         let challenge = result.unwrap();
-        assert!(!challenge.challenge.is_empty(), "Challenge string should not be empty");
-        assert!(challenge.timestamp_ms > 0, "Timestamp ms should be a positive integer");
+        assert!(
+            !challenge.challenge.is_empty(),
+            "Challenge string should not be empty"
+        );
+        assert!(
+            challenge.timestamp_ms > 0,
+            "Timestamp ms should be a positive integer"
+        );
     }
 }

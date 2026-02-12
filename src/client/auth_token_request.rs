@@ -1,4 +1,4 @@
-use std::fmt::Write;
+use crate::client::xades::utils::xml_escape;
 
 #[derive(Debug, Clone)]
 pub enum ContextIdentifierType {
@@ -47,65 +47,83 @@ pub struct AuthTokenRequest {
 impl AuthTokenRequest {
     pub fn to_xml(&self) -> String {
         let mut xml = String::new();
-        writeln!(&mut xml, "<?xml version=\"1.0\" encoding=\"utf-8\"?>").unwrap();
-        writeln!(&mut xml, "<AuthTokenRequest xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns=\"http://ksef.mf.gov.pl/auth/token/2.0\">").unwrap();
-        writeln!(&mut xml, "  <Challenge>{}</Challenge>", xml_escape(&self.challenge)).unwrap();
-        writeln!(&mut xml, "  <ContextIdentifier>").unwrap();
+
+        xml.push_str(r#"<?xml version="1.0" encoding="utf-8"?>"#);
+        xml.push_str(r#"<AuthTokenRequest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://ksef.mf.gov.pl/auth/token/2.0">"#);
+
+        xml.push_str("<Challenge>");
+        xml.push_str(&xml_escape(&self.challenge));
+        xml.push_str("</Challenge>");
+
+        xml.push_str("<ContextIdentifier>");
         match self.context_type {
-            ContextIdentifierType::Nip => writeln!(&mut xml, "    <Nip>{}</Nip>", xml_escape(&self.context_value)).unwrap(),
-            ContextIdentifierType::InternalId => writeln!(&mut xml, "    <InternalId>{}</InternalId>", xml_escape(&self.context_value)).unwrap(),
-            ContextIdentifierType::NipVatUe => writeln!(&mut xml, "    <NipVatUe>{}</NipVatUe>", xml_escape(&self.context_value)).unwrap(),
+            ContextIdentifierType::Nip => {
+                xml.push_str("<Nip>");
+                xml.push_str(&xml_escape(&self.context_value));
+                xml.push_str("</Nip>");
+            }
+            ContextIdentifierType::InternalId => {
+                xml.push_str("<InternalId>");
+                xml.push_str(&xml_escape(&self.context_value));
+                xml.push_str("</InternalId>");
+            }
+            ContextIdentifierType::NipVatUe => {
+                xml.push_str("<NipVatUe>");
+                xml.push_str(&xml_escape(&self.context_value));
+                xml.push_str("</NipVatUe>");
+            }
         }
-        writeln!(&mut xml, "  </ContextIdentifier>").unwrap();
-        writeln!(
-            &mut xml,
-            "  <SubjectIdentifierType>{}</SubjectIdentifierType>",
-            xml_escape(self.subject_identifier_type.as_str())
-        )
-        .unwrap();
+        xml.push_str("</ContextIdentifier>");
+
+        xml.push_str("<SubjectIdentifierType>");
+        xml.push_str(&xml_escape(self.subject_identifier_type.as_str()));
+        xml.push_str("</SubjectIdentifierType>");
 
         if let Some(fp) = &self.certificate_fingerprint {
-            writeln!(
-                &mut xml,
-                "  <CertificateFingerprint>{}</CertificateFingerprint>",
-                xml_escape(fp)
-            )
-            .unwrap();
+            xml.push_str("<CertificateFingerprint>");
+            xml.push_str(&xml_escape(fp));
+            xml.push_str("</CertificateFingerprint>");
         }
 
         if let Some(policy) = &self.authorization_policy {
-            writeln!(&mut xml, "  <AuthorizationPolicy>").unwrap();
-            writeln!(&mut xml, "    <AllowedIps>").unwrap();
+            xml.push_str("<AuthorizationPolicy>");
+            xml.push_str("<AllowedIps>");
 
             if !policy.allowed_ips.ip4_addresses.is_empty() {
-                writeln!(&mut xml, "      <Ip4Addresses>").unwrap();
+                xml.push_str("<Ip4Addresses>");
                 for ip in &policy.allowed_ips.ip4_addresses {
-                    writeln!(&mut xml, "        <Ip4Address>{}</Ip4Address>", xml_escape(ip)).unwrap();
+                    xml.push_str("<Ip4Address>");
+                    xml.push_str(&xml_escape(ip));
+                    xml.push_str("</Ip4Address>");
                 }
-                writeln!(&mut xml, "      </Ip4Addresses>").unwrap();
+                xml.push_str("</Ip4Addresses>");
             }
 
             if !policy.allowed_ips.ip4_masks.is_empty() {
-                writeln!(&mut xml, "      <Ip4Masks>").unwrap();
+                xml.push_str("<Ip4Masks>");
                 for mask in &policy.allowed_ips.ip4_masks {
-                    writeln!(&mut xml, "        <Ip4Mask>{}</Ip4Mask>", xml_escape(mask)).unwrap();
+                    xml.push_str("<Ip4Mask>");
+                    xml.push_str(&xml_escape(mask));
+                    xml.push_str("</Ip4Mask>");
                 }
-                writeln!(&mut xml, "      </Ip4Masks>").unwrap();
+                xml.push_str("</Ip4Masks>");
             }
 
             if !policy.allowed_ips.ip4_ranges.is_empty() {
-                writeln!(&mut xml, "      <Ip4Ranges>").unwrap();
+                xml.push_str("<Ip4Ranges>");
                 for range in &policy.allowed_ips.ip4_ranges {
-                    writeln!(&mut xml, "        <Ip4Range>{}</Ip4Range>", xml_escape(range)).unwrap();
+                    xml.push_str("<Ip4Range>");
+                    xml.push_str(&xml_escape(range));
+                    xml.push_str("</Ip4Range>");
                 }
-                writeln!(&mut xml, "      </Ip4Ranges>").unwrap();
+                xml.push_str("</Ip4Ranges>");
             }
 
-            writeln!(&mut xml, "    </AllowedIps>").unwrap();
-            writeln!(&mut xml, "  </AuthorizationPolicy>").unwrap();
+            xml.push_str("</AllowedIps>");
+            xml.push_str("</AuthorizationPolicy>");
         }
 
-        writeln!(&mut xml, "</AuthTokenRequest>").unwrap();
+        xml.push_str("</AuthTokenRequest>");
         xml
     }
 }
@@ -130,7 +148,11 @@ impl AuthTokenRequestBuilder {
         self
     }
 
-    pub fn with_context(mut self, ctx_type: ContextIdentifierType, ctx_value: impl Into<String>) -> Self {
+    pub fn with_context(
+        mut self,
+        ctx_type: ContextIdentifierType,
+        ctx_value: impl Into<String>,
+    ) -> Self {
         self.context_type = Some(ctx_type);
         self.context_value = Some(ctx_value.into());
         self
@@ -146,21 +168,35 @@ impl AuthTokenRequestBuilder {
         self
     }
 
-    pub fn with_authorization_policy(mut self, policy: AuthenticationTokenAuthorizationPolicy) -> Self {
+    pub fn with_authorization_policy(
+        mut self,
+        policy: AuthenticationTokenAuthorizationPolicy,
+    ) -> Self {
         self.authorization_policy = Some(policy);
         self
     }
 
     pub fn build(self) -> Result<AuthTokenRequest, String> {
-        let challenge = self.challenge.ok_or_else(|| "challenge is required".to_string())?;
-        let ctx_type = self.context_type.ok_or_else(|| "context type is required".to_string())?;
-        let ctx_value = self.context_value.ok_or_else(|| "context value is required".to_string())?;
+        let challenge = self
+            .challenge
+            .ok_or_else(|| "challenge is required".to_string())?;
+        let ctx_type = self
+            .context_type
+            .ok_or_else(|| "context type is required".to_string())?;
+        let ctx_value = self
+            .context_value
+            .ok_or_else(|| "context value is required".to_string())?;
         let subject_type = self
             .subject_identifier_type
             .ok_or_else(|| "subject identifier type is required".to_string())?;
 
         if let SubjectIdentifierType::CertificateFingerprint = subject_type {
-            if self.certificate_fingerprint.as_ref().map(|s| s.trim().is_empty()).unwrap_or(true) {
+            if self
+                .certificate_fingerprint
+                .as_ref()
+                .map(|s| s.trim().is_empty())
+                .unwrap_or(true)
+            {
                 return Err("certificate_fingerprint is required when subject type is certificateFingerprint".to_string());
             }
         }
@@ -174,21 +210,6 @@ impl AuthTokenRequestBuilder {
             authorization_policy: self.authorization_policy,
         })
     }
-}
-
-fn xml_escape(s: &str) -> String {
-    let mut out = String::with_capacity(s.len());
-    for c in s.chars() {
-        match c {
-            '&' => out.push_str("&amp;"),
-            '<' => out.push_str("&lt;"),
-            '>' => out.push_str("&gt;"),
-            '"' => out.push_str("&quot;"),
-            '\'' => out.push_str("&apos;"),
-            _ => out.push(c),
-        }
-    }
-    out
 }
 
 #[cfg(test)]
@@ -216,9 +237,13 @@ mod tests {
         let mut allowed = AuthenticationTokenAllowedIps::default();
         allowed.ip4_addresses.push("192.168.0.1".to_string());
         allowed.ip4_masks.push("192.168.1.0/24".to_string());
-        allowed.ip4_ranges.push("222.111.0.1-222.111.0.255".to_string());
+        allowed
+            .ip4_ranges
+            .push("222.111.0.1-222.111.0.255".to_string());
 
-        let policy = AuthenticationTokenAuthorizationPolicy { allowed_ips: allowed };
+        let policy = AuthenticationTokenAuthorizationPolicy {
+            allowed_ips: allowed,
+        };
 
         let req = AuthTokenRequestBuilder::new()
             .with_challenge("challenge-value")

@@ -1,14 +1,23 @@
+use crate::AccessTokens;
+use crate::AuthTokens;
 use crate::client::error::KsefError;
 
 pub mod error;
 
 mod auth_challenge;
-mod routes;
 pub mod auth_token_request;
+pub mod get_access_token;
+mod get_auth_status;
+mod routes;
+pub mod submit_xades_auth_request;
+pub mod xades;
 
 pub struct KsefClient {
     pub base_url: String,
     pub client: reqwest::Client,
+    pub xades: xades::XadesSigner,
+    pub auth_token: AuthTokens,
+    pub access_token: AccessTokens,
 }
 
 impl KsefClient {
@@ -20,6 +29,9 @@ impl KsefClient {
         KsefClient {
             base_url: base.trim_end_matches('/').to_string(),
             client: reqwest::Client::new(),
+            xades: xades::XadesSigner::default(),
+            auth_token: AuthTokens::default(),
+            access_token: AccessTokens::default(),
         }
     }
 
@@ -27,7 +39,43 @@ impl KsefClient {
         auth_challenge::get_auth_challenge(self)
     }
 
+    pub fn submit_xades_auth_request(&mut self, signed_xml: String) -> Result<(), KsefError> {
+        match submit_xades_auth_request::submit_xades_auth_request(self, signed_xml) {
+            Ok(tokens) => {
+                self.auth_token = tokens;
+                Ok(())
+            }
+            Err(e) => Err(e),
+        }
+    }
+
+    pub fn get_auth_status(&self) -> Result<bool, KsefError> {
+        get_auth_status::get_auth_status(self)
+    }
+
+    pub fn get_access_token(&mut self) -> Result<(), KsefError> {
+        match get_access_token::get_access_token(self) {
+            Ok(tokens) => {
+                self.access_token = tokens;
+                Ok(())
+            }
+            Err(e) => Err(e),
+        }
+    }
+
+    pub fn auth_token(&self) -> &AuthTokens {
+        &self.auth_token
+    }
+
+    pub fn access_token(&self) -> &AccessTokens {
+        &self.access_token
+    }
+
     pub fn url_for(&self, path: &str) -> String {
-        format!("{}/{}", self.base_url.trim_end_matches('/'), path.trim_start_matches('/'))
+        format!(
+            "{}/{}",
+            self.base_url.trim_end_matches('/'),
+            path.trim_start_matches('/')
+        )
     }
 }
