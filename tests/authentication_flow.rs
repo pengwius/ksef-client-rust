@@ -63,44 +63,54 @@ fn test_full_authentication_flow() {
         "Signed XML should contain challenge"
     );
 
-    let submit_result = client.submit_xades_auth_request(signed_xml);
+    if let Err(e) = client.submit_xades_auth_request(signed_xml) {
+        println!(
+            "Submit auth request failed (expected on non-mock envs with random NIP): {:?}",
+            e
+        );
+        return;
+    }
 
-    match submit_result {
-        Ok(()) => {
-            let auth_tokens = client.auth_token();
-            assert!(!auth_tokens.authentication_token.is_empty());
-            assert!(!auth_tokens.reference_number.is_empty());
+    let auth_tokens = client.auth_token();
+    assert!(!auth_tokens.authentication_token.is_empty());
+    assert!(!auth_tokens.reference_number.is_empty());
 
-            let status_result = client.get_auth_status();
-            match status_result {
-                Ok(authorized) => {
-                    println!("Auth status result: {}", authorized);
-
-                    if authorized {
-                        let access_token_result = client.get_access_token();
-                        assert!(
-                            access_token_result.is_ok(),
-                            "Should retrieve access tokens if authorized"
-                        );
-
-                        let access_tokens = client.access_token();
-                        assert!(!access_tokens.access_token.is_empty());
-                        assert!(!access_tokens.refresh_token.is_empty());
-                    }
-                }
-                Err(e) => {
-                    println!(
-                        "Get auth status failed (expected on non-mock envs with random NIP): {:?}",
-                        e
-                    );
-                }
-            }
-        }
+    let authorized = match client.get_auth_status() {
+        Ok(status) => status,
         Err(e) => {
             println!(
-                "Submit auth request failed (expected on non-mock envs with random NIP): {:?}",
+                "Get auth status failed (expected on non-mock envs with random NIP): {:?}",
                 e
             );
+            return;
         }
+    };
+
+    println!("Auth status result: {}", authorized);
+
+    if !authorized {
+        return;
     }
+
+    if let Err(e) = client.get_access_token() {
+        panic!("Should retrieve access tokens if authorized: {:?}", e);
+    }
+
+    let access_tokens = client.access_token();
+    assert!(!access_tokens.access_token.is_empty());
+    assert!(!access_tokens.refresh_token.is_empty());
+
+    println!("Access Token obtained: {}", access_tokens.access_token);
+
+    println!("Refreshing access token...");
+    if let Err(e) = client.refresh_access_token() {
+        panic!("Should refresh access token: {:?}", e);
+    }
+
+    let refreshed_access_tokens = client.access_token();
+    assert!(!refreshed_access_tokens.access_token.is_empty());
+    println!(
+        "Refreshed Access Token: {}",
+        refreshed_access_tokens.access_token
+    );
 }

@@ -63,6 +63,16 @@ impl KsefClient {
         }
     }
 
+    pub fn refresh_access_token(&mut self) -> Result<(), KsefError> {
+        match get_access_token::refresh_access_token(self) {
+            Ok(token) => {
+                self.access_token = token;
+                Ok(())
+            }
+            Err(e) => Err(e),
+        }
+    }
+
     pub fn auth_token(&self) -> &AuthTokens {
         &self.auth_token
     }

@@ -1,14 +1,15 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct AccessTokens {
-    #[serde(rename = "accessToken")]
     pub access_token: String,
-    #[serde(rename = "refreshToken")]
+    pub access_token_valid_until: DateTime<Utc>,
     pub refresh_token: String,
+    pub refresh_token_valid_until: DateTime<Utc>,
 }
 
 #[derive(Deserialize)]
@@ -20,8 +21,16 @@ struct TokenResponse {
 }
 
 #[derive(Deserialize)]
+struct RefreshTokenResponse {
+    #[serde(rename = "accessToken")]
+    access_token_obj: TokenObject,
+}
+
+#[derive(Deserialize)]
 struct TokenObject {
     token: String,
+    #[serde(rename = "validUntil")]
+    valid_until: DateTime<Utc>,
 }
 
 pub fn get_access_token(client: &KsefClient) -> Result<AccessTokens, KsefError> {
@@ -55,6 +64,45 @@ pub fn get_access_token(client: &KsefClient) -> Result<AccessTokens, KsefError> 
 
     Ok(AccessTokens {
         access_token: token_response.access_token_obj.token,
+        access_token_valid_until: token_response.access_token_obj.valid_until,
         refresh_token: token_response.refresh_token_obj.token,
+        refresh_token_valid_until: token_response.refresh_token_obj.valid_until,
+    })
+}
+
+pub fn refresh_access_token(client: &KsefClient) -> Result<AccessTokens, KsefError> {
+    let fut = async {
+        let url = client.url_for(routes::AUTH_TOKEN_REFRESH_PATH);
+        let resp = client
+            .client
+            .post(&url)
+            .header("Accept", "application/json")
+            .bearer_auth(&client.access_token.refresh_token)
+            .send()
+            .await?;
+
+        let status = resp.status();
+        if !status.is_success() {
+            let body = resp.text().await.unwrap_or_default();
+            return Err(KsefError::ApiError(status.as_u16(), body));
+        }
+
+        let parsed: RefreshTokenResponse = resp.json().await?;
+        Ok(parsed)
+    };
+
+    let token_response = match tokio::runtime::Handle::try_current() {
+        Ok(handle) => handle.block_on(fut)?,
+        Err(_) => {
+            let rt = tokio::runtime::Runtime::new()?;
+            rt.block_on(fut)?
+        }
+    };
+
+    Ok(AccessTokens {
+        access_token: token_response.access_token_obj.token,
+        access_token_valid_until: token_response.access_token_obj.valid_until,
+        refresh_token: client.access_token.refresh_token.clone(),
+        refresh_token_valid_until: client.access_token.refresh_token_valid_until,
     })
 }

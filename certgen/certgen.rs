@@ -197,6 +197,18 @@ fn main() -> ExitCode {
     println!("    AccessToken: {}", access_tokens.access_token);
     println!("    RefreshToken: {}", access_tokens.refresh_token);
 
+    println!("[10] Refreshing access token...");
+    match client.refresh_access_token() {
+        Ok(()) => {}
+        Err(e) => {
+            eprintln!("Unable to refresh access token: {}", e);
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let refreshed_access_token = client.access_token().access_token.clone();
+    println!("    Refreshed AccessToken: {}", refreshed_access_token);
+
     println!("Finished successfully.");
     ExitCode::SUCCESS
 }
