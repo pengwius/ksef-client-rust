@@ -18,4 +18,4 @@ base64 = "0.21"
 
 [[bin]]
 name = "certgen"
-path = "bin/certgen.rs"
+path = "certgen/certgen.rs"
