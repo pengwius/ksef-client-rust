@@ -1,5 +1,6 @@
 use crate::AccessTokens;
 use crate::AuthTokens;
+use crate::DetailedKsefToken;
 use crate::KsefToken;
 use crate::client::error::KsefError;
 
@@ -9,7 +10,7 @@ mod auth_challenge;
 pub mod auth_token_request;
 pub mod get_access_token;
 mod get_auth_status;
-pub mod new_ksef_token;
+pub mod ksef_tokens;
 mod routes;
 pub mod submit_xades_auth_request;
 pub mod xades;
@@ -78,13 +79,17 @@ impl KsefClient {
     }
 
     pub fn new_ksef_token(&mut self) -> Result<(), KsefError> {
-        match new_ksef_token::new_ksef_token(self) {
+        match ksef_tokens::new_ksef_token::new_ksef_token(self) {
             Ok(token) => {
                 self.ksef_token = token;
                 Ok(())
             }
             Err(e) => Err(e),
         }
+    }
+
+    pub fn get_ksef_tokens(&mut self) -> Result<Vec<DetailedKsefToken>, KsefError> {
+        ksef_tokens::get_ksef_tokens::get_ksef_tokens(self)
     }
 
     pub fn auth_token(&self) -> &AuthTokens {

@@ -6,5 +6,6 @@ pub use client::auth_token_request::{
     ContextIdentifierType, SubjectIdentifierType,
 };
 pub use client::get_access_token::AccessTokens;
-pub use client::new_ksef_token::KsefToken;
+pub use client::ksef_tokens::get_ksef_tokens::DetailedKsefToken;
+pub use client::ksef_tokens::new_ksef_token::KsefToken;
 pub use client::submit_xades_auth_request::AuthTokens;

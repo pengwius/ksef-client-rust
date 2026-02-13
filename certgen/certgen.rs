@@ -221,6 +221,20 @@ fn main() -> ExitCode {
     let ksef_token = client.ksef_token();
     println!("    KSeF Token: {:?}", ksef_token);
 
+    println!("[12] Getting list of KSeF tokens...");
+    match client.get_ksef_tokens() {
+        Ok(tokens) => {
+            println!(
+                "    KSeF Tokens\n{}",
+                serde_json::to_string_pretty(&tokens).unwrap_or_default()
+            );
+        }
+        Err(e) => {
+            eprintln!("Unable to get list of KSeF tokens: {}", e);
+            return ExitCode::FAILURE;
+        }
+    };
+
     println!("Finished successfully.");
     ExitCode::SUCCESS
 }

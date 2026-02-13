@@ -122,4 +122,15 @@ fn test_full_authentication_flow() {
     let ksef_token = client.ksef_token();
     assert!(!ksef_token.token.is_empty());
     println!("New KSeF Token: {}", ksef_token.token);
+
+    println!("Getting list of KSeF tokens...");
+    match client.get_ksef_tokens() {
+        Ok(tokens) => {
+            println!("KSeF Tokens retrieved: {}", tokens.len());
+            assert!(tokens.len() >= 1);
+        }
+        Err(e) => {
+            println!("Failed to get KSeF tokens: {:?}", e);
+        }
+    }
 }
