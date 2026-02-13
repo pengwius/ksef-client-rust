@@ -2,7 +2,7 @@ use crate::client::routes;
 use crate::client::{KsefClient, KsefError};
 use serde::Deserialize;
 
-#[derive(Deserialize, Default, Debug)]
+#[derive(Deserialize, Default, Debug, Clone)]
 pub struct KsefToken {
     #[serde(rename = "referenceNumber")]
     pub reference_number: String,

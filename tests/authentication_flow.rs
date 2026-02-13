@@ -1,5 +1,5 @@
 use ksef_client::{
-    AuthTokenRequestBuilder, ContextIdentifierType, KsefClient, SubjectIdentifierType,
+    AuthTokenRequestBuilder, ContextIdentifierType, KsefClient, SubjectIdentifierType, TokenStatus,
 };
 use rand::Rng;
 use rand::distributions::Uniform;
@@ -119,7 +119,7 @@ fn test_full_authentication_flow() {
         panic!("Should get new KSeF token: {:?}", e);
     }
 
-    let ksef_token = client.ksef_token();
+    let ksef_token = (*client.ksef_token()).clone();
     assert!(!ksef_token.token.is_empty());
     println!("New KSeF Token: {}", ksef_token.token);
 
@@ -131,6 +131,17 @@ fn test_full_authentication_flow() {
         }
         Err(e) => {
             println!("Failed to get KSeF tokens: {:?}", e);
+        }
+    }
+
+    println!("Getting KSeF token status...");
+    match client.get_ksef_token_status(&ksef_token.reference_number) {
+        Ok(token_status) => {
+            println!("KSeF Token status retrieved: {:?}", token_status.status);
+            assert!(token_status.description == "KSeF Client Rust Token");
+        }
+        Err(e) => {
+            println!("Failed to get KSeF token status: {:?}", e);
         }
     }
 }

@@ -1,11 +1,18 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
-use crate::client::ksef_tokens::models::{DetailedKsefToken, QueryTokensResponse};
+use crate::client::ksef_tokens::models::DetailedKsefToken;
 use crate::client::routes;
 
-pub fn get_ksef_tokens(client: &KsefClient) -> Result<Vec<DetailedKsefToken>, KsefError> {
+pub fn get_ksef_token_status(
+    client: &KsefClient,
+    token_reference_number: &str,
+) -> Result<DetailedKsefToken, KsefError> {
     let fut = async {
-        let url = client.url_for(routes::TOKENS_PATH);
+        let url = client.url_for(&format!(
+            "{}/{}",
+            routes::TOKENS_PATH,
+            token_reference_number
+        ));
 
         let access_token = &client.access_token.access_token;
 
@@ -24,8 +31,8 @@ pub fn get_ksef_tokens(client: &KsefClient) -> Result<Vec<DetailedKsefToken>, Ks
             return Err(KsefError::ApiError(status.as_u16(), body));
         }
 
-        let parsed: QueryTokensResponse = resp.json().await.map_err(KsefError::RequestError)?;
-        Ok(parsed.tokens)
+        let parsed: DetailedKsefToken = resp.json().await.map_err(KsefError::RequestError)?;
+        Ok(parsed)
     };
 
     match tokio::runtime::Handle::try_current() {

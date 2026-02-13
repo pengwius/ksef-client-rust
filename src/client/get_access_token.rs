@@ -42,7 +42,8 @@ pub fn get_access_token(client: &KsefClient) -> Result<AccessTokens, KsefError> 
             .header("Accept", "application/json")
             .bearer_auth(&client.auth_token.authentication_token)
             .send()
-            .await?;
+            .await
+            .map_err(KsefError::RequestError)?;
 
         let status = resp.status();
         if !status.is_success() {
@@ -50,14 +51,15 @@ pub fn get_access_token(client: &KsefClient) -> Result<AccessTokens, KsefError> 
             return Err(KsefError::ApiError(status.as_u16(), body));
         }
 
-        let parsed: TokenResponse = resp.json().await?;
+        let parsed: TokenResponse = resp.json().await.map_err(KsefError::RequestError)?;
         Ok(parsed)
     };
 
     let token_response = match tokio::runtime::Handle::try_current() {
         Ok(handle) => handle.block_on(fut)?,
         Err(_) => {
-            let rt = tokio::runtime::Runtime::new()?;
+            let rt = tokio::runtime::Runtime::new()
+                .map_err(|e| KsefError::RuntimeError(e.to_string()))?;
             rt.block_on(fut)?
         }
     };
@@ -79,7 +81,8 @@ pub fn refresh_access_token(client: &KsefClient) -> Result<AccessTokens, KsefErr
             .header("Accept", "application/json")
             .bearer_auth(&client.access_token.refresh_token)
             .send()
-            .await?;
+            .await
+            .map_err(KsefError::RequestError)?;
 
         let status = resp.status();
         if !status.is_success() {
@@ -87,14 +90,15 @@ pub fn refresh_access_token(client: &KsefClient) -> Result<AccessTokens, KsefErr
             return Err(KsefError::ApiError(status.as_u16(), body));
         }
 
-        let parsed: RefreshTokenResponse = resp.json().await?;
+        let parsed: RefreshTokenResponse = resp.json().await.map_err(KsefError::RequestError)?;
         Ok(parsed)
     };
 
     let token_response = match tokio::runtime::Handle::try_current() {
         Ok(handle) => handle.block_on(fut)?,
         Err(_) => {
-            let rt = tokio::runtime::Runtime::new()?;
+            let rt = tokio::runtime::Runtime::new()
+                .map_err(|e| KsefError::RuntimeError(e.to_string()))?;
             rt.block_on(fut)?
         }
     };

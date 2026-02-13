@@ -218,7 +218,7 @@ fn main() -> ExitCode {
         }
     };
 
-    let ksef_token = client.ksef_token();
+    let ksef_token = (*client.ksef_token()).clone();
     println!("    KSeF Token: {:?}", ksef_token);
 
     println!("[12] Getting list of KSeF tokens...");
@@ -231,6 +231,22 @@ fn main() -> ExitCode {
         }
         Err(e) => {
             eprintln!("Unable to get list of KSeF tokens: {}", e);
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let ksef_token_reference_number = &ksef_token.reference_number;
+
+    println!("[13] Getting status of a specific KSeF token...");
+    match client.get_ksef_token_status(ksef_token_reference_number.as_str()) {
+        Ok(token_status) => {
+            println!(
+                "    KSeF Token Status\n{}",
+                serde_json::to_string_pretty(&token_status).unwrap_or_default()
+            );
+        }
+        Err(e) => {
+            eprintln!("Unable to get KSeF token status: {}", e);
             return ExitCode::FAILURE;
         }
     };
