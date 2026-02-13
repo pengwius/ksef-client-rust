@@ -209,6 +209,18 @@ fn main() -> ExitCode {
     let refreshed_access_token = client.access_token().access_token.clone();
     println!("    Refreshed AccessToken: {}", refreshed_access_token);
 
+    println!("[11] Getting new KSeF token...");
+    match client.new_ksef_token() {
+        Ok(()) => {}
+        Err(e) => {
+            eprintln!("Unable to get KSeF token: {}", e);
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let ksef_token = client.ksef_token();
+    println!("    KSeF Token: {:?}", ksef_token);
+
     println!("Finished successfully.");
     ExitCode::SUCCESS
 }

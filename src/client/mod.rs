@@ -1,5 +1,6 @@
 use crate::AccessTokens;
 use crate::AuthTokens;
+use crate::KsefToken;
 use crate::client::error::KsefError;
 
 pub mod error;
@@ -8,6 +9,7 @@ mod auth_challenge;
 pub mod auth_token_request;
 pub mod get_access_token;
 mod get_auth_status;
+pub mod new_ksef_token;
 mod routes;
 pub mod submit_xades_auth_request;
 pub mod xades;
@@ -18,6 +20,7 @@ pub struct KsefClient {
     pub xades: xades::XadesSigner,
     pub auth_token: AuthTokens,
     pub access_token: AccessTokens,
+    pub ksef_token: KsefToken,
 }
 
 impl KsefClient {
@@ -32,6 +35,7 @@ impl KsefClient {
             xades: xades::XadesSigner::default(),
             auth_token: AuthTokens::default(),
             access_token: AccessTokens::default(),
+            ksef_token: KsefToken::default(),
         }
     }
 
@@ -73,12 +77,26 @@ impl KsefClient {
         }
     }
 
+    pub fn new_ksef_token(&mut self) -> Result<(), KsefError> {
+        match new_ksef_token::new_ksef_token(self) {
+            Ok(token) => {
+                self.ksef_token = token;
+                Ok(())
+            }
+            Err(e) => Err(e),
+        }
+    }
+
     pub fn auth_token(&self) -> &AuthTokens {
         &self.auth_token
     }
 
     pub fn access_token(&self) -> &AccessTokens {
         &self.access_token
+    }
+
+    pub fn ksef_token(&self) -> &KsefToken {
+        &self.ksef_token
     }
 
     pub fn url_for(&self, path: &str) -> String {

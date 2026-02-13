@@ -113,4 +113,13 @@ fn test_full_authentication_flow() {
         "Refreshed Access Token: {}",
         refreshed_access_tokens.access_token
     );
+
+    println!("Getting new KSeF token...");
+    if let Err(e) = client.new_ksef_token() {
+        panic!("Should get new KSeF token: {:?}", e);
+    }
+
+    let ksef_token = client.ksef_token();
+    assert!(!ksef_token.token.is_empty());
+    println!("New KSeF Token: {}", ksef_token.token);
 }
