@@ -1,11 +1,26 @@
 use ksef_client::{ContextIdentifierType, KsefClient, SubjectIdentifierType};
 use rand::Rng;
-use rand::distributions::Uniform;
-
 pub fn generate_random_nip() -> String {
     let mut rng = rand::thread_rng();
-    let digits = Uniform::from(0..10);
-    (0..10).map(|_| rng.sample(&digits).to_string()).collect()
+    loop {
+        let mut digits: Vec<u8> = (0..9).map(|_| rng.gen_range(0..10) as u8).collect();
+        if digits[0] == 0 {
+            digits[0] = rng.gen_range(1..10) as u8;
+        }
+
+        let weights = [6, 5, 7, 2, 3, 4, 5, 6, 7];
+        let sum: u32 = digits
+            .iter()
+            .zip(weights.iter())
+            .map(|(d, w)| (*d as u32) * (*w as u32))
+            .sum();
+
+        let checksum = sum % 11;
+        if checksum != 10 {
+            digits.push(checksum as u8);
+            return digits.iter().map(|d| d.to_string()).collect();
+        }
+    }
 }
 
 #[allow(dead_code)]
