@@ -1,3 +1,4 @@
+use crate::client::auth_token_request::ContextIdentifierType;
 use crate::client::routes;
 use crate::client::{KsefClient, KsefError};
 use serde::Deserialize;
@@ -7,6 +8,10 @@ pub struct KsefToken {
     #[serde(rename = "referenceNumber")]
     pub reference_number: String,
     pub token: String,
+    #[serde(skip)]
+    pub context_type: Option<ContextIdentifierType>,
+    #[serde(skip)]
+    pub context_value: Option<String>,
 }
 
 pub fn new_ksef_token(client: &KsefClient) -> Result<KsefToken, KsefError> {

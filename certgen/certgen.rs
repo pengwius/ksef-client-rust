@@ -251,6 +251,21 @@ fn main() -> ExitCode {
         }
     };
 
+    println!("[13.5] Authenticating using the KSeF token...");
+    client.ksef_token.context_type = Some(ContextIdentifierType::Nip);
+    client.ksef_token.context_value = Some(nip.clone());
+
+    match client.authenticate_by_ksef_token() {
+        Ok(tokens) => {
+            println!("    Authentication successful!");
+            println!("    Auth Token: {}", tokens.authentication_token);
+        }
+        Err(e) => {
+            eprintln!("Unable to authenticate with KSeF token: {}", e);
+            return ExitCode::FAILURE;
+        }
+    }
+
     println!("[14] Revoking the KSeF token...");
     match client.revoke_ksef_token(ksef_token_reference_number.as_str()) {
         Ok(()) => {

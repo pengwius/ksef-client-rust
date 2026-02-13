@@ -1,6 +1,7 @@
 mod client;
 
 pub use client::KsefClient;
+pub use client::auth_challenge::AuthChallenge;
 pub use client::auth_token_request::{
     AuthTokenRequestBuilder, AuthenticationTokenAllowedIps, AuthenticationTokenAuthorizationPolicy,
     ContextIdentifierType, SubjectIdentifierType,
