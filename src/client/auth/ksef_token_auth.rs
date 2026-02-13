@@ -1,9 +1,10 @@
 use crate::client::KsefClient;
-use crate::client::auth_challenge::AuthChallenge;
-use crate::client::auth_token_request::ContextIdentifierType;
+use crate::client::auth::auth_challenge::AuthChallenge;
+use crate::client::auth::auth_token_request::ContextIdentifierType;
+use crate::client::auth::xades_auth::AuthTokens;
 use crate::client::error::KsefError;
+use crate::client::get_public_key_certificates::PublicKeyCertificateUsage;
 use crate::client::routes;
-use crate::client::submit_xades_auth_request::AuthTokens;
 use base64::{Engine as _, engine::general_purpose};
 use openssl::hash::MessageDigest;
 use openssl::md::MdRef;
@@ -39,15 +40,49 @@ struct TokenObject {
     token: String,
 }
 
-pub fn submit_ksef_token_auth_request(
-    client: &mut KsefClient,
-    challenge: AuthChallenge,
-    token: &str,
-    context_type: ContextIdentifierType,
-    context_value: &str,
-    public_key_pem: &str,
-) -> Result<AuthTokens, KsefError> {
-    let encrypted_token = encrypt_token(token, challenge.timestamp_ms, public_key_pem)
+pub fn submit_ksef_token_auth_request(client: &mut KsefClient) -> Result<AuthTokens, KsefError> {
+    let challenge = match client.get_auth_challenge() {
+        Ok(challenge) => challenge,
+        Err(e) => return Err(e),
+    };
+
+    let token = client.ksef_token.token.clone();
+    let context_type = client
+        .ksef_token
+        .context_type
+        .clone()
+        .ok_or_else(|| KsefError::ApplicationError(0, "Context type not set".to_string()))?;
+    let context_value = client
+        .ksef_token
+        .context_value
+        .clone()
+        .ok_or_else(|| KsefError::ApplicationError(0, "Context value not set".to_string()))?;
+
+    let certificates = client.get_public_key_certificates()?;
+    let encryption_cert = certificates
+        .iter()
+        .find(|c| {
+            c.usage
+                .contains(&PublicKeyCertificateUsage::KsefTokenEncryption)
+        })
+        .ok_or_else(|| {
+            KsefError::Unexpected("No KsefTokenEncryption certificate found".to_string())
+        })?;
+
+    let cert_der = general_purpose::STANDARD
+        .decode(&encryption_cert.certificate)
+        .map_err(|e| KsefError::Unexpected(format!("Base64 decode error: {}", e)))?;
+
+    let x509 = openssl::x509::X509::from_der(&cert_der).map_err(KsefError::OpenSslError)?;
+
+    let pkey = x509.public_key().map_err(KsefError::OpenSslError)?;
+
+    let pem_bytes = pkey.public_key_to_pem().map_err(KsefError::OpenSslError)?;
+
+    let pem = String::from_utf8(pem_bytes)
+        .map_err(|e| KsefError::Unexpected(format!("UTF-8 error: {}", e)))?;
+
+    let encrypted_token = encrypt_token(&token, challenge.timestamp_ms, &pem)
         .map_err(|e| KsefError::OpenSslError(e))?;
 
     let context_type_str = match context_type {

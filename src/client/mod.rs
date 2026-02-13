@@ -1,22 +1,21 @@
 use crate::AccessTokens;
 use crate::AuthChallenge;
+use crate::AuthTokenRequest;
+use crate::AuthTokenRequestBuilder;
 use crate::AuthTokens;
+use crate::ContextIdentifierType;
 use crate::DetailedKsefToken;
 use crate::KsefToken;
+use crate::SubjectIdentifierType;
 use crate::client::error::KsefError;
-use base64::{Engine as _, engine::general_purpose};
+use crate::client::get_public_key_certificates::PublicKeyCertificate;
 
 pub mod error;
 
-pub mod auth_challenge;
-pub mod auth_token_request;
-pub mod get_access_token;
-mod get_auth_status;
+pub mod auth;
 pub mod get_public_key_certificates;
 pub mod ksef_tokens;
 mod routes;
-pub mod submit_ksef_token_auth_request;
-pub mod submit_xades_auth_request;
 pub mod xades;
 
 pub struct KsefClient {
@@ -44,12 +43,47 @@ impl KsefClient {
         }
     }
 
-    pub fn get_auth_challenge(&self) -> Result<auth_challenge::AuthChallenge, KsefError> {
-        auth_challenge::get_auth_challenge(self)
+    pub fn get_auth_challenge(&self) -> Result<AuthChallenge, KsefError> {
+        auth::auth_challenge::get_auth_challenge(self)
     }
 
-    pub fn submit_xades_auth_request(&mut self, signed_xml: String) -> Result<(), KsefError> {
-        match submit_xades_auth_request::submit_xades_auth_request(self, signed_xml) {
+    pub fn get_auth_token_request(
+        &self,
+        id: &str,
+        id_type: ContextIdentifierType,
+        subject_type: SubjectIdentifierType,
+    ) -> Result<AuthTokenRequest, KsefError> {
+        let challenge = match self.get_auth_challenge() {
+            Ok(ch) => ch.challenge,
+            Err(e) => {
+                return Err(KsefError::ApplicationError(
+                    0,
+                    format!("Unable to get AuthChallenge: {}", e),
+                ));
+            }
+        };
+
+        let built = AuthTokenRequestBuilder::new()
+            .with_challenge(&challenge)
+            .with_context(id_type, id)
+            .with_subject_type(subject_type)
+            .build();
+
+        let auth_token_request = match built {
+            Ok(req) => req,
+            Err(e) => {
+                return Err(KsefError::ApplicationError(
+                    0,
+                    format!("Unable to build AuthTokenRequest: {}", e),
+                ));
+            }
+        };
+
+        Ok(auth_token_request)
+    }
+
+    pub fn authenticate_by_xades_signature(&mut self, signed_xml: String) -> Result<(), KsefError> {
+        match auth::xades_auth::submit_xades_auth_request(self, signed_xml) {
             Ok(tokens) => {
                 self.auth_token = tokens;
                 Ok(())
@@ -58,63 +92,22 @@ impl KsefClient {
         }
     }
 
-    pub fn authenticate_by_ksef_token(&mut self) -> Result<AuthTokens, KsefError> {
-        let challenge = match auth_challenge::get_auth_challenge(self) {
-            Ok(challenge) => challenge,
-            Err(e) => return Err(e),
-        };
-
-        let token = self.ksef_token.token.clone();
-        let context_type =
-            self.ksef_token.context_type.clone().ok_or_else(|| {
-                KsefError::ApplicationError(0, "Context type not set".to_string())
-            })?;
-        let context_value =
-            self.ksef_token.context_value.clone().ok_or_else(|| {
-                KsefError::ApplicationError(0, "Context value not set".to_string())
-            })?;
-
-        let certificates = get_public_key_certificates::get_public_key_certificates(self)?;
-        let encryption_cert = certificates
-            .iter()
-            .find(|c| {
-                c.usage.contains(
-                    &get_public_key_certificates::PublicKeyCertificateUsage::KsefTokenEncryption,
-                )
-            })
-            .ok_or_else(|| {
-                KsefError::Unexpected("No KsefTokenEncryption certificate found".to_string())
-            })?;
-
-        let cert_der = general_purpose::STANDARD
-            .decode(&encryption_cert.certificate)
-            .map_err(|e| KsefError::Unexpected(format!("Base64 decode error: {}", e)))?;
-
-        let x509 = openssl::x509::X509::from_der(&cert_der).map_err(KsefError::OpenSslError)?;
-
-        let pkey = x509.public_key().map_err(KsefError::OpenSslError)?;
-
-        let pem_bytes = pkey.public_key_to_pem().map_err(KsefError::OpenSslError)?;
-
-        let pem = String::from_utf8(pem_bytes)
-            .map_err(|e| KsefError::Unexpected(format!("UTF-8 error: {}", e)))?;
-
-        submit_ksef_token_auth_request::submit_ksef_token_auth_request(
-            self,
-            challenge,
-            &token,
-            context_type,
-            &context_value,
-            &pem,
-        )
+    pub fn authenticate_by_ksef_token(&mut self) -> Result<(), KsefError> {
+        match auth::ksef_token_auth::submit_ksef_token_auth_request(self) {
+            Ok(tokens) => {
+                self.auth_token = tokens;
+                Ok(())
+            }
+            Err(e) => Err(e),
+        }
     }
 
     pub fn get_auth_status(&self) -> Result<bool, KsefError> {
-        get_auth_status::get_auth_status(self)
+        auth::get_auth_status::get_auth_status(self)
     }
 
     pub fn get_access_token(&mut self) -> Result<(), KsefError> {
-        match get_access_token::get_access_token(self) {
+        match auth::get_access_token::get_access_token(self) {
             Ok(tokens) => {
                 self.access_token = tokens;
                 Ok(())
@@ -124,7 +117,7 @@ impl KsefClient {
     }
 
     pub fn refresh_access_token(&mut self) -> Result<(), KsefError> {
-        match get_access_token::refresh_access_token(self) {
+        match auth::get_access_token::refresh_access_token(self) {
             Ok(token) => {
                 self.access_token = token;
                 Ok(())
@@ -133,14 +126,24 @@ impl KsefClient {
         }
     }
 
-    pub fn new_ksef_token(&mut self) -> Result<(), KsefError> {
+    pub fn get_public_key_certificates(&self) -> Result<Vec<PublicKeyCertificate>, KsefError> {
+        get_public_key_certificates::get_public_key_certificates(self)
+    }
+
+    pub fn new_ksef_token(&mut self, load: bool) -> Result<KsefToken, KsefError> {
         match ksef_tokens::new_ksef_token::new_ksef_token(self) {
             Ok(token) => {
-                self.ksef_token = token;
-                Ok(())
+                if load {
+                    self.ksef_token = token.clone();
+                }
+                Ok(token)
             }
             Err(e) => Err(e),
         }
+    }
+
+    pub fn load_ksef_token(&mut self, token: KsefToken) {
+        self.ksef_token = token;
     }
 
     pub fn get_ksef_tokens(&mut self) -> Result<Vec<DetailedKsefToken>, KsefError> {

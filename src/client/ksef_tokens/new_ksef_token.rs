@@ -1,4 +1,4 @@
-use crate::client::auth_token_request::ContextIdentifierType;
+use crate::client::auth::auth_token_request::ContextIdentifierType;
 use crate::client::routes;
 use crate::client::{KsefClient, KsefError};
 use serde::Deserialize;

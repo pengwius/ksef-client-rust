@@ -69,33 +69,17 @@ fn main() -> ExitCode {
     println!("    Organization: {}", &args.organization);
     println!("    CommonName: {}", &args.common_name);
 
-    println!("[2] Getting AuthChallenge from KSeF...");
+    println!("[3] Getting AuthTokenRequest...");
     let mut client = KsefClient::new();
-    let challenge = match client.get_auth_challenge() {
-        Ok(ch) => {
-            println!(
-                "    AuthChallenge: {} (timestamp: {}, ts_ms: {})",
-                ch.challenge, ch.timestamp, ch.timestamp_ms
-            );
-            ch.challenge
-        }
-        Err(e) => {
-            eprintln!("Unable to get AuthChallenge: {}", e);
-            return ExitCode::FAILURE;
-        }
-    };
 
-    println!("[3] Building AuthTokenRequest (builder)...");
-    let built = AuthTokenRequestBuilder::new()
-        .with_challenge(&challenge)
-        .with_context(ContextIdentifierType::Nip, nip.clone())
-        .with_subject_type(SubjectIdentifierType::CertificateSubject)
-        .build();
-
-    let auth_token_request = match built {
+    let auth_token_request = match client.get_auth_token_request(
+        &nip,
+        ContextIdentifierType::Nip,
+        SubjectIdentifierType::CertificateSubject,
+    ) {
         Ok(req) => req,
         Err(e) => {
-            eprintln!("Unable to build AuthTokenRequest: {}", e);
+            eprintln!("Unable to get AuthTokenRequest: {}", e);
             return ExitCode::FAILURE;
         }
     };
@@ -151,7 +135,7 @@ fn main() -> ExitCode {
     }
 
     println!("[7] Sending signed XML to KSeF...");
-    match client.submit_xades_auth_request(signed_xml) {
+    match client.authenticate_by_xades_signature(signed_xml) {
         Ok(()) => {}
         Err(e) => {
             eprintln!("Unable to submit signed XML for authentication: {}", e);
@@ -210,16 +194,16 @@ fn main() -> ExitCode {
     println!("    Refreshed AccessToken: {}", refreshed_access_token);
 
     println!("[11] Getting new KSeF token...");
-    match client.new_ksef_token() {
-        Ok(()) => {}
+    let ksef_token = match client.new_ksef_token(true) {
+        Ok(token) => {
+            println!("    KSeF Token: {:?}", token);
+            token
+        }
         Err(e) => {
             eprintln!("Unable to get KSeF token: {}", e);
             return ExitCode::FAILURE;
         }
     };
-
-    let ksef_token = (*client.ksef_token()).clone();
-    println!("    KSeF Token: {:?}", ksef_token);
 
     println!("[12] Getting list of KSeF tokens...");
     match client.get_ksef_tokens() {
@@ -256,9 +240,10 @@ fn main() -> ExitCode {
     client.ksef_token.context_value = Some(nip.clone());
 
     match client.authenticate_by_ksef_token() {
-        Ok(tokens) => {
+        Ok(()) => {
             println!("    Authentication successful!");
-            println!("    Auth Token: {}", tokens.authentication_token);
+            let auth_token = client.auth_token();
+            println!("    Auth Token: {}", auth_token.authentication_token);
         }
         Err(e) => {
             eprintln!("Unable to authenticate with KSeF token: {}", e);
