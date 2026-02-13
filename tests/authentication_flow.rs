@@ -144,4 +144,30 @@ fn test_full_authentication_flow() {
             println!("Failed to get KSeF token status: {:?}", e);
         }
     }
+
+    println!("Revoking KSeF token...");
+    match client.revoke_ksef_token(&ksef_token.reference_number) {
+        Ok(()) => {
+            println!("KSeF token revoked successfully");
+        }
+        Err(e) => {
+            println!("Failed to revoke KSeF token: {:?}", e);
+        }
+    }
+
+    match client.get_ksef_token_status(&ksef_token.reference_number) {
+        Ok(token_status) => {
+            println!(
+                "KSeF Token status after revocation: {:?}",
+                token_status.status
+            );
+            assert!(
+                token_status.status == TokenStatus::Revoked
+                    || token_status.status == TokenStatus::Revoking
+            );
+        }
+        Err(e) => {
+            println!("Failed to get KSeF token status after revocation: {:?}", e);
+        }
+    }
 }

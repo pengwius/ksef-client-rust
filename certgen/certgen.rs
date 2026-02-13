@@ -251,6 +251,17 @@ fn main() -> ExitCode {
         }
     };
 
+    println!("[14] Revoking the KSeF token...");
+    match client.revoke_ksef_token(ksef_token_reference_number.as_str()) {
+        Ok(()) => {
+            println!("    KSeF token revoked successfully.");
+        }
+        Err(e) => {
+            eprintln!("Unable to revoke KSeF token: {}", e);
+            return ExitCode::FAILURE;
+        }
+    };
+
     println!("Finished successfully.");
     ExitCode::SUCCESS
 }

@@ -94,9 +94,13 @@ impl KsefClient {
 
     pub fn get_ksef_token_status(
         &self,
-        reference_number: &str,
+        token_reference_number: &str,
     ) -> Result<DetailedKsefToken, KsefError> {
-        ksef_tokens::get_ksef_token_status::get_ksef_token_status(self, reference_number)
+        ksef_tokens::get_ksef_token_status::get_ksef_token_status(self, token_reference_number)
+    }
+    
+    pub fn revoke_ksef_token(&self, token_reference_number: &str) -> Result<(), KsefError> {
+        ksef_tokens::revoke_ksef_token::revoke_ksef_token(self, token_reference_number)
     }
 
     pub fn auth_token(&self) -> &AuthTokens {
