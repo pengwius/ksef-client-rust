@@ -1,5 +1,4 @@
 use crate::client::KsefClient;
-use crate::client::auth::auth_challenge::AuthChallenge;
 use crate::client::auth::auth_token_request::ContextIdentifierType;
 use crate::client::auth::xades_auth::AuthTokens;
 use crate::client::error::KsefError;

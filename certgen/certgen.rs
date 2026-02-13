@@ -1,8 +1,6 @@
 use chrono::Utc;
 use clap::Parser;
-use ksef_client::{
-    AuthTokenRequestBuilder, ContextIdentifierType, KsefClient, SubjectIdentifierType,
-};
+use ksef_client::{ContextIdentifierType, KsefClient, SubjectIdentifierType};
 use std::fs;
 use std::path::PathBuf;
 use std::process::ExitCode;
@@ -180,87 +178,6 @@ fn main() -> ExitCode {
 
     println!("    AccessToken: {}", access_tokens.access_token);
     println!("    RefreshToken: {}", access_tokens.refresh_token);
-
-    println!("[10] Refreshing access token...");
-    match client.refresh_access_token() {
-        Ok(()) => {}
-        Err(e) => {
-            eprintln!("Unable to refresh access token: {}", e);
-            return ExitCode::FAILURE;
-        }
-    };
-
-    let refreshed_access_token = client.access_token().access_token.clone();
-    println!("    Refreshed AccessToken: {}", refreshed_access_token);
-
-    println!("[11] Getting new KSeF token...");
-    let ksef_token = match client.new_ksef_token(true) {
-        Ok(token) => {
-            println!("    KSeF Token: {:?}", token);
-            token
-        }
-        Err(e) => {
-            eprintln!("Unable to get KSeF token: {}", e);
-            return ExitCode::FAILURE;
-        }
-    };
-
-    println!("[12] Getting list of KSeF tokens...");
-    match client.get_ksef_tokens() {
-        Ok(tokens) => {
-            println!(
-                "    KSeF Tokens\n{}",
-                serde_json::to_string_pretty(&tokens).unwrap_or_default()
-            );
-        }
-        Err(e) => {
-            eprintln!("Unable to get list of KSeF tokens: {}", e);
-            return ExitCode::FAILURE;
-        }
-    };
-
-    let ksef_token_reference_number = &ksef_token.reference_number;
-
-    println!("[13] Getting status of a specific KSeF token...");
-    match client.get_ksef_token_status(ksef_token_reference_number.as_str()) {
-        Ok(token_status) => {
-            println!(
-                "    KSeF Token Status\n{}",
-                serde_json::to_string_pretty(&token_status).unwrap_or_default()
-            );
-        }
-        Err(e) => {
-            eprintln!("Unable to get KSeF token status: {}", e);
-            return ExitCode::FAILURE;
-        }
-    };
-
-    println!("[13.5] Authenticating using the KSeF token...");
-    client.ksef_token.context_type = Some(ContextIdentifierType::Nip);
-    client.ksef_token.context_value = Some(nip.clone());
-
-    match client.authenticate_by_ksef_token() {
-        Ok(()) => {
-            println!("    Authentication successful!");
-            let auth_token = client.auth_token();
-            println!("    Auth Token: {}", auth_token.authentication_token);
-        }
-        Err(e) => {
-            eprintln!("Unable to authenticate with KSeF token: {}", e);
-            return ExitCode::FAILURE;
-        }
-    }
-
-    println!("[14] Revoking the KSeF token...");
-    match client.revoke_ksef_token(ksef_token_reference_number.as_str()) {
-        Ok(()) => {
-            println!("    KSeF token revoked successfully.");
-        }
-        Err(e) => {
-            eprintln!("Unable to revoke KSeF token: {}", e);
-            return ExitCode::FAILURE;
-        }
-    };
 
     println!("Finished successfully.");
     ExitCode::SUCCESS
