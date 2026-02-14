@@ -7,3 +7,5 @@ pub const AUTH_TOKEN_REFRESH_PATH: &str = "/v2/auth/token/refresh";
 
 pub const TOKENS_PATH: &str = "/v2/tokens";
 pub const PUBLIC_KEYS_PATH: &str = "/v2/security/public-key-certificates";
+
+pub const AUTH_SESSIONS_PATH: &str = "/v2/auth/sessions";

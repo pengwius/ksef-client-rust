@@ -17,6 +17,7 @@ pub mod auth;
 pub mod get_public_key_certificates;
 pub mod ksef_tokens;
 mod routes;
+pub mod sessions;
 pub mod xades;
 
 pub struct KsefClient {
@@ -177,6 +178,13 @@ impl KsefClient {
 
     pub fn ksef_token(&self) -> &KsefToken {
         &self.ksef_token
+    }
+
+    pub fn get_active_sessions(
+        &self,
+        continuation_token: Option<&str>,
+    ) -> Result<crate::client::sessions::QuerySessionsResponse, KsefError> {
+        sessions::get_active_sessions::get_active_sessions(self, continuation_token)
     }
 
     pub fn url_for(&self, path: &str) -> String {
