@@ -14,7 +14,7 @@ struct StatusObject {
     description: String,
 }
 
-pub fn get_auth_status(client: &KsefClient) -> Result<bool, KsefError> {
+pub fn get_auth_status(client: &mut KsefClient) -> Result<bool, KsefError> {
     let start_time = std::time::Instant::now();
     let timeout = std::time::Duration::from_secs(120);
 
@@ -63,9 +63,15 @@ pub fn get_auth_status(client: &KsefClient) -> Result<bool, KsefError> {
                 std::thread::sleep(std::time::Duration::from_secs(1));
                 continue;
             }
-            200 => {
-                return Ok(true);
-            }
+            200 => match client.get_access_token() {
+                Ok(()) => return Ok(true),
+                Err(e) => {
+                    return Err(KsefError::Unexpected(format!(
+                        "Failed to get access token: {}",
+                        e
+                    )));
+                }
+            },
             _ => {
                 return Err(KsefError::ApplicationError(
                     status_response.status.code,

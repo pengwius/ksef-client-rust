@@ -34,41 +34,30 @@ struct TokenObject {
 }
 
 pub fn get_access_token(client: &KsefClient) -> Result<AccessTokens, KsefError> {
-    let fut = async {
-        let url = client.url_for(routes::AUTH_TOKEN_REDEEM_PATH);
-        let resp = client
-            .client
-            .post(&url)
-            .header("Accept", "application/json")
-            .bearer_auth(&client.auth_token.authentication_token)
-            .send()
-            .await
-            .map_err(KsefError::RequestError)?;
+    let url = client.url_for(routes::AUTH_TOKEN_REDEEM_PATH);
 
-        let status = resp.status();
-        if !status.is_success() {
-            let body = resp.text().await.unwrap_or_default();
-            return Err(KsefError::ApiError(status.as_u16(), body));
-        }
+    let http_client = reqwest::blocking::Client::new();
 
-        let parsed: TokenResponse = resp.json().await.map_err(KsefError::RequestError)?;
-        Ok(parsed)
-    };
+    let resp = http_client
+        .post(&url)
+        .header("Accept", "application/json")
+        .bearer_auth(&client.auth_token.authentication_token)
+        .send()
+        .map_err(KsefError::RequestError)?;
 
-    let token_response = match tokio::runtime::Handle::try_current() {
-        Ok(handle) => handle.block_on(fut)?,
-        Err(_) => {
-            let rt = tokio::runtime::Runtime::new()
-                .map_err(|e| KsefError::RuntimeError(e.to_string()))?;
-            rt.block_on(fut)?
-        }
-    };
+    let status = resp.status();
+    if !status.is_success() {
+        let body = resp.text().unwrap_or_default();
+        return Err(KsefError::ApiError(status.as_u16(), body));
+    }
+
+    let parsed: TokenResponse = resp.json().map_err(KsefError::RequestError)?;
 
     Ok(AccessTokens {
-        access_token: token_response.access_token_obj.token,
-        access_token_valid_until: token_response.access_token_obj.valid_until,
-        refresh_token: token_response.refresh_token_obj.token,
-        refresh_token_valid_until: token_response.refresh_token_obj.valid_until,
+        access_token: parsed.access_token_obj.token,
+        access_token_valid_until: parsed.access_token_obj.valid_until,
+        refresh_token: parsed.refresh_token_obj.token,
+        refresh_token_valid_until: parsed.refresh_token_obj.valid_until,
     })
 }
 

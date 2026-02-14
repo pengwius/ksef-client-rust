@@ -1,5 +1,6 @@
 use ksef_client::{ContextIdentifierType, KsefClient, SubjectIdentifierType};
 use rand::Rng;
+
 pub fn generate_random_nip() -> String {
     let mut rng = rand::thread_rng();
     loop {
@@ -60,21 +61,14 @@ pub fn authorize_client() -> KsefClient {
         }
     }
 
-    let mut attempts = 0;
-    loop {
-        match client.get_auth_status() {
-            Ok(true) => break,
-            Ok(false) => {
-                attempts += 1;
-                if attempts > 10 {
-                    panic!("Timeout waiting for auth status");
-                }
-                std::thread::sleep(std::time::Duration::from_secs(2));
-            }
-            Err(e) => {
-                eprintln!("Error checking auth status: {:?}", e);
-                break;
-            }
+    match client.get_auth_status() {
+        Ok(true) => {}
+        Ok(false) => {
+            eprintln!("Authentication status check failed: Authentication not successful");
+            panic!("Authentication not successful");
+        }
+        Err(e) => {
+            panic!("Error checking auth status: {:?}", e);
         }
     }
 

@@ -3,3 +3,15 @@
 # KSeF SDK for Rust
 
 SDK for integrating with the Polish National e-Invoice System (KSeF).
+
+## Documentation
+
+Detailed documentation can be found in the `docs/` directory.
+
+*   [Authentication Flow](docs/authentication.en.md)
+
+## Contact
+If you have any questions, suggestions, or need assistance, please contact me:
+- Email: [pengwius@proton.me](mailto:pengwius@proton.me)
+- Telegram: [@pengwius](https://t.me/pengwius)
+- Matrix: [@pengwius:matrix.org](https://matrix.to/#/@pengwius:matrix.org)

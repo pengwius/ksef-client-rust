@@ -81,7 +81,7 @@ fn test_authentication_submission() {
             assert!(!auth_token.reference_number.is_empty());
         }
         Err(e) => {
-            println!(
+            panic!(
                 "Authentication submission failed (expected for random NIP): {:?}",
                 e
             );

@@ -102,7 +102,7 @@ impl KsefClient {
         }
     }
 
-    pub fn get_auth_status(&self) -> Result<bool, KsefError> {
+    pub fn get_auth_status(&mut self) -> Result<bool, KsefError> {
         auth::get_auth_status::get_auth_status(self)
     }
 
