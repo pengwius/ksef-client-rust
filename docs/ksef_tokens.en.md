@@ -14,9 +14,22 @@ All operations below (generating, listing, revoking) require prior authenticatio
 ### 1. Generating a KSeF Token
 
 ```rust
+use ksef_client::KsefTokenPermissions;
+
+let permissions = KsefTokenPermissions {
+    invoice_read: true,
+    invoice_write: true,
+    credentials_read: true,
+    credentials_manage: false,
+    subunit_manage: false,
+    enforcement_operations: false,
+};
+
+let description = "My token description";
+
 // The 'true' parameter means the generated token will be automatically loaded into the client,
 // enabling subsequent login with it (in a new session) or performing operations in its context.
-let ksef_token = match client.new_ksef_token(true) {
+let ksef_token = match client.new_ksef_token(true, permissions, description) {
     Ok(token) => {
         println!("    KSeF Token: {}", token.token);
         println!("    Reference Number: {}", token.reference_number);
@@ -111,14 +124,24 @@ match client.revoke_ksef_token(ksef_token_reference_number.as_str()) {
 The code below assumes that the client (`client`) is already logged in (e.g., using an XAdES certificate) and possesses permissions to manage credentials (`CredentialsManage`).
 
 ```rust
-use ksef_client::KsefClient;
+use ksef_client::{KsefClient, KsefTokenPermissions};
 
 fn token_lifecycle_example(client: &mut KsefClient) -> Result<(), Box<dyn std::error::Error>> {
     println!("--- Starting Token Lifecycle ---");
 
     // 1. Generate new token
     println!("\n1. Generating new token...");
-    let new_token = client.new_ksef_token(false)?; // false - do not load as active auth token for this session
+
+    let permissions = KsefTokenPermissions {
+        invoice_read: true,
+        invoice_write: true,
+        credentials_read: true,
+        credentials_manage: false,
+        subunit_manage: false,
+        enforcement_operations: false,
+    };
+
+    let new_token = client.new_ksef_token(false, permissions, "Lifecycle test token")?; // false - do not load as active auth token for this session
     println!("   Generated token: {}", new_token.token);
     println!("   Reference number: {}", new_token.reference_number);
 

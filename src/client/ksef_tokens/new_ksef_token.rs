@@ -14,20 +14,47 @@ pub struct KsefToken {
     pub context_value: Option<String>,
 }
 
-pub fn new_ksef_token(client: &KsefClient) -> Result<KsefToken, KsefError> {
+#[derive(Default)]
+pub struct KsefTokenPermissions {
+    pub invoice_read: bool,
+    pub invoice_write: bool,
+    pub credentials_read: bool,
+    pub credentials_manage: bool,
+    pub subunit_manage: bool,
+    pub enforcement_operations: bool,
+}
+
+pub fn new_ksef_token(
+    client: &KsefClient,
+    permissions: KsefTokenPermissions,
+    description: &str,
+) -> Result<KsefToken, KsefError> {
     let fut = async {
         let url = client.url_for(routes::TOKENS_PATH);
 
+        let mut permissions_vec = Vec::new();
+        if permissions.invoice_read {
+            permissions_vec.push("InvoiceRead");
+        }
+        if permissions.invoice_write {
+            permissions_vec.push("InvoiceWrite");
+        }
+        if permissions.credentials_read {
+            permissions_vec.push("CredentialsRead");
+        }
+        if permissions.credentials_manage {
+            permissions_vec.push("CredentialsManage");
+        }
+        if permissions.subunit_manage {
+            permissions_vec.push("SubunitManage");
+        }
+        if permissions.enforcement_operations {
+            permissions_vec.push("EnforcementOperations");
+        }
+
         let body = serde_json::json!({
-            "permissions": [
-                "InvoiceRead",
-                "InvoiceWrite",
-                "CredentialsRead",
-                "CredentialsManage",
-                "SubunitManage",
-                "EnforcementOperations"
-            ],
-            "description": "KSeF Client Rust Token",
+            "permissions": permissions_vec,
+            "description": if description.is_empty() { None } else { Some(description) },
         })
         .to_string();
 

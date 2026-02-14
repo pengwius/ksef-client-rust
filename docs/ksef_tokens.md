@@ -14,11 +14,24 @@ Wszystkie poniższe operacje (generowanie, pobieranie listy, unieważnianie) wym
 ### 1. Generowanie Tokena KSeF
 
 ```rust
+use ksef_client::KsefTokenPermissions;
+
+let permissions = KsefTokenPermissions {
+    invoice_read: true,
+    invoice_write: true,
+    credentials_read: true,
+    credentials_manage: false,
+    subunit_manage: false,
+    enforcement_operations: false,
+};
+
+let description = "Opis mojego tokena";
+
 // Parametr 'true' oznacza, że wygenerowany token zostanie automatycznie załadowany do klienta,
 // umożliwiając późniejsze logowanie się nim (w nowej sesji) lub wykonywanie operacji w jego kontekście.
-let ksef_token = match client.new_ksef_token(true) {
+let ksef_token = match client.new_ksef_token(true, permissions, description) {
     Ok(token) => {
-        println!("    KSeF Token: {:?}", token);
+        println!("    KSeF Token: {}", token.token);
         token
     }
     Err(e) => {
@@ -110,14 +123,24 @@ match client.revoke_ksef_token(ksef_token_reference_number.as_str()) {
 Poniższy kod zakłada, że klient (`client`) jest już zalogowany (np. certyfikatem XAdES) i posiada uprawnienia do zarządzania poświadczeniami (`CredentialsManage`).
 
 ```rust
-use ksef_client::KsefClient;
+use ksef_client::{KsefClient, KsefTokenPermissions};
 
 fn token_lifecycle_example(client: &mut KsefClient) -> Result<(), Box<dyn std::error::Error>> {
     println!("--- Rozpoczęcie cyklu życia tokena ---");
 
     // 1. Generowanie nowego tokena
     println!("\n1. Generowanie nowego tokena...");
-    let new_token = client.new_ksef_token(false)?; // false - nie ładujemy go jako aktywnego tokena autoryzacyjnego tej sesji
+
+    let permissions = KsefTokenPermissions {
+        invoice_read: true,
+        invoice_write: true,
+        credentials_read: true,
+        credentials_manage: false,
+        subunit_manage: false,
+        enforcement_operations: false,
+    };
+
+    let new_token = client.new_ksef_token(false, permissions, "Token testowy cyklu życia")?; // false - nie ładujemy go jako aktywnego tokena autoryzacyjnego tej sesji
     println!("   Wygenerowano token: {}", new_token.token);
     println!("   Numer referencyjny: {}", new_token.reference_number);
 

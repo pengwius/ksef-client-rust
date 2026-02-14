@@ -6,6 +6,7 @@ use crate::AuthTokens;
 use crate::ContextIdentifierType;
 use crate::DetailedKsefToken;
 use crate::KsefToken;
+use crate::KsefTokenPermissions;
 use crate::SubjectIdentifierType;
 use crate::client::error::KsefError;
 use crate::client::get_public_key_certificates::PublicKeyCertificate;
@@ -130,8 +131,13 @@ impl KsefClient {
         get_public_key_certificates::get_public_key_certificates(self)
     }
 
-    pub fn new_ksef_token(&mut self, load: bool) -> Result<KsefToken, KsefError> {
-        match ksef_tokens::new_ksef_token::new_ksef_token(self) {
+    pub fn new_ksef_token(
+        &mut self,
+        load: bool,
+        permissions: KsefTokenPermissions,
+        description: &str,
+    ) -> Result<KsefToken, KsefError> {
+        match ksef_tokens::new_ksef_token::new_ksef_token(self, permissions, description) {
             Ok(token) => {
                 if load {
                     self.ksef_token = token.clone();

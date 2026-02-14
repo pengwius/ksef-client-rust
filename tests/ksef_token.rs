@@ -1,6 +1,6 @@
 mod common;
 
-use ksef_client::{ContextIdentifierType, KsefClient, SubjectIdentifierType};
+use ksef_client::{ContextIdentifierType, KsefClient, KsefTokenPermissions, SubjectIdentifierType};
 
 #[test]
 fn test_ksef_token_lifecycle() {
@@ -49,7 +49,19 @@ fn test_ksef_token_lifecycle() {
     }
 
     println!("Generating new KSeF token...");
-    match client.new_ksef_token(true) {
+
+    let ksef_token_permissions = KsefTokenPermissions {
+        invoice_read: true,
+        invoice_write: true,
+        credentials_read: true,
+        credentials_manage: false,
+        subunit_manage: false,
+        enforcement_operations: false,
+    };
+
+    let ksef_token_description = "Test KSeF token for Rust client".to_string();
+
+    match client.new_ksef_token(true, ksef_token_permissions, &ksef_token_description) {
         Ok(token) => {
             assert!(
                 !token.token.is_empty(),

@@ -11,3 +11,4 @@ pub use client::auth::xades_auth::AuthTokens;
 pub use client::ksef_tokens::models::DetailedKsefToken;
 pub use client::ksef_tokens::models::TokenStatus;
 pub use client::ksef_tokens::new_ksef_token::KsefToken;
+pub use client::ksef_tokens::new_ksef_token::KsefTokenPermissions;
