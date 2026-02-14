@@ -9,6 +9,7 @@ SDK do integracji z Krajowym Systemem e-Faktur (KSeF).
 Szczegółowa dokumentacja znajduje się w katalogu `docs/`.
 
 *   [Proces Uwierzytelniania](docs/authentication.md)
+*   [Zarządzanie Tokenami KSeF](docs/ksef_tokens.md)
 
 ## Kontakt
 Jeśli masz pytania, sugestie lub potrzebujesz pomocy, skontaktuj się ze mną:

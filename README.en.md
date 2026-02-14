@@ -9,6 +9,7 @@ SDK for integrating with the Polish National e-Invoice System (KSeF).
 Detailed documentation can be found in the `docs/` directory.
 
 *   [Authentication Flow](docs/authentication.en.md)
+*   [KSeF Tokens Management](docs/ksef_tokens.en.md)
 
 ## Contact
 If you have any questions, suggestions, or need assistance, please contact me:

@@ -4,6 +4,8 @@ Polska wersja / [English version](authentication.en.md)
 
 Uwierzytelnianie może odbyć się za pomocą podpisu XAdES lub tokena KSeF. Token KSeF można wygenerować po pierwszym logowaniu podpisem kwalifikowanym XAdES. Do celów testowych można użyć certyfikatu samopodpisanego wygenerowanego za pomocą narzędzia [certgen](https://github.com/pengwius/ksef-client-rust/tree/main/certgen) lub metody `gen_selfsign_cert` w obiekcie `xades` w strukturze `KsefClient`.
 
+__[Oficjalna Dokumentacja](https://github.com/CIRFMF/ksef-docs/blob/main/uwierzytelnianie.md)__
+
 ### 1. Przygotowanie dokumentu XML
 
 Należy przygotować dokument XML z identyfikatorem kontekstu, sposobem identyfikacji oraz podmiotu wywołując metodę `get_auth_token_request`.
