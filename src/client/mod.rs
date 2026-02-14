@@ -191,6 +191,10 @@ impl KsefClient {
         sessions::revoke_current_session::revoke_current_session(self)
     }
 
+    pub fn revoke_session(&self, reference_number: &str) -> Result<(), KsefError> {
+        sessions::revoke_session::revoke_session(self, reference_number)
+    }
+
     pub fn url_for(&self, path: &str) -> String {
         format!(
             "{}/{}",
