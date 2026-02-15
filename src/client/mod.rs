@@ -7,6 +7,7 @@ use crate::ContextIdentifierType;
 use crate::DetailedKsefToken;
 use crate::KsefToken;
 use crate::KsefTokenPermissions;
+use crate::QuerySessionsResponse;
 use crate::SubjectIdentifierType;
 use crate::client::error::KsefError;
 use crate::client::get_public_key_certificates::PublicKeyCertificate;
@@ -183,7 +184,7 @@ impl KsefClient {
     pub fn get_active_sessions(
         &self,
         continuation_token: Option<&str>,
-    ) -> Result<crate::client::sessions::QuerySessionsResponse, KsefError> {
+    ) -> Result<QuerySessionsResponse, KsefError> {
         sessions::get_active_sessions::get_active_sessions(self, continuation_token)
     }
 

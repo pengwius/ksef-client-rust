@@ -10,9 +10,10 @@ Szczegółowa dokumentacja znajduje się w katalogu `docs/`.
 
 *   [Proces Uwierzytelniania](docs/authentication.md)
 *   [Zarządzanie Tokenami KSeF](docs/ksef_tokens.md)
+*   [Zarządzanie Sesjami](docs/sessions.md)
 
 ## Kontakt
 Jeśli masz pytania, sugestie lub potrzebujesz pomocy, skontaktuj się ze mną:
-- Email: [pengwius@proton.me](mailto:pengwius@proton.me)
-- Telegram: [@pengwius](https://t.me/pengwius)
-- Matrix: [@pengwius:matrix.org](https://matrix.to/#/@pengwius:matrix.org)
+- Telegram: [@pengwius](https://t.me/pengwius) (preferowane)
+- Matrix: [@pengwius:matrix.org](https://matrix.to/#/@pengwius:matrix.org) (preferowane)
+- Email: [pengwius@proton.me](mailto:pengwius@proton.me) (niepreferowane ze względu na potencjalne opóźnienia w odpowiedzi)
