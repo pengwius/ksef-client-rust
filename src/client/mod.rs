@@ -7,6 +7,7 @@ use crate::ContextIdentifierType;
 use crate::DetailedKsefToken;
 use crate::KsefToken;
 use crate::KsefTokenPermissions;
+use crate::QuerySessionsResponse;
 use crate::SubjectIdentifierType;
 use crate::client::error::KsefError;
 use crate::client::get_public_key_certificates::PublicKeyCertificate;
@@ -17,6 +18,7 @@ pub mod auth;
 pub mod get_public_key_certificates;
 pub mod ksef_tokens;
 mod routes;
+pub mod sessions;
 pub mod xades;
 
 pub struct KsefClient {
@@ -177,6 +179,21 @@ impl KsefClient {
 
     pub fn ksef_token(&self) -> &KsefToken {
         &self.ksef_token
+    }
+
+    pub fn get_active_sessions(
+        &self,
+        continuation_token: Option<&str>,
+    ) -> Result<QuerySessionsResponse, KsefError> {
+        sessions::get_active_sessions::get_active_sessions(self, continuation_token)
+    }
+
+    pub fn revoke_current_session(&self) -> Result<(), KsefError> {
+        sessions::revoke_current_session::revoke_current_session(self)
+    }
+
+    pub fn revoke_session(&self, reference_number: &str) -> Result<(), KsefError> {
+        sessions::revoke_session::revoke_session(self, reference_number)
     }
 
     pub fn url_for(&self, path: &str) -> String {
