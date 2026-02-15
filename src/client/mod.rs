@@ -11,12 +11,16 @@ use crate::QuerySessionsResponse;
 use crate::SubjectIdentifierType;
 use crate::client::error::KsefError;
 use crate::client::get_public_key_certificates::PublicKeyCertificate;
+use crate::client::permissions::grant_person_permissions::{
+    GrantPersonPermissionsRequest, GrantPersonPermissionsResponse,
+};
 
 pub mod error;
 
 pub mod auth;
 pub mod get_public_key_certificates;
 pub mod ksef_tokens;
+pub mod permissions;
 mod routes;
 pub mod sessions;
 pub mod xades;
@@ -194,6 +198,13 @@ impl KsefClient {
 
     pub fn revoke_session(&self, reference_number: &str) -> Result<(), KsefError> {
         sessions::revoke_session::revoke_session(self, reference_number)
+    }
+
+    pub fn grant_person_permissions(
+        &self,
+        request: GrantPersonPermissionsRequest,
+    ) -> Result<GrantPersonPermissionsResponse, KsefError> {
+        permissions::grant_person_permissions::grant_person_permissions(self, request)
     }
 
     pub fn url_for(&self, path: &str) -> String {

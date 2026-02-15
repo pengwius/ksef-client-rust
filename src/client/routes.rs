@@ -10,3 +10,5 @@ pub const PUBLIC_KEYS_PATH: &str = "/v2/security/public-key-certificates";
 
 pub const AUTH_SESSIONS_PATH: &str = "/v2/auth/sessions";
 pub const AUTH_SESSIONS_CURRENT_PATH: &str = "/v2/auth/sessions/current";
+
+pub const PERMISSIONS_PERSONS_GRANTS_PATH: &str = "/v2/permissions/persons/grants";

@@ -11,4 +11,11 @@ pub use client::auth::xades_auth::AuthTokens;
 pub use client::ksef_tokens::models::{DetailedKsefToken, TokenStatus};
 pub use client::ksef_tokens::new_ksef_token::{KsefToken, KsefTokenPermissions};
 
+pub use client::permissions::grant_person_permissions::{
+    GrantPersonPermissionsRequest, GrantPersonPermissionsResponse, IdDocument, PersonByFpNoId,
+    PersonByFpWithId, PersonById, PersonIdentifier, PersonIdentifierType, PersonPermissionType,
+    SubjectDetails, SubjectDetailsType, SubjectIdentifier,
+    SubjectIdentifierType as GrantSubjectIdentifierType,
+};
+
 pub use client::sessions::{AuthenticationMethod, QuerySessionsResponse, Session, SessionStatus};
