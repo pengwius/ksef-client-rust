@@ -7,11 +7,11 @@ use std::process::ExitCode;
 
 fn generate_random_nip() -> String {
     use rand::Rng;
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     loop {
-        let mut digits: Vec<u8> = (0..9).map(|_| rng.gen_range(0..10) as u8).collect();
+        let mut digits: Vec<u8> = (0..9).map(|_| rng.random_range(0..10) as u8).collect();
         if digits[0] == 0 {
-            digits[0] = rng.gen_range(1..10) as u8;
+            digits[0] = rng.random_range(1..10) as u8;
         }
 
         let weights = [6, 5, 7, 2, 3, 4, 5, 6, 7];
