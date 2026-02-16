@@ -22,6 +22,14 @@ pub use client::permissions::grant_entity_permissions::{
     EntitySubjectDetails, GrantEntityPermissionsRequest, GrantEntityPermissionsResponse,
 };
 
+pub use client::permissions::grant_indirect_entity_permissions::{
+    GrantIndirectEntityPermissionsRequest, GrantIndirectEntityPermissionsResponse,
+    IndirectIdDocument, IndirectPermissionType, IndirectPersonByFpNoId, IndirectPersonByFpWithId,
+    IndirectPersonById, IndirectPersonIdentifier, IndirectPersonIdentifierType,
+    IndirectSubjectDetails, IndirectSubjectDetailsType, IndirectSubjectIdentifier,
+    IndirectSubjectIdentifierType, IndirectTargetIdentifier, IndirectTargetIdentifierType,
+};
+
 pub use client::permissions::grant_person_permissions::{
     GrantPersonPermissionsRequest, GrantPersonPermissionsResponse, IdDocument, PersonByFpNoId,
     PersonByFpWithId, PersonById, PersonIdentifier, PersonIdentifierType, PersonPermissionType,
