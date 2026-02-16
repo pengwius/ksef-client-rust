@@ -15,3 +15,4 @@ pub const PERMISSIONS_PERSONS_GRANTS_PATH: &str = "/v2/permissions/persons/grant
 pub const PERMISSIONS_ENTITIES_GRANTS_PATH: &str = "/v2/permissions/entities/grants";
 pub const PERMISSIONS_AUTHORIZATIONS_GRANTS_PATH: &str = "/v2/permissions/authorizations/grants";
 pub const PERMISSIONS_INDIRECT_GRANTS_PATH: &str = "/v2/permissions/indirect/grants";
+pub const PERMISSIONS_SUBUNITS_GRANTS_PATH: &str = "/v2/permissions/subunits/grants";

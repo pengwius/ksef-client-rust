@@ -30,6 +30,14 @@ pub use client::permissions::grant_indirect_entity_permissions::{
     IndirectSubjectIdentifierType, IndirectTargetIdentifier, IndirectTargetIdentifierType,
 };
 
+pub use client::permissions::grant_subunit_permissions::{
+    GrantSubunitPermissionsRequest, GrantSubunitPermissionsResponse, SubunitContextIdentifier,
+    SubunitContextIdentifierType, SubunitIdDocument, SubunitPersonByFpNoId,
+    SubunitPersonByFpWithId, SubunitPersonById, SubunitPersonIdentifier,
+    SubunitPersonIdentifierType, SubunitSubjectDetails, SubunitSubjectDetailsType,
+    SubunitSubjectIdentifier, SubunitSubjectIdentifierType,
+};
+
 pub use client::permissions::grant_person_permissions::{
     GrantPersonPermissionsRequest, GrantPersonPermissionsResponse, IdDocument, PersonByFpNoId,
     PersonByFpWithId, PersonById, PersonIdentifier, PersonIdentifierType, PersonPermissionType,
