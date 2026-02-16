@@ -38,6 +38,14 @@ pub use client::permissions::grant_subunit_permissions::{
     SubunitSubjectIdentifier, SubunitSubjectIdentifierType,
 };
 
+pub use client::permissions::grant_eu_entity_permissions::{
+    EuEntityByFp, EuEntityContextIdentifier, EuEntityContextIdentifierType, EuEntityDetails,
+    EuEntityIdDocument, EuEntityPersonByFpNoId, EuEntityPersonByFpWithId, EuEntityPersonIdentifier,
+    EuEntityPersonIdentifierType, EuEntitySubjectDetails, EuEntitySubjectDetailsType,
+    EuEntitySubjectIdentifier, EuEntitySubjectIdentifierType, GrantEuEntityPermissionsRequest,
+    GrantEuEntityPermissionsResponse,
+};
+
 pub use client::permissions::grant_person_permissions::{
     GrantPersonPermissionsRequest, GrantPersonPermissionsResponse, IdDocument, PersonByFpNoId,
     PersonByFpWithId, PersonById, PersonIdentifier, PersonIdentifierType, PersonPermissionType,

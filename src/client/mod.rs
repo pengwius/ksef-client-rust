@@ -14,6 +14,9 @@ use crate::client::get_public_key_certificates::PublicKeyCertificate;
 use crate::client::permissions::grant_authorization_permissions::{
     GrantAuthorizationPermissionsRequest, GrantAuthorizationPermissionsResponse,
 };
+use crate::client::permissions::grant_eu_entity_permissions::{
+    GrantEuEntityPermissionsRequest, GrantEuEntityPermissionsResponse,
+};
 use crate::client::permissions::grant_indirect_entity_permissions::{
     GrantIndirectEntityPermissionsRequest, GrantIndirectEntityPermissionsResponse,
 };
@@ -247,6 +250,13 @@ impl KsefClient {
         request: GrantSubunitPermissionsRequest,
     ) -> Result<GrantSubunitPermissionsResponse, KsefError> {
         permissions::grant_subunit_permissions::grant_subunit_permissions(self, request)
+    }
+
+    pub fn grant_eu_entity_permissions(
+        &self,
+        request: GrantEuEntityPermissionsRequest,
+    ) -> Result<GrantEuEntityPermissionsResponse, KsefError> {
+        permissions::grant_eu_entity_permissions::grant_eu_entity_permissions(self, request)
     }
 
     pub fn url_for(&self, path: &str) -> String {
