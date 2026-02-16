@@ -1,4 +1,4 @@
-mod common;
+use crate::common;
 
 use ksef_client::{
     EntityIdentifier, EntityIdentifierType, EntityPermission, EntityPermissionType,
@@ -10,12 +10,12 @@ fn test_grant_entity_permissions() {
     let client = common::authorize_client();
     let target_nip = common::generate_random_nip();
 
-    let request = GrantEntityPermissionsRequest {
-        subject_identifier: EntityIdentifier {
+    let request = GrantEntityPermissionsRequest::builder()
+        .with_subject_identifier(EntityIdentifier {
             identifier_type: EntityIdentifierType::Nip,
             value: target_nip,
-        },
-        permissions: vec![
+        })
+        .with_permissions(vec![
             EntityPermission {
                 permission_type: EntityPermissionType::InvoiceRead,
                 can_delegate: Some(false),
@@ -24,12 +24,13 @@ fn test_grant_entity_permissions() {
                 permission_type: EntityPermissionType::InvoiceWrite,
                 can_delegate: Some(true),
             },
-        ],
-        description: "Test entity permission grant".to_string(),
-        subject_details: EntitySubjectDetails {
+        ])
+        .with_description("Test entity permission grant")
+        .with_subject_details(EntitySubjectDetails {
             full_name: "Test Entity Sp. z o.o.".to_string(),
-        },
-    };
+        })
+        .build()
+        .expect("Failed to build request");
 
     match client.grant_entity_permissions(request) {
         Ok(resp) => {

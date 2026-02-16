@@ -1,4 +1,4 @@
-mod common;
+use crate::common;
 
 #[test]
 fn test_revoke_current_session() {

@@ -1,4 +1,4 @@
-mod common;
+use crate::common;
 
 use ksef_client::{
     EuEntityByFp, EuEntityContextIdentifier, EuEntityContextIdentifierType, EuEntityDetails,
@@ -16,18 +16,18 @@ fn test_grant_eu_entity_permissions_entity_by_fingerprint() {
     let vat_ue = "DE123456789";
     let context_value = format!("{}-{}", parent_nip, vat_ue);
 
-    let request = GrantEuEntityPermissionsRequest {
-        subject_identifier: EuEntitySubjectIdentifier {
+    let request = GrantEuEntityPermissionsRequest::builder()
+        .with_subject_identifier(EuEntitySubjectIdentifier {
             identifier_type: EuEntitySubjectIdentifierType::Fingerprint,
             value: fingerprint.to_string(),
-        },
-        context_identifier: EuEntityContextIdentifier {
+        })
+        .with_context_identifier(EuEntityContextIdentifier {
             identifier_type: EuEntityContextIdentifierType::NipVatUe,
             value: context_value.clone(),
-        },
-        description: "Test EU entity permission grant (Entity)".to_string(),
-        eu_entity_name: "Test EU Company, Berlin, Germany".to_string(),
-        subject_details: EuEntitySubjectDetails {
+        })
+        .with_description("Test EU entity permission grant (Entity)")
+        .with_eu_entity_name("Test EU Company, Berlin, Germany")
+        .with_subject_details(EuEntitySubjectDetails {
             subject_details_type: EuEntitySubjectDetailsType::EntityByFingerprint,
             person_by_fp_with_id: None,
             person_by_fp_no_id: None,
@@ -35,12 +35,13 @@ fn test_grant_eu_entity_permissions_entity_by_fingerprint() {
                 full_name: "Test EU Company".to_string(),
                 address: "Berlin, Germany".to_string(),
             }),
-        },
-        eu_entity_details: EuEntityDetails {
+        })
+        .with_eu_entity_details(EuEntityDetails {
             full_name: "Test EU Company".to_string(),
             address: "Berlin, Germany".to_string(),
-        },
-    };
+        })
+        .build()
+        .expect("Failed to build request");
 
     match client.grant_eu_entity_permissions(request) {
         Ok(resp) => {
@@ -65,18 +66,18 @@ fn test_grant_eu_entity_permissions_person_with_nip() {
     let context_value = format!("{}-{}", parent_nip, vat_ue);
     let person_nip = common::generate_random_nip();
 
-    let request = GrantEuEntityPermissionsRequest {
-        subject_identifier: EuEntitySubjectIdentifier {
+    let request = GrantEuEntityPermissionsRequest::builder()
+        .with_subject_identifier(EuEntitySubjectIdentifier {
             identifier_type: EuEntitySubjectIdentifierType::Fingerprint,
             value: fingerprint.to_string(),
-        },
-        context_identifier: EuEntityContextIdentifier {
+        })
+        .with_context_identifier(EuEntityContextIdentifier {
             identifier_type: EuEntityContextIdentifierType::NipVatUe,
             value: context_value.clone(),
-        },
-        description: "Test EU entity permission grant (Person with NIP)".to_string(),
-        eu_entity_name: "Test EU Company, Berlin, Germany".to_string(),
-        subject_details: EuEntitySubjectDetails {
+        })
+        .with_description("Test EU entity permission grant (Person with NIP)")
+        .with_eu_entity_name("Test EU Company, Berlin, Germany")
+        .with_subject_details(EuEntitySubjectDetails {
             subject_details_type: EuEntitySubjectDetailsType::PersonByFingerprintWithIdentifier,
             person_by_fp_with_id: Some(EuEntityPersonByFpWithId {
                 first_name: "Jan".to_string(),
@@ -88,12 +89,13 @@ fn test_grant_eu_entity_permissions_person_with_nip() {
             }),
             person_by_fp_no_id: None,
             entity_by_fp: None,
-        },
-        eu_entity_details: EuEntityDetails {
+        })
+        .with_eu_entity_details(EuEntityDetails {
             full_name: "Test EU Company".to_string(),
             address: "Berlin, Germany".to_string(),
-        },
-    };
+        })
+        .build()
+        .expect("Failed to build request");
 
     match client.grant_eu_entity_permissions(request) {
         Ok(resp) => {
@@ -120,18 +122,18 @@ fn test_grant_eu_entity_permissions_person_without_id() {
     let vat_ue = "DE123456789";
     let context_value = format!("{}-{}", parent_nip, vat_ue);
 
-    let request = GrantEuEntityPermissionsRequest {
-        subject_identifier: EuEntitySubjectIdentifier {
+    let request = GrantEuEntityPermissionsRequest::builder()
+        .with_subject_identifier(EuEntitySubjectIdentifier {
             identifier_type: EuEntitySubjectIdentifierType::Fingerprint,
             value: fingerprint.to_string(),
-        },
-        context_identifier: EuEntityContextIdentifier {
+        })
+        .with_context_identifier(EuEntityContextIdentifier {
             identifier_type: EuEntityContextIdentifierType::NipVatUe,
             value: context_value.clone(),
-        },
-        description: "Test EU entity permission grant (Person without ID)".to_string(),
-        eu_entity_name: "Test EU Company, Berlin, Germany".to_string(),
-        subject_details: EuEntitySubjectDetails {
+        })
+        .with_description("Test EU entity permission grant (Person without ID)")
+        .with_eu_entity_name("Test EU Company, Berlin, Germany")
+        .with_subject_details(EuEntitySubjectDetails {
             subject_details_type: EuEntitySubjectDetailsType::PersonByFingerprintWithoutIdentifier,
             person_by_fp_with_id: None,
             person_by_fp_no_id: Some(EuEntityPersonByFpNoId {
@@ -145,12 +147,13 @@ fn test_grant_eu_entity_permissions_person_without_id() {
                 },
             }),
             entity_by_fp: None,
-        },
-        eu_entity_details: EuEntityDetails {
+        })
+        .with_eu_entity_details(EuEntityDetails {
             full_name: "Test EU Company".to_string(),
             address: "Berlin, Germany".to_string(),
-        },
-    };
+        })
+        .build()
+        .expect("Failed to build request");
 
     match client.grant_eu_entity_permissions(request) {
         Ok(resp) => {

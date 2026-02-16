@@ -12,6 +12,70 @@ pub struct GrantEntityPermissionsRequest {
     pub subject_details: EntitySubjectDetails,
 }
 
+impl GrantEntityPermissionsRequest {
+    pub fn builder() -> GrantEntityPermissionsRequestBuilder {
+        GrantEntityPermissionsRequestBuilder::new()
+    }
+}
+
+pub struct GrantEntityPermissionsRequestBuilder {
+    subject_identifier: Option<EntityIdentifier>,
+    permissions: Vec<EntityPermission>,
+    description: Option<String>,
+    subject_details: Option<EntitySubjectDetails>,
+}
+
+impl GrantEntityPermissionsRequestBuilder {
+    pub fn new() -> Self {
+        Self {
+            subject_identifier: None,
+            permissions: Vec::new(),
+            description: None,
+            subject_details: None,
+        }
+    }
+
+    pub fn with_subject_identifier(mut self, identifier: EntityIdentifier) -> Self {
+        self.subject_identifier = Some(identifier);
+        self
+    }
+
+    pub fn with_permission(mut self, permission: EntityPermission) -> Self {
+        self.permissions.push(permission);
+        self
+    }
+
+    pub fn with_permissions(mut self, permissions: Vec<EntityPermission>) -> Self {
+        self.permissions = permissions;
+        self
+    }
+
+    pub fn with_description(mut self, description: impl Into<String>) -> Self {
+        self.description = Some(description.into());
+        self
+    }
+
+    pub fn with_subject_details(mut self, details: EntitySubjectDetails) -> Self {
+        self.subject_details = Some(details);
+        self
+    }
+
+    pub fn build(self) -> Result<GrantEntityPermissionsRequest, String> {
+        Ok(GrantEntityPermissionsRequest {
+            subject_identifier: self.subject_identifier.ok_or("subject_identifier is required")?,
+            permissions: self.permissions,
+            description: self.description.ok_or("description is required")?,
+            subject_details: self.subject_details.ok_or("subject_details is required")?,
+        })
+    }
+}
+
+impl Default for GrantEntityPermissionsRequestBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EntityIdentifier {

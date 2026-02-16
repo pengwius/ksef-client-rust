@@ -1,4 +1,4 @@
-mod common;
+use crate::common;
 
 use ksef_client::{
     GrantIndirectEntityPermissionsRequest, IndirectPermissionType, IndirectPersonById,
@@ -11,21 +11,21 @@ fn test_grant_indirect_entity_permissions() {
     let client = common::authorize_client();
     let target_nip = common::generate_random_nip();
 
-    let request = GrantIndirectEntityPermissionsRequest {
-        subject_identifier: IndirectSubjectIdentifier {
+    let request = GrantIndirectEntityPermissionsRequest::builder()
+        .with_subject_identifier(IndirectSubjectIdentifier {
             identifier_type: IndirectSubjectIdentifierType::Nip,
             value: target_nip,
-        },
-        target_identifier: Some(IndirectTargetIdentifier {
+        })
+        .with_target_identifier(IndirectTargetIdentifier {
             identifier_type: IndirectTargetIdentifierType::AllPartners,
             value: None,
-        }),
-        permissions: vec![
+        })
+        .with_permissions(vec![
             IndirectPermissionType::InvoiceRead,
             IndirectPermissionType::InvoiceWrite,
-        ],
-        description: "Test indirect permission grant".to_string(),
-        subject_details: IndirectSubjectDetails {
+        ])
+        .with_description("Test indirect permission grant")
+        .with_subject_details(IndirectSubjectDetails {
             subject_details_type: IndirectSubjectDetailsType::PersonByIdentifier,
             person_by_id: Some(IndirectPersonById {
                 first_name: "Jan".to_string(),
@@ -33,8 +33,9 @@ fn test_grant_indirect_entity_permissions() {
             }),
             person_by_fp_with_id: None,
             person_by_fp_no_id: None,
-        },
-    };
+        })
+        .build()
+        .expect("Failed to build request");
 
     match client.grant_indirect_entity_permissions(request) {
         Ok(resp) => {

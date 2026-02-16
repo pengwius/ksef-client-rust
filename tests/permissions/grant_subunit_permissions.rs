@@ -1,4 +1,4 @@
-mod common;
+use crate::common;
 
 use ksef_client::{
     GrantSubunitPermissionsRequest, SubunitContextIdentifier, SubunitContextIdentifierType,
@@ -27,18 +27,18 @@ fn test_grant_subunit_permissions() {
     let checksum = calculate_checksum(&internal_id_prefix);
     let internal_id = format!("{}{}", internal_id_prefix, checksum);
 
-    let request = GrantSubunitPermissionsRequest {
-        subject_identifier: SubunitSubjectIdentifier {
+    let request = GrantSubunitPermissionsRequest::builder()
+        .with_subject_identifier(SubunitSubjectIdentifier {
             identifier_type: SubunitSubjectIdentifierType::Nip,
             value: target_nip,
-        },
-        context_identifier: SubunitContextIdentifier {
+        })
+        .with_context_identifier(SubunitContextIdentifier {
             identifier_type: SubunitContextIdentifierType::InternalId,
             value: internal_id,
-        },
-        description: "Test subunit permission grant".to_string(),
-        subunit_name: Some("Test Subunit".to_string()),
-        subject_details: SubunitSubjectDetails {
+        })
+        .with_description("Test subunit permission grant")
+        .with_subunit_name("Test Subunit")
+        .with_subject_details(SubunitSubjectDetails {
             subject_details_type: SubunitSubjectDetailsType::PersonByIdentifier,
             person_by_id: Some(SubunitPersonById {
                 first_name: "Jan".to_string(),
@@ -46,8 +46,9 @@ fn test_grant_subunit_permissions() {
             }),
             person_by_fp_with_id: None,
             person_by_fp_no_id: None,
-        },
-    };
+        })
+        .build()
+        .expect("Failed to build request");
 
     match client.grant_subunit_permissions(request) {
         Ok(resp) => {

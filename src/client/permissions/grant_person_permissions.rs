@@ -12,6 +12,72 @@ pub struct GrantPersonPermissionsRequest {
     pub subject_details: SubjectDetails,
 }
 
+impl GrantPersonPermissionsRequest {
+    pub fn builder() -> GrantPersonPermissionsRequestBuilder {
+        GrantPersonPermissionsRequestBuilder::new()
+    }
+}
+
+pub struct GrantPersonPermissionsRequestBuilder {
+    subject_identifier: Option<SubjectIdentifier>,
+    permissions: Vec<PersonPermissionType>,
+    description: Option<String>,
+    subject_details: Option<SubjectDetails>,
+}
+
+impl GrantPersonPermissionsRequestBuilder {
+    pub fn new() -> Self {
+        Self {
+            subject_identifier: None,
+            permissions: Vec::new(),
+            description: None,
+            subject_details: None,
+        }
+    }
+
+    pub fn with_subject_identifier(mut self, identifier: SubjectIdentifier) -> Self {
+        self.subject_identifier = Some(identifier);
+        self
+    }
+
+    pub fn with_permission(mut self, permission: PersonPermissionType) -> Self {
+        self.permissions.push(permission);
+        self
+    }
+
+    pub fn with_permissions(mut self, permissions: Vec<PersonPermissionType>) -> Self {
+        self.permissions = permissions;
+        self
+    }
+
+    pub fn with_description(mut self, description: impl Into<String>) -> Self {
+        self.description = Some(description.into());
+        self
+    }
+
+    pub fn with_subject_details(mut self, details: SubjectDetails) -> Self {
+        self.subject_details = Some(details);
+        self
+    }
+
+    pub fn build(self) -> Result<GrantPersonPermissionsRequest, String> {
+        Ok(GrantPersonPermissionsRequest {
+            subject_identifier: self
+                .subject_identifier
+                .ok_or("subject_identifier is required")?,
+            permissions: self.permissions,
+            description: self.description.ok_or("description is required")?,
+            subject_details: self.subject_details.ok_or("subject_details is required")?,
+        })
+    }
+}
+
+impl Default for GrantPersonPermissionsRequestBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SubjectIdentifier {

@@ -1,4 +1,4 @@
-mod common;
+use crate::common;
 
 use ksef_client::{
     EuEntityRepresentativeEntityByFp, EuEntityRepresentativeIdDocument,
@@ -15,17 +15,17 @@ fn test_grant_eu_entity_representative_permissions_entity_by_fingerprint() {
 
     let fingerprint = "0000000000000000000000000000000000000000000000000000000000000000";
 
-    let request = GrantEuEntityRepresentativePermissionsRequest {
-        subject_identifier: EuEntityRepresentativeSubjectIdentifier {
+    let request = GrantEuEntityRepresentativePermissionsRequest::builder()
+        .with_subject_identifier(EuEntityRepresentativeSubjectIdentifier {
             identifier_type: EuEntityRepresentativeSubjectIdentifierType::Fingerprint,
             value: fingerprint.to_string(),
-        },
-        permissions: vec![
+        })
+        .with_permissions(vec![
             EuEntityRepresentativePermissionType::InvoiceRead,
             EuEntityRepresentativePermissionType::InvoiceWrite,
-        ],
-        description: "Test EU entity representative permission grant (Entity)".to_string(),
-        subject_details: EuEntityRepresentativeSubjectDetails {
+        ])
+        .with_description("Test EU entity representative permission grant (Entity)")
+        .with_subject_details(EuEntityRepresentativeSubjectDetails {
             subject_details_type: EuEntityRepresentativeSubjectDetailsType::EntityByFingerprint,
             person_by_fp_with_id: None,
             person_by_fp_no_id: None,
@@ -33,8 +33,9 @@ fn test_grant_eu_entity_representative_permissions_entity_by_fingerprint() {
                 full_name: "Test EU Company".to_string(),
                 address: "Berlin, Germany".to_string(),
             }),
-        },
-    };
+        })
+        .build()
+        .expect("Failed to build request");
 
     match client.grant_eu_entity_representative_permissions(request) {
         Ok(resp) => {
@@ -63,15 +64,16 @@ fn test_grant_eu_entity_representative_permissions_person_with_nip() {
     let fingerprint = "1111111111111111111111111111111111111111111111111111111111111111";
     let person_nip = common::generate_random_nip();
 
-    let request = GrantEuEntityRepresentativePermissionsRequest {
-        subject_identifier: EuEntityRepresentativeSubjectIdentifier {
+    let request = GrantEuEntityRepresentativePermissionsRequest::builder()
+        .with_subject_identifier(EuEntityRepresentativeSubjectIdentifier {
             identifier_type: EuEntityRepresentativeSubjectIdentifierType::Fingerprint,
             value: fingerprint.to_string(),
-        },
-        permissions: vec![EuEntityRepresentativePermissionType::InvoiceRead],
-        description: "Test EU entity representative permission grant (Person with NIP)".to_string(),
-        subject_details: EuEntityRepresentativeSubjectDetails {
-            subject_details_type: EuEntityRepresentativeSubjectDetailsType::PersonByFingerprintWithIdentifier,
+        })
+        .with_permissions(vec![EuEntityRepresentativePermissionType::InvoiceRead])
+        .with_description("Test EU entity representative permission grant (Person with NIP)")
+        .with_subject_details(EuEntityRepresentativeSubjectDetails {
+            subject_details_type:
+                EuEntityRepresentativeSubjectDetailsType::PersonByFingerprintWithIdentifier,
             person_by_fp_with_id: Some(EuEntityRepresentativePersonByFpWithId {
                 first_name: "Jan".to_string(),
                 last_name: "Kowalski".to_string(),
@@ -82,8 +84,9 @@ fn test_grant_eu_entity_representative_permissions_person_with_nip() {
             }),
             person_by_fp_no_id: None,
             entity_by_fp: None,
-        },
-    };
+        })
+        .build()
+        .expect("Failed to build request");
 
     match client.grant_eu_entity_representative_permissions(request) {
         Ok(resp) => {
@@ -111,15 +114,16 @@ fn test_grant_eu_entity_representative_permissions_person_without_id() {
 
     let fingerprint = "2222222222222222222222222222222222222222222222222222222222222222";
 
-    let request = GrantEuEntityRepresentativePermissionsRequest {
-        subject_identifier: EuEntityRepresentativeSubjectIdentifier {
+    let request = GrantEuEntityRepresentativePermissionsRequest::builder()
+        .with_subject_identifier(EuEntityRepresentativeSubjectIdentifier {
             identifier_type: EuEntityRepresentativeSubjectIdentifierType::Fingerprint,
             value: fingerprint.to_string(),
-        },
-        permissions: vec![EuEntityRepresentativePermissionType::InvoiceWrite],
-        description: "Test EU entity representative permission grant (Person without ID)".to_string(),
-        subject_details: EuEntityRepresentativeSubjectDetails {
-            subject_details_type: EuEntityRepresentativeSubjectDetailsType::PersonByFingerprintWithoutIdentifier,
+        })
+        .with_permissions(vec![EuEntityRepresentativePermissionType::InvoiceWrite])
+        .with_description("Test EU entity representative permission grant (Person without ID)")
+        .with_subject_details(EuEntityRepresentativeSubjectDetails {
+            subject_details_type:
+                EuEntityRepresentativeSubjectDetailsType::PersonByFingerprintWithoutIdentifier,
             person_by_fp_with_id: None,
             person_by_fp_no_id: Some(EuEntityRepresentativePersonByFpNoId {
                 first_name: "Anna".to_string(),
@@ -132,8 +136,9 @@ fn test_grant_eu_entity_representative_permissions_person_without_id() {
                 },
             }),
             entity_by_fp: None,
-        },
-    };
+        })
+        .build()
+        .expect("Failed to build request");
 
     match client.grant_eu_entity_representative_permissions(request) {
         Ok(resp) => {

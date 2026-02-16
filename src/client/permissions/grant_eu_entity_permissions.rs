@@ -14,6 +14,85 @@ pub struct GrantEuEntityPermissionsRequest {
     pub eu_entity_details: EuEntityDetails,
 }
 
+impl GrantEuEntityPermissionsRequest {
+    pub fn builder() -> GrantEuEntityPermissionsRequestBuilder {
+        GrantEuEntityPermissionsRequestBuilder::new()
+    }
+}
+
+pub struct GrantEuEntityPermissionsRequestBuilder {
+    subject_identifier: Option<EuEntitySubjectIdentifier>,
+    context_identifier: Option<EuEntityContextIdentifier>,
+    description: Option<String>,
+    eu_entity_name: Option<String>,
+    subject_details: Option<EuEntitySubjectDetails>,
+    eu_entity_details: Option<EuEntityDetails>,
+}
+
+impl GrantEuEntityPermissionsRequestBuilder {
+    pub fn new() -> Self {
+        Self {
+            subject_identifier: None,
+            context_identifier: None,
+            description: None,
+            eu_entity_name: None,
+            subject_details: None,
+            eu_entity_details: None,
+        }
+    }
+
+    pub fn with_subject_identifier(mut self, identifier: EuEntitySubjectIdentifier) -> Self {
+        self.subject_identifier = Some(identifier);
+        self
+    }
+
+    pub fn with_context_identifier(mut self, identifier: EuEntityContextIdentifier) -> Self {
+        self.context_identifier = Some(identifier);
+        self
+    }
+
+    pub fn with_description(mut self, description: impl Into<String>) -> Self {
+        self.description = Some(description.into());
+        self
+    }
+
+    pub fn with_eu_entity_name(mut self, eu_entity_name: impl Into<String>) -> Self {
+        self.eu_entity_name = Some(eu_entity_name.into());
+        self
+    }
+
+    pub fn with_subject_details(mut self, details: EuEntitySubjectDetails) -> Self {
+        self.subject_details = Some(details);
+        self
+    }
+
+    pub fn with_eu_entity_details(mut self, details: EuEntityDetails) -> Self {
+        self.eu_entity_details = Some(details);
+        self
+    }
+
+    pub fn build(self) -> Result<GrantEuEntityPermissionsRequest, String> {
+        Ok(GrantEuEntityPermissionsRequest {
+            subject_identifier: self
+                .subject_identifier
+                .ok_or("subject_identifier is required")?,
+            context_identifier: self
+                .context_identifier
+                .ok_or("context_identifier is required")?,
+            description: self.description.ok_or("description is required")?,
+            eu_entity_name: self.eu_entity_name.ok_or("eu_entity_name is required")?,
+            subject_details: self.subject_details.ok_or("subject_details is required")?,
+            eu_entity_details: self.eu_entity_details.ok_or("eu_entity_details is required")?,
+        })
+    }
+}
+
+impl Default for GrantEuEntityPermissionsRequestBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EuEntitySubjectIdentifier {

@@ -12,6 +12,67 @@ pub struct GrantAuthorizationPermissionsRequest {
     pub subject_details: AuthorizationSubjectDetails,
 }
 
+impl GrantAuthorizationPermissionsRequest {
+    pub fn builder() -> GrantAuthorizationPermissionsRequestBuilder {
+        GrantAuthorizationPermissionsRequestBuilder::new()
+    }
+}
+
+pub struct GrantAuthorizationPermissionsRequestBuilder {
+    subject_identifier: Option<AuthorizationSubjectIdentifier>,
+    permission: Option<AuthorizationPermissionType>,
+    description: Option<String>,
+    subject_details: Option<AuthorizationSubjectDetails>,
+}
+
+impl GrantAuthorizationPermissionsRequestBuilder {
+    pub fn new() -> Self {
+        Self {
+            subject_identifier: None,
+            permission: None,
+            description: None,
+            subject_details: None,
+        }
+    }
+
+    pub fn with_subject_identifier(mut self, identifier: AuthorizationSubjectIdentifier) -> Self {
+        self.subject_identifier = Some(identifier);
+        self
+    }
+
+    pub fn with_permission(mut self, permission: AuthorizationPermissionType) -> Self {
+        self.permission = Some(permission);
+        self
+    }
+
+    pub fn with_description(mut self, description: impl Into<String>) -> Self {
+        self.description = Some(description.into());
+        self
+    }
+
+    pub fn with_subject_details(mut self, details: AuthorizationSubjectDetails) -> Self {
+        self.subject_details = Some(details);
+        self
+    }
+
+    pub fn build(self) -> Result<GrantAuthorizationPermissionsRequest, String> {
+        Ok(GrantAuthorizationPermissionsRequest {
+            subject_identifier: self
+                .subject_identifier
+                .ok_or("subject_identifier is required")?,
+            permission: self.permission.ok_or("permission is required")?,
+            description: self.description.ok_or("description is required")?,
+            subject_details: self.subject_details.ok_or("subject_details is required")?,
+        })
+    }
+}
+
+impl Default for GrantAuthorizationPermissionsRequestBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AuthorizationSubjectIdentifier {

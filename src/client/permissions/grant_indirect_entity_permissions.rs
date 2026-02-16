@@ -14,6 +14,80 @@ pub struct GrantIndirectEntityPermissionsRequest {
     pub subject_details: IndirectSubjectDetails,
 }
 
+impl GrantIndirectEntityPermissionsRequest {
+    pub fn builder() -> GrantIndirectEntityPermissionsRequestBuilder {
+        GrantIndirectEntityPermissionsRequestBuilder::new()
+    }
+}
+
+pub struct GrantIndirectEntityPermissionsRequestBuilder {
+    subject_identifier: Option<IndirectSubjectIdentifier>,
+    target_identifier: Option<IndirectTargetIdentifier>,
+    permissions: Vec<IndirectPermissionType>,
+    description: Option<String>,
+    subject_details: Option<IndirectSubjectDetails>,
+}
+
+impl GrantIndirectEntityPermissionsRequestBuilder {
+    pub fn new() -> Self {
+        Self {
+            subject_identifier: None,
+            target_identifier: None,
+            permissions: Vec::new(),
+            description: None,
+            subject_details: None,
+        }
+    }
+
+    pub fn with_subject_identifier(mut self, identifier: IndirectSubjectIdentifier) -> Self {
+        self.subject_identifier = Some(identifier);
+        self
+    }
+
+    pub fn with_target_identifier(mut self, identifier: IndirectTargetIdentifier) -> Self {
+        self.target_identifier = Some(identifier);
+        self
+    }
+
+    pub fn with_permission(mut self, permission: IndirectPermissionType) -> Self {
+        self.permissions.push(permission);
+        self
+    }
+
+    pub fn with_permissions(mut self, permissions: Vec<IndirectPermissionType>) -> Self {
+        self.permissions = permissions;
+        self
+    }
+
+    pub fn with_description(mut self, description: impl Into<String>) -> Self {
+        self.description = Some(description.into());
+        self
+    }
+
+    pub fn with_subject_details(mut self, details: IndirectSubjectDetails) -> Self {
+        self.subject_details = Some(details);
+        self
+    }
+
+    pub fn build(self) -> Result<GrantIndirectEntityPermissionsRequest, String> {
+        Ok(GrantIndirectEntityPermissionsRequest {
+            subject_identifier: self
+                .subject_identifier
+                .ok_or("subject_identifier is required")?,
+            target_identifier: self.target_identifier,
+            permissions: self.permissions,
+            description: self.description.ok_or("description is required")?,
+            subject_details: self.subject_details.ok_or("subject_details is required")?,
+        })
+    }
+}
+
+impl Default for GrantIndirectEntityPermissionsRequestBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IndirectSubjectIdentifier {

@@ -14,25 +14,28 @@ pub use client::ksef_tokens::new_ksef_token::{KsefToken, KsefTokenPermissions};
 pub use client::permissions::grant_authorization_permissions::{
     AuthorizationPermissionType, AuthorizationSubjectDetails, AuthorizationSubjectIdentifier,
     AuthorizationSubjectIdentifierType, GrantAuthorizationPermissionsRequest,
-    GrantAuthorizationPermissionsResponse,
+    GrantAuthorizationPermissionsRequestBuilder, GrantAuthorizationPermissionsResponse,
 };
 
 pub use client::permissions::grant_entity_permissions::{
     EntityIdentifier, EntityIdentifierType, EntityPermission, EntityPermissionType,
-    EntitySubjectDetails, GrantEntityPermissionsRequest, GrantEntityPermissionsResponse,
+    EntitySubjectDetails, GrantEntityPermissionsRequest, GrantEntityPermissionsRequestBuilder,
+    GrantEntityPermissionsResponse,
 };
 
 pub use client::permissions::grant_indirect_entity_permissions::{
-    GrantIndirectEntityPermissionsRequest, GrantIndirectEntityPermissionsResponse,
-    IndirectIdDocument, IndirectPermissionType, IndirectPersonByFpNoId, IndirectPersonByFpWithId,
+    GrantIndirectEntityPermissionsRequest, GrantIndirectEntityPermissionsRequestBuilder,
+    GrantIndirectEntityPermissionsResponse, IndirectIdDocument, IndirectPermissionType,
+    IndirectPersonByFpNoId, IndirectPersonByFpWithId,
     IndirectPersonById, IndirectPersonIdentifier, IndirectPersonIdentifierType,
     IndirectSubjectDetails, IndirectSubjectDetailsType, IndirectSubjectIdentifier,
     IndirectSubjectIdentifierType, IndirectTargetIdentifier, IndirectTargetIdentifierType,
 };
 
 pub use client::permissions::grant_subunit_permissions::{
-    GrantSubunitPermissionsRequest, GrantSubunitPermissionsResponse, SubunitContextIdentifier,
-    SubunitContextIdentifierType, SubunitIdDocument, SubunitPersonByFpNoId,
+    GrantSubunitPermissionsRequest, GrantSubunitPermissionsRequestBuilder,
+    GrantSubunitPermissionsResponse, SubunitContextIdentifier, SubunitContextIdentifierType,
+    SubunitIdDocument, SubunitPersonByFpNoId,
     SubunitPersonByFpWithId, SubunitPersonById, SubunitPersonIdentifier,
     SubunitPersonIdentifierType, SubunitSubjectDetails, SubunitSubjectDetailsType,
     SubunitSubjectIdentifier, SubunitSubjectIdentifierType,
@@ -43,7 +46,7 @@ pub use client::permissions::grant_eu_entity_permissions::{
     EuEntityIdDocument, EuEntityPersonByFpNoId, EuEntityPersonByFpWithId, EuEntityPersonIdentifier,
     EuEntityPersonIdentifierType, EuEntitySubjectDetails, EuEntitySubjectDetailsType,
     EuEntitySubjectIdentifier, EuEntitySubjectIdentifierType, GrantEuEntityPermissionsRequest,
-    GrantEuEntityPermissionsResponse,
+    GrantEuEntityPermissionsRequestBuilder, GrantEuEntityPermissionsResponse,
 };
 
 pub use client::permissions::grant_eu_entity_representative_permissions::{
@@ -53,12 +56,14 @@ pub use client::permissions::grant_eu_entity_representative_permissions::{
     EuEntityRepresentativePersonIdentifierType, EuEntityRepresentativeSubjectDetails,
     EuEntityRepresentativeSubjectDetailsType, EuEntityRepresentativeSubjectIdentifier,
     EuEntityRepresentativeSubjectIdentifierType, GrantEuEntityRepresentativePermissionsRequest,
+    GrantEuEntityRepresentativePermissionsRequestBuilder,
     GrantEuEntityRepresentativePermissionsResponse,
 };
 
 pub use client::permissions::grant_person_permissions::{
-    GrantPersonPermissionsRequest, GrantPersonPermissionsResponse, IdDocument, PersonByFpNoId,
-    PersonByFpWithId, PersonById, PersonIdentifier, PersonIdentifierType, PersonPermissionType,
+    GrantPersonPermissionsRequest, GrantPersonPermissionsRequestBuilder,
+    GrantPersonPermissionsResponse, IdDocument, PersonByFpNoId, PersonByFpWithId, PersonById,
+    PersonIdentifier, PersonIdentifierType, PersonPermissionType,
     SubjectDetails, SubjectDetailsType, SubjectIdentifier,
     SubjectIdentifierType as GrantSubjectIdentifierType,
 };

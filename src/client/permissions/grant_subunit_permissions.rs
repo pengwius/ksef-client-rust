@@ -14,6 +14,77 @@ pub struct GrantSubunitPermissionsRequest {
     pub subject_details: SubunitSubjectDetails,
 }
 
+impl GrantSubunitPermissionsRequest {
+    pub fn builder() -> GrantSubunitPermissionsRequestBuilder {
+        GrantSubunitPermissionsRequestBuilder::new()
+    }
+}
+
+pub struct GrantSubunitPermissionsRequestBuilder {
+    subject_identifier: Option<SubunitSubjectIdentifier>,
+    context_identifier: Option<SubunitContextIdentifier>,
+    description: Option<String>,
+    subunit_name: Option<String>,
+    subject_details: Option<SubunitSubjectDetails>,
+}
+
+impl GrantSubunitPermissionsRequestBuilder {
+    pub fn new() -> Self {
+        Self {
+            subject_identifier: None,
+            context_identifier: None,
+            description: None,
+            subunit_name: None,
+            subject_details: None,
+        }
+    }
+
+    pub fn with_subject_identifier(mut self, identifier: SubunitSubjectIdentifier) -> Self {
+        self.subject_identifier = Some(identifier);
+        self
+    }
+
+    pub fn with_context_identifier(mut self, identifier: SubunitContextIdentifier) -> Self {
+        self.context_identifier = Some(identifier);
+        self
+    }
+
+    pub fn with_description(mut self, description: impl Into<String>) -> Self {
+        self.description = Some(description.into());
+        self
+    }
+
+    pub fn with_subunit_name(mut self, subunit_name: impl Into<String>) -> Self {
+        self.subunit_name = Some(subunit_name.into());
+        self
+    }
+
+    pub fn with_subject_details(mut self, details: SubunitSubjectDetails) -> Self {
+        self.subject_details = Some(details);
+        self
+    }
+
+    pub fn build(self) -> Result<GrantSubunitPermissionsRequest, String> {
+        Ok(GrantSubunitPermissionsRequest {
+            subject_identifier: self
+                .subject_identifier
+                .ok_or("subject_identifier is required")?,
+            context_identifier: self
+                .context_identifier
+                .ok_or("context_identifier is required")?,
+            description: self.description.ok_or("description is required")?,
+            subunit_name: self.subunit_name,
+            subject_details: self.subject_details.ok_or("subject_details is required")?,
+        })
+    }
+}
+
+impl Default for GrantSubunitPermissionsRequestBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SubunitSubjectIdentifier {
