@@ -46,6 +46,16 @@ pub use client::permissions::grant_eu_entity_permissions::{
     GrantEuEntityPermissionsResponse,
 };
 
+pub use client::permissions::grant_eu_entity_representative_permissions::{
+    EuEntityRepresentativeEntityByFp, EuEntityRepresentativeIdDocument,
+    EuEntityRepresentativePermissionType, EuEntityRepresentativePersonByFpNoId,
+    EuEntityRepresentativePersonByFpWithId, EuEntityRepresentativePersonIdentifier,
+    EuEntityRepresentativePersonIdentifierType, EuEntityRepresentativeSubjectDetails,
+    EuEntityRepresentativeSubjectDetailsType, EuEntityRepresentativeSubjectIdentifier,
+    EuEntityRepresentativeSubjectIdentifierType, GrantEuEntityRepresentativePermissionsRequest,
+    GrantEuEntityRepresentativePermissionsResponse,
+};
+
 pub use client::permissions::grant_person_permissions::{
     GrantPersonPermissionsRequest, GrantPersonPermissionsResponse, IdDocument, PersonByFpNoId,
     PersonByFpWithId, PersonById, PersonIdentifier, PersonIdentifierType, PersonPermissionType,
