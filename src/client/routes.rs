@@ -13,3 +13,4 @@ pub const AUTH_SESSIONS_CURRENT_PATH: &str = "/v2/auth/sessions/current";
 
 pub const PERMISSIONS_PERSONS_GRANTS_PATH: &str = "/v2/permissions/persons/grants";
 pub const PERMISSIONS_ENTITIES_GRANTS_PATH: &str = "/v2/permissions/entities/grants";
+pub const PERMISSIONS_AUTHORIZATIONS_GRANTS_PATH: &str = "/v2/permissions/authorizations/grants";

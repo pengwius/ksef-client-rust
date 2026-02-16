@@ -11,6 +11,12 @@ pub use client::auth::xades_auth::AuthTokens;
 pub use client::ksef_tokens::models::{DetailedKsefToken, TokenStatus};
 pub use client::ksef_tokens::new_ksef_token::{KsefToken, KsefTokenPermissions};
 
+pub use client::permissions::grant_authorization_permissions::{
+    AuthorizationPermissionType, AuthorizationSubjectDetails, AuthorizationSubjectIdentifier,
+    AuthorizationSubjectIdentifierType, GrantAuthorizationPermissionsRequest,
+    GrantAuthorizationPermissionsResponse,
+};
+
 pub use client::permissions::grant_entity_permissions::{
     EntityIdentifier, EntityIdentifierType, EntityPermission, EntityPermissionType,
     EntitySubjectDetails, GrantEntityPermissionsRequest, GrantEntityPermissionsResponse,

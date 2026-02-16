@@ -11,6 +11,9 @@ use crate::QuerySessionsResponse;
 use crate::SubjectIdentifierType;
 use crate::client::error::KsefError;
 use crate::client::get_public_key_certificates::PublicKeyCertificate;
+use crate::client::permissions::grant_authorization_permissions::{
+    GrantAuthorizationPermissionsRequest, GrantAuthorizationPermissionsResponse,
+};
 use crate::client::permissions::grant_entity_permissions::{
     GrantEntityPermissionsRequest, GrantEntityPermissionsResponse,
 };
@@ -215,6 +218,13 @@ impl KsefClient {
         request: GrantEntityPermissionsRequest,
     ) -> Result<GrantEntityPermissionsResponse, KsefError> {
         permissions::grant_entity_permissions::grant_entity_permissions(self, request)
+    }
+
+    pub fn grant_authorization_permissions(
+        &self,
+        request: GrantAuthorizationPermissionsRequest,
+    ) -> Result<GrantAuthorizationPermissionsResponse, KsefError> {
+        permissions::grant_authorization_permissions::grant_authorization_permissions(self, request)
     }
 
     pub fn url_for(&self, path: &str) -> String {
