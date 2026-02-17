@@ -1,12 +1,11 @@
 use ksef_client::{ContextIdentifierType, KsefClient, SubjectIdentifierType};
-use rand::Rng;
+use rand::random_range;
 
 pub fn generate_random_nip() -> String {
-    let mut rng = rand::rng();
     loop {
-        let mut digits: Vec<u8> = (0..9).map(|_| rng.random_range(0..10) as u8).collect();
+        let mut digits: Vec<u8> = (0..9).map(|_| random_range(0..10) as u8).collect();
         if digits[0] == 0 {
-            digits[0] = rng.random_range(1..10) as u8;
+            digits[0] = random_range(1..10) as u8;
         }
 
         let weights = [6, 5, 7, 2, 3, 4, 5, 6, 7];
