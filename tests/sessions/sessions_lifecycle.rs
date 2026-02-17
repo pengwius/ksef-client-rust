@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-mod common;
+use crate::common;
 
 use ksef_client::{ContextIdentifierType, KsefClient, SubjectIdentifierType};
 

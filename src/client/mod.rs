@@ -11,12 +11,34 @@ use crate::QuerySessionsResponse;
 use crate::SubjectIdentifierType;
 use crate::client::error::KsefError;
 use crate::client::get_public_key_certificates::PublicKeyCertificate;
+use crate::client::permissions::grant_authorization_permissions::{
+    GrantAuthorizationPermissionsRequest, GrantAuthorizationPermissionsResponse,
+};
+use crate::client::permissions::grant_eu_entity_permissions::{
+    GrantEuEntityPermissionsRequest, GrantEuEntityPermissionsResponse,
+};
+use crate::client::permissions::grant_eu_entity_representative_permissions::{
+    GrantEuEntityRepresentativePermissionsRequest, GrantEuEntityRepresentativePermissionsResponse,
+};
+use crate::client::permissions::grant_indirect_entity_permissions::{
+    GrantIndirectEntityPermissionsRequest, GrantIndirectEntityPermissionsResponse,
+};
+use crate::client::permissions::grant_subunit_permissions::{
+    GrantSubunitPermissionsRequest, GrantSubunitPermissionsResponse,
+};
+use crate::client::permissions::grant_entity_permissions::{
+    GrantEntityPermissionsRequest, GrantEntityPermissionsResponse,
+};
+use crate::client::permissions::grant_person_permissions::{
+    GrantPersonPermissionsRequest, GrantPersonPermissionsResponse,
+};
 
 pub mod error;
 
 pub mod auth;
 pub mod get_public_key_certificates;
 pub mod ksef_tokens;
+pub mod permissions;
 mod routes;
 pub mod sessions;
 pub mod xades;
@@ -194,6 +216,59 @@ impl KsefClient {
 
     pub fn revoke_session(&self, reference_number: &str) -> Result<(), KsefError> {
         sessions::revoke_session::revoke_session(self, reference_number)
+    }
+
+    pub fn grant_person_permissions(
+        &self,
+        request: GrantPersonPermissionsRequest,
+    ) -> Result<GrantPersonPermissionsResponse, KsefError> {
+        permissions::grant_person_permissions::grant_person_permissions(self, request)
+    }
+
+    pub fn grant_entity_permissions(
+        &self,
+        request: GrantEntityPermissionsRequest,
+    ) -> Result<GrantEntityPermissionsResponse, KsefError> {
+        permissions::grant_entity_permissions::grant_entity_permissions(self, request)
+    }
+
+    pub fn grant_authorization_permissions(
+        &self,
+        request: GrantAuthorizationPermissionsRequest,
+    ) -> Result<GrantAuthorizationPermissionsResponse, KsefError> {
+        permissions::grant_authorization_permissions::grant_authorization_permissions(self, request)
+    }
+
+    pub fn grant_indirect_entity_permissions(
+        &self,
+        request: GrantIndirectEntityPermissionsRequest,
+    ) -> Result<GrantIndirectEntityPermissionsResponse, KsefError> {
+        permissions::grant_indirect_entity_permissions::grant_indirect_entity_permissions(
+            self, request,
+        )
+    }
+
+    pub fn grant_subunit_permissions(
+        &self,
+        request: GrantSubunitPermissionsRequest,
+    ) -> Result<GrantSubunitPermissionsResponse, KsefError> {
+        permissions::grant_subunit_permissions::grant_subunit_permissions(self, request)
+    }
+
+    pub fn grant_eu_entity_permissions(
+        &self,
+        request: GrantEuEntityPermissionsRequest,
+    ) -> Result<GrantEuEntityPermissionsResponse, KsefError> {
+        permissions::grant_eu_entity_permissions::grant_eu_entity_permissions(self, request)
+    }
+
+    pub fn grant_eu_entity_representative_permissions(
+        &self,
+        request: GrantEuEntityRepresentativePermissionsRequest,
+    ) -> Result<GrantEuEntityRepresentativePermissionsResponse, KsefError> {
+        permissions::grant_eu_entity_representative_permissions::grant_eu_entity_representative_permissions(
+            self, request,
+        )
     }
 
     pub fn url_for(&self, path: &str) -> String {

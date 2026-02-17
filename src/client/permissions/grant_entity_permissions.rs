@@ -1,0 +1,156 @@
+use crate::client::KsefClient;
+use crate::client::error::KsefError;
+use crate::client::routes;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GrantEntityPermissionsRequest {
+    pub subject_identifier: EntityIdentifier,
+    pub permissions: Vec<EntityPermission>,
+    pub description: String,
+    pub subject_details: EntitySubjectDetails,
+}
+
+impl GrantEntityPermissionsRequest {
+    pub fn builder() -> GrantEntityPermissionsRequestBuilder {
+        GrantEntityPermissionsRequestBuilder::new()
+    }
+}
+
+pub struct GrantEntityPermissionsRequestBuilder {
+    subject_identifier: Option<EntityIdentifier>,
+    permissions: Vec<EntityPermission>,
+    description: Option<String>,
+    subject_details: Option<EntitySubjectDetails>,
+}
+
+impl GrantEntityPermissionsRequestBuilder {
+    pub fn new() -> Self {
+        Self {
+            subject_identifier: None,
+            permissions: Vec::new(),
+            description: None,
+            subject_details: None,
+        }
+    }
+
+    pub fn with_subject_identifier(mut self, identifier: EntityIdentifier) -> Self {
+        self.subject_identifier = Some(identifier);
+        self
+    }
+
+    pub fn with_permission(mut self, permission: EntityPermission) -> Self {
+        self.permissions.push(permission);
+        self
+    }
+
+    pub fn with_permissions(mut self, permissions: Vec<EntityPermission>) -> Self {
+        self.permissions = permissions;
+        self
+    }
+
+    pub fn with_description(mut self, description: impl Into<String>) -> Self {
+        self.description = Some(description.into());
+        self
+    }
+
+    pub fn with_subject_details(mut self, details: EntitySubjectDetails) -> Self {
+        self.subject_details = Some(details);
+        self
+    }
+
+    pub fn build(self) -> Result<GrantEntityPermissionsRequest, String> {
+        Ok(GrantEntityPermissionsRequest {
+            subject_identifier: self.subject_identifier.ok_or("subject_identifier is required")?,
+            permissions: self.permissions,
+            description: self.description.ok_or("description is required")?,
+            subject_details: self.subject_details.ok_or("subject_details is required")?,
+        })
+    }
+}
+
+impl Default for GrantEntityPermissionsRequestBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EntityIdentifier {
+    #[serde(rename = "type")]
+    pub identifier_type: EntityIdentifierType,
+    pub value: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum EntityIdentifierType {
+    Nip,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EntityPermission {
+    #[serde(rename = "type")]
+    pub permission_type: EntityPermissionType,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub can_delegate: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum EntityPermissionType {
+    InvoiceWrite,
+    InvoiceRead,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EntitySubjectDetails {
+    pub full_name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GrantEntityPermissionsResponse {
+    pub reference_number: String,
+}
+
+pub fn grant_entity_permissions(
+    client: &KsefClient,
+    request: GrantEntityPermissionsRequest,
+) -> Result<GrantEntityPermissionsResponse, KsefError> {
+    let fut = async {
+        let url = client.url_for(routes::PERMISSIONS_ENTITIES_GRANTS_PATH);
+        let access_token = &client.access_token.access_token;
+
+        let resp = client
+            .client
+            .post(&url)
+            .header("Accept", "application/json")
+            .bearer_auth(access_token)
+            .json(&request)
+            .send()
+            .await
+            .map_err(KsefError::RequestError)?;
+
+        let status = resp.status();
+        if !status.is_success() {
+            let body = resp.text().await.unwrap_or_default();
+            return Err(KsefError::ApiError(status.as_u16(), body));
+        }
+
+        let parsed: GrantEntityPermissionsResponse =
+            resp.json().await.map_err(KsefError::RequestError)?;
+        Ok(parsed)
+    };
+
+    match tokio::runtime::Handle::try_current() {
+        Ok(handle) => handle.block_on(fut),
+        Err(_) => {
+            let rt = tokio::runtime::Runtime::new()
+                .map_err(|e| KsefError::RuntimeError(e.to_string()))?;
+            rt.block_on(fut)
+        }
+    }
+}

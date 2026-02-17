@@ -11,4 +11,61 @@ pub use client::auth::xades_auth::AuthTokens;
 pub use client::ksef_tokens::models::{DetailedKsefToken, TokenStatus};
 pub use client::ksef_tokens::new_ksef_token::{KsefToken, KsefTokenPermissions};
 
+pub use client::permissions::grant_authorization_permissions::{
+    AuthorizationPermissionType, AuthorizationSubjectDetails, AuthorizationSubjectIdentifier,
+    AuthorizationSubjectIdentifierType, GrantAuthorizationPermissionsRequest,
+    GrantAuthorizationPermissionsRequestBuilder, GrantAuthorizationPermissionsResponse,
+};
+
+pub use client::permissions::grant_entity_permissions::{
+    EntityIdentifier, EntityIdentifierType, EntityPermission, EntityPermissionType,
+    EntitySubjectDetails, GrantEntityPermissionsRequest, GrantEntityPermissionsRequestBuilder,
+    GrantEntityPermissionsResponse,
+};
+
+pub use client::permissions::grant_indirect_entity_permissions::{
+    GrantIndirectEntityPermissionsRequest, GrantIndirectEntityPermissionsRequestBuilder,
+    GrantIndirectEntityPermissionsResponse, IndirectIdDocument, IndirectPermissionType,
+    IndirectPersonByFpNoId, IndirectPersonByFpWithId,
+    IndirectPersonById, IndirectPersonIdentifier, IndirectPersonIdentifierType,
+    IndirectSubjectDetails, IndirectSubjectDetailsType, IndirectSubjectIdentifier,
+    IndirectSubjectIdentifierType, IndirectTargetIdentifier, IndirectTargetIdentifierType,
+};
+
+pub use client::permissions::grant_subunit_permissions::{
+    GrantSubunitPermissionsRequest, GrantSubunitPermissionsRequestBuilder,
+    GrantSubunitPermissionsResponse, SubunitContextIdentifier, SubunitContextIdentifierType,
+    SubunitIdDocument, SubunitPersonByFpNoId,
+    SubunitPersonByFpWithId, SubunitPersonById, SubunitPersonIdentifier,
+    SubunitPersonIdentifierType, SubunitSubjectDetails, SubunitSubjectDetailsType,
+    SubunitSubjectIdentifier, SubunitSubjectIdentifierType,
+};
+
+pub use client::permissions::grant_eu_entity_permissions::{
+    EuEntityByFp, EuEntityContextIdentifier, EuEntityContextIdentifierType, EuEntityDetails,
+    EuEntityIdDocument, EuEntityPersonByFpNoId, EuEntityPersonByFpWithId, EuEntityPersonIdentifier,
+    EuEntityPersonIdentifierType, EuEntitySubjectDetails, EuEntitySubjectDetailsType,
+    EuEntitySubjectIdentifier, EuEntitySubjectIdentifierType, GrantEuEntityPermissionsRequest,
+    GrantEuEntityPermissionsRequestBuilder, GrantEuEntityPermissionsResponse,
+};
+
+pub use client::permissions::grant_eu_entity_representative_permissions::{
+    EuEntityRepresentativeEntityByFp, EuEntityRepresentativeIdDocument,
+    EuEntityRepresentativePermissionType, EuEntityRepresentativePersonByFpNoId,
+    EuEntityRepresentativePersonByFpWithId, EuEntityRepresentativePersonIdentifier,
+    EuEntityRepresentativePersonIdentifierType, EuEntityRepresentativeSubjectDetails,
+    EuEntityRepresentativeSubjectDetailsType, EuEntityRepresentativeSubjectIdentifier,
+    EuEntityRepresentativeSubjectIdentifierType, GrantEuEntityRepresentativePermissionsRequest,
+    GrantEuEntityRepresentativePermissionsRequestBuilder,
+    GrantEuEntityRepresentativePermissionsResponse,
+};
+
+pub use client::permissions::grant_person_permissions::{
+    GrantPersonPermissionsRequest, GrantPersonPermissionsRequestBuilder,
+    GrantPersonPermissionsResponse, IdDocument, PersonByFpNoId, PersonByFpWithId, PersonById,
+    PersonIdentifier, PersonIdentifierType, PersonPermissionType,
+    SubjectDetails, SubjectDetailsType, SubjectIdentifier,
+    SubjectIdentifierType as GrantSubjectIdentifierType,
+};
+
 pub use client::sessions::{AuthenticationMethod, QuerySessionsResponse, Session, SessionStatus};
