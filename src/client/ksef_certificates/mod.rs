@@ -5,3 +5,4 @@ pub mod get_certificates_limits;
 pub mod get_enrollment_data;
 pub mod get_enrollment_status;
 pub mod retrieve_certificates;
+pub mod revoke_certificate;

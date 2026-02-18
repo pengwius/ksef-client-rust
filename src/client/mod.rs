@@ -13,6 +13,7 @@ use crate::KsefToken;
 use crate::KsefTokenPermissions;
 use crate::QuerySessionsResponse;
 use crate::RetrieveCertificatesListItem;
+use crate::RevocationReason;
 use crate::SubjectIdentifierType;
 use crate::client::error::KsefError;
 use crate::client::get_public_key_certificates::PublicKeyCertificate;
@@ -326,6 +327,14 @@ impl KsefClient {
             page_size,
             page_offset,
         )
+    }
+
+    pub fn revoke_certificate(
+        &self,
+        serial_number: &str,
+        reason: RevocationReason,
+    ) -> Result<(), KsefError> {
+        ksef_certificates::revoke_certificate::revoke_certificate(self, serial_number, reason)
     }
 
     pub fn url_for(&self, path: &str) -> String {

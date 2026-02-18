@@ -27,3 +27,4 @@ pub const CERTIFICATES_ENROLLMENT_PATH: &str = "/v2/certificates/enrollments";
 pub const CERTIFICATES_ENROLLMENT_STATUS_PATH: &str = "/v2/certificates/enrollments/";
 pub const CERTIFICATES_RETRIEVE_PATH: &str = "/v2/certificates/retrieve";
 pub const CERTIFICATES_QUERY_PATH: &str = "/v2/certificates/query";
+pub const CERTIFICATES_PATH: &str = "/v2/certificates";
