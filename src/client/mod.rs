@@ -8,6 +8,7 @@ use crate::ContextIdentifierType;
 use crate::CsrResult;
 use crate::DetailedKsefToken;
 use crate::EnrollmentData;
+use crate::EnrollmentStatusResponse;
 use crate::KsefToken;
 use crate::KsefTokenPermissions;
 use crate::QuerySessionsResponse;
@@ -295,6 +296,13 @@ impl KsefClient {
 
     pub fn generate_csr(&self, enrollment_data: &EnrollmentData) -> Result<CsrResult, KsefError> {
         ksef_certificates::csr::generate_csr(enrollment_data)
+    }
+
+    pub fn get_enrollment_status(
+        &self,
+        reference_number: &str,
+    ) -> Result<EnrollmentStatusResponse, KsefError> {
+        ksef_certificates::get_enrollment_status::get_enrollment_status(self, reference_number)
     }
 
     pub fn url_for(&self, path: &str) -> String {
