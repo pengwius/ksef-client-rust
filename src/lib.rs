@@ -9,6 +9,7 @@ pub use client::auth::auth_token_request::{
 pub use client::auth::get_access_token::AccessTokens;
 pub use client::auth::xades_auth::AuthTokens;
 pub use client::ksef_certificates::get_certificates_limits::{CertificateLimits, LimitDetails};
+pub use client::ksef_certificates::get_enrollment_data::EnrollmentData;
 pub use client::ksef_tokens::models::{DetailedKsefToken, TokenStatus};
 pub use client::ksef_tokens::new_ksef_token::{KsefToken, KsefTokenPermissions};
 

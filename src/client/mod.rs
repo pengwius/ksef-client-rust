@@ -6,6 +6,7 @@ use crate::AuthTokens;
 use crate::CertificateLimits;
 use crate::ContextIdentifierType;
 use crate::DetailedKsefToken;
+use crate::EnrollmentData;
 use crate::KsefToken;
 use crate::KsefTokenPermissions;
 use crate::QuerySessionsResponse;
@@ -275,6 +276,10 @@ impl KsefClient {
 
     pub fn get_certificates_limits(&self) -> Result<CertificateLimits, KsefError> {
         ksef_certificates::get_certificates_limits::get_certificates_limits(self)
+    }
+
+    pub fn get_enrollment_data(&self) -> Result<EnrollmentData, KsefError> {
+        ksef_certificates::get_enrollment_data::get_enrollment_data(self)
     }
 
     pub fn url_for(&self, path: &str) -> String {
