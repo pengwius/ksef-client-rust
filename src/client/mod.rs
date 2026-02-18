@@ -40,6 +40,7 @@ use crate::client::permissions::grant_person_permissions::{
 use crate::client::permissions::grant_subunit_permissions::{
     GrantSubunitPermissionsRequest, GrantSubunitPermissionsResponse,
 };
+use crate::{GetCertificateMetadataListRequest, GetCertificateMetadataListResponse};
 
 pub mod error;
 
@@ -311,6 +312,20 @@ impl KsefClient {
         serial_numbers: Vec<String>,
     ) -> Result<Vec<RetrieveCertificatesListItem>, KsefError> {
         ksef_certificates::retrieve_certificates::retrieve_certificates(self, serial_numbers)
+    }
+
+    pub fn get_certificate_metadata_list(
+        &self,
+        query: GetCertificateMetadataListRequest,
+        page_size: Option<i32>,
+        page_offset: Option<i32>,
+    ) -> Result<GetCertificateMetadataListResponse, KsefError> {
+        ksef_certificates::get_certificate_metadata_list::get_certificate_metadata_list(
+            self,
+            query,
+            page_size,
+            page_offset,
+        )
     }
 
     pub fn url_for(&self, path: &str) -> String {

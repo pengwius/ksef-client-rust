@@ -14,6 +14,11 @@ pub use client::ksef_certificates::csr::CsrResult;
 pub use client::ksef_certificates::enroll_certificate::{
     CertificateType, EnrollCertificateRequest, EnrollCertificateResponse,
 };
+pub use client::ksef_certificates::get_certificate_metadata_list::{
+    CertificateListItem, CertificateStatus, CertificateSubjectIdentifier,
+    CertificateSubjectIdentifierType, GetCertificateMetadataListRequest,
+    GetCertificateMetadataListResponse,
+};
 pub use client::ksef_certificates::get_certificates_limits::{CertificateLimits, LimitDetails};
 pub use client::ksef_certificates::get_enrollment_data::EnrollmentData;
 pub use client::ksef_certificates::get_enrollment_status::{
