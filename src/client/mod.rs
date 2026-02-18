@@ -12,6 +12,7 @@ use crate::EnrollmentStatusResponse;
 use crate::KsefToken;
 use crate::KsefTokenPermissions;
 use crate::QuerySessionsResponse;
+use crate::RetrieveCertificatesListItem;
 use crate::SubjectIdentifierType;
 use crate::client::error::KsefError;
 use crate::client::get_public_key_certificates::PublicKeyCertificate;
@@ -303,6 +304,13 @@ impl KsefClient {
         reference_number: &str,
     ) -> Result<EnrollmentStatusResponse, KsefError> {
         ksef_certificates::get_enrollment_status::get_enrollment_status(self, reference_number)
+    }
+
+    pub fn retrieve_certificates(
+        &self,
+        serial_numbers: Vec<String>,
+    ) -> Result<Vec<RetrieveCertificatesListItem>, KsefError> {
+        ksef_certificates::retrieve_certificates::retrieve_certificates(self, serial_numbers)
     }
 
     pub fn url_for(&self, path: &str) -> String {

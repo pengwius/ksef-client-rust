@@ -3,3 +3,4 @@ pub mod enroll_certificate;
 pub mod get_certificates_limits;
 pub mod get_enrollment_data;
 pub mod get_enrollment_status;
+pub mod retrieve_certificates;
