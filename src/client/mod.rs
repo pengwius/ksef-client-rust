@@ -3,6 +3,7 @@ use crate::AuthChallenge;
 use crate::AuthTokenRequest;
 use crate::AuthTokenRequestBuilder;
 use crate::AuthTokens;
+use crate::CertificateLimits;
 use crate::ContextIdentifierType;
 use crate::DetailedKsefToken;
 use crate::KsefToken;
@@ -14,6 +15,9 @@ use crate::client::get_public_key_certificates::PublicKeyCertificate;
 use crate::client::permissions::grant_authorization_permissions::{
     GrantAuthorizationPermissionsRequest, GrantAuthorizationPermissionsResponse,
 };
+use crate::client::permissions::grant_entity_permissions::{
+    GrantEntityPermissionsRequest, GrantEntityPermissionsResponse,
+};
 use crate::client::permissions::grant_eu_entity_permissions::{
     GrantEuEntityPermissionsRequest, GrantEuEntityPermissionsResponse,
 };
@@ -23,20 +27,18 @@ use crate::client::permissions::grant_eu_entity_representative_permissions::{
 use crate::client::permissions::grant_indirect_entity_permissions::{
     GrantIndirectEntityPermissionsRequest, GrantIndirectEntityPermissionsResponse,
 };
-use crate::client::permissions::grant_subunit_permissions::{
-    GrantSubunitPermissionsRequest, GrantSubunitPermissionsResponse,
-};
-use crate::client::permissions::grant_entity_permissions::{
-    GrantEntityPermissionsRequest, GrantEntityPermissionsResponse,
-};
 use crate::client::permissions::grant_person_permissions::{
     GrantPersonPermissionsRequest, GrantPersonPermissionsResponse,
+};
+use crate::client::permissions::grant_subunit_permissions::{
+    GrantSubunitPermissionsRequest, GrantSubunitPermissionsResponse,
 };
 
 pub mod error;
 
 pub mod auth;
 pub mod get_public_key_certificates;
+pub mod ksef_certificates;
 pub mod ksef_tokens;
 pub mod permissions;
 mod routes;
@@ -269,6 +271,10 @@ impl KsefClient {
         permissions::grant_eu_entity_representative_permissions::grant_eu_entity_representative_permissions(
             self, request,
         )
+    }
+
+    pub fn get_certificates_limits(&self) -> Result<CertificateLimits, KsefError> {
+        ksef_certificates::get_certificates_limits::get_certificates_limits(self)
     }
 
     pub fn url_for(&self, path: &str) -> String {
