@@ -8,6 +8,12 @@ pub use client::auth::auth_token_request::{
 };
 pub use client::auth::get_access_token::AccessTokens;
 pub use client::auth::xades_auth::AuthTokens;
+pub use client::error;
+pub use client::error::KsefError;
+pub use client::ksef_certificates::csr::CsrResult;
+pub use client::ksef_certificates::enroll_certificate::{
+    CertificateType, EnrollCertificateRequest, EnrollCertificateResponse,
+};
 pub use client::ksef_certificates::get_certificates_limits::{CertificateLimits, LimitDetails};
 pub use client::ksef_certificates::get_enrollment_data::EnrollmentData;
 pub use client::ksef_tokens::models::{DetailedKsefToken, TokenStatus};

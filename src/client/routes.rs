@@ -23,3 +23,4 @@ pub const PERMISSIONS_EU_ENTITIES_REPRESENTATIVE_GRANTS_PATH: &str =
 
 pub const CERTIFICATES_LIMITS_PATH: &str = "/v2/certificates/limits";
 pub const CERTIFICATES_ENROLLMENT_DATA_PATH: &str = "/v2/certificates/enrollments/data";
+pub const CERTIFICATES_ENROLLMENT_PATH: &str = "/v2/certificates/enrollments";

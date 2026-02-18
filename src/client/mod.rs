@@ -5,6 +5,7 @@ use crate::AuthTokenRequestBuilder;
 use crate::AuthTokens;
 use crate::CertificateLimits;
 use crate::ContextIdentifierType;
+use crate::CsrResult;
 use crate::DetailedKsefToken;
 use crate::EnrollmentData;
 use crate::KsefToken;
@@ -13,6 +14,9 @@ use crate::QuerySessionsResponse;
 use crate::SubjectIdentifierType;
 use crate::client::error::KsefError;
 use crate::client::get_public_key_certificates::PublicKeyCertificate;
+use crate::client::ksef_certificates::enroll_certificate::{
+    EnrollCertificateRequest, EnrollCertificateResponse,
+};
 use crate::client::permissions::grant_authorization_permissions::{
     GrantAuthorizationPermissionsRequest, GrantAuthorizationPermissionsResponse,
 };
@@ -280,6 +284,17 @@ impl KsefClient {
 
     pub fn get_enrollment_data(&self) -> Result<EnrollmentData, KsefError> {
         ksef_certificates::get_enrollment_data::get_enrollment_data(self)
+    }
+
+    pub fn enroll_certificate(
+        &self,
+        request: EnrollCertificateRequest,
+    ) -> Result<EnrollCertificateResponse, KsefError> {
+        ksef_certificates::enroll_certificate::enroll_certificate(self, request)
+    }
+
+    pub fn generate_csr(&self, enrollment_data: &EnrollmentData) -> Result<CsrResult, KsefError> {
+        ksef_certificates::csr::generate_csr(enrollment_data)
     }
 
     pub fn url_for(&self, path: &str) -> String {
