@@ -10,6 +10,7 @@ pub use client::auth::get_access_token::AccessTokens;
 pub use client::auth::xades_auth::AuthTokens;
 pub use client::error;
 pub use client::error::KsefError;
+pub use client::get_public_key_certificates::{PublicKeyCertificate, PublicKeyCertificateUsage};
 pub use client::ksef_certificates::csr::CsrResult;
 pub use client::ksef_certificates::enroll_certificate::{
     CertificateType, EnrollCertificateRequest, EnrollCertificateResponse,
@@ -85,3 +86,9 @@ pub use client::permissions::grant_person_permissions::{
 };
 
 pub use client::sessions::{AuthenticationMethod, QuerySessionsResponse, Session, SessionStatus};
+
+pub use client::online_session::encryption::EncryptionData;
+pub use client::online_session::open_online_session::{
+    Encryption, FormCode, OpenOnlineSessionRequest, OpenOnlineSessionRequestBuilder,
+    OpenOnlineSessionResponse,
+};
