@@ -16,5 +16,15 @@ pub const PERMISSIONS_ENTITIES_GRANTS_PATH: &str = "/v2/permissions/entities/gra
 pub const PERMISSIONS_AUTHORIZATIONS_GRANTS_PATH: &str = "/v2/permissions/authorizations/grants";
 pub const PERMISSIONS_INDIRECT_GRANTS_PATH: &str = "/v2/permissions/indirect/grants";
 pub const PERMISSIONS_SUBUNITS_GRANTS_PATH: &str = "/v2/permissions/subunits/grants";
-pub const PERMISSIONS_EU_ENTITIES_GRANTS_PATH: &str = "/v2/permissions/eu-entities/administration/grants";
-pub const PERMISSIONS_EU_ENTITIES_REPRESENTATIVE_GRANTS_PATH: &str = "/v2/permissions/eu-entities/grants";
+pub const PERMISSIONS_EU_ENTITIES_GRANTS_PATH: &str =
+    "/v2/permissions/eu-entities/administration/grants";
+pub const PERMISSIONS_EU_ENTITIES_REPRESENTATIVE_GRANTS_PATH: &str =
+    "/v2/permissions/eu-entities/grants";
+
+pub const CERTIFICATES_LIMITS_PATH: &str = "/v2/certificates/limits";
+pub const CERTIFICATES_ENROLLMENT_DATA_PATH: &str = "/v2/certificates/enrollments/data";
+pub const CERTIFICATES_ENROLLMENT_PATH: &str = "/v2/certificates/enrollments";
+pub const CERTIFICATES_ENROLLMENT_STATUS_PATH: &str = "/v2/certificates/enrollments/";
+pub const CERTIFICATES_RETRIEVE_PATH: &str = "/v2/certificates/retrieve";
+pub const CERTIFICATES_QUERY_PATH: &str = "/v2/certificates/query";
+pub const CERTIFICATES_PATH: &str = "/v2/certificates";

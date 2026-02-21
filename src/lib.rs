@@ -8,6 +8,24 @@ pub use client::auth::auth_token_request::{
 };
 pub use client::auth::get_access_token::AccessTokens;
 pub use client::auth::xades_auth::AuthTokens;
+pub use client::error;
+pub use client::error::KsefError;
+pub use client::ksef_certificates::csr::CsrResult;
+pub use client::ksef_certificates::enroll_certificate::{
+    CertificateType, EnrollCertificateRequest, EnrollCertificateResponse,
+};
+pub use client::ksef_certificates::get_certificate_metadata_list::{
+    CertificateListItem, CertificateStatus, CertificateSubjectIdentifier,
+    CertificateSubjectIdentifierType, GetCertificateMetadataListRequest,
+    GetCertificateMetadataListResponse,
+};
+pub use client::ksef_certificates::get_certificates_limits::{CertificateLimits, LimitDetails};
+pub use client::ksef_certificates::get_enrollment_data::EnrollmentData;
+pub use client::ksef_certificates::get_enrollment_status::{
+    EnrollmentStatus, EnrollmentStatusResponse,
+};
+pub use client::ksef_certificates::retrieve_certificates::RetrieveCertificatesListItem;
+pub use client::ksef_certificates::revoke_certificate::RevocationReason;
 pub use client::ksef_tokens::models::{DetailedKsefToken, TokenStatus};
 pub use client::ksef_tokens::new_ksef_token::{KsefToken, KsefTokenPermissions};
 
@@ -26,19 +44,18 @@ pub use client::permissions::grant_entity_permissions::{
 pub use client::permissions::grant_indirect_entity_permissions::{
     GrantIndirectEntityPermissionsRequest, GrantIndirectEntityPermissionsRequestBuilder,
     GrantIndirectEntityPermissionsResponse, IndirectIdDocument, IndirectPermissionType,
-    IndirectPersonByFpNoId, IndirectPersonByFpWithId,
-    IndirectPersonById, IndirectPersonIdentifier, IndirectPersonIdentifierType,
-    IndirectSubjectDetails, IndirectSubjectDetailsType, IndirectSubjectIdentifier,
-    IndirectSubjectIdentifierType, IndirectTargetIdentifier, IndirectTargetIdentifierType,
+    IndirectPersonByFpNoId, IndirectPersonByFpWithId, IndirectPersonById, IndirectPersonIdentifier,
+    IndirectPersonIdentifierType, IndirectSubjectDetails, IndirectSubjectDetailsType,
+    IndirectSubjectIdentifier, IndirectSubjectIdentifierType, IndirectTargetIdentifier,
+    IndirectTargetIdentifierType,
 };
 
 pub use client::permissions::grant_subunit_permissions::{
     GrantSubunitPermissionsRequest, GrantSubunitPermissionsRequestBuilder,
     GrantSubunitPermissionsResponse, SubunitContextIdentifier, SubunitContextIdentifierType,
-    SubunitIdDocument, SubunitPersonByFpNoId,
-    SubunitPersonByFpWithId, SubunitPersonById, SubunitPersonIdentifier,
-    SubunitPersonIdentifierType, SubunitSubjectDetails, SubunitSubjectDetailsType,
-    SubunitSubjectIdentifier, SubunitSubjectIdentifierType,
+    SubunitIdDocument, SubunitPersonByFpNoId, SubunitPersonByFpWithId, SubunitPersonById,
+    SubunitPersonIdentifier, SubunitPersonIdentifierType, SubunitSubjectDetails,
+    SubunitSubjectDetailsType, SubunitSubjectIdentifier, SubunitSubjectIdentifierType,
 };
 
 pub use client::permissions::grant_eu_entity_permissions::{
@@ -63,9 +80,8 @@ pub use client::permissions::grant_eu_entity_representative_permissions::{
 pub use client::permissions::grant_person_permissions::{
     GrantPersonPermissionsRequest, GrantPersonPermissionsRequestBuilder,
     GrantPersonPermissionsResponse, IdDocument, PersonByFpNoId, PersonByFpWithId, PersonById,
-    PersonIdentifier, PersonIdentifierType, PersonPermissionType,
-    SubjectDetails, SubjectDetailsType, SubjectIdentifier,
-    SubjectIdentifierType as GrantSubjectIdentifierType,
+    PersonIdentifier, PersonIdentifierType, PersonPermissionType, SubjectDetails,
+    SubjectDetailsType, SubjectIdentifier, SubjectIdentifierType as GrantSubjectIdentifierType,
 };
 
 pub use client::sessions::{AuthenticationMethod, QuerySessionsResponse, Session, SessionStatus};

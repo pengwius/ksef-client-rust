@@ -3,16 +3,28 @@ use crate::AuthChallenge;
 use crate::AuthTokenRequest;
 use crate::AuthTokenRequestBuilder;
 use crate::AuthTokens;
+use crate::CertificateLimits;
 use crate::ContextIdentifierType;
+use crate::CsrResult;
 use crate::DetailedKsefToken;
+use crate::EnrollmentData;
+use crate::EnrollmentStatusResponse;
 use crate::KsefToken;
 use crate::KsefTokenPermissions;
 use crate::QuerySessionsResponse;
+use crate::RetrieveCertificatesListItem;
+use crate::RevocationReason;
 use crate::SubjectIdentifierType;
 use crate::client::error::KsefError;
 use crate::client::get_public_key_certificates::PublicKeyCertificate;
+use crate::client::ksef_certificates::enroll_certificate::{
+    EnrollCertificateRequest, EnrollCertificateResponse,
+};
 use crate::client::permissions::grant_authorization_permissions::{
     GrantAuthorizationPermissionsRequest, GrantAuthorizationPermissionsResponse,
+};
+use crate::client::permissions::grant_entity_permissions::{
+    GrantEntityPermissionsRequest, GrantEntityPermissionsResponse,
 };
 use crate::client::permissions::grant_eu_entity_permissions::{
     GrantEuEntityPermissionsRequest, GrantEuEntityPermissionsResponse,
@@ -23,20 +35,19 @@ use crate::client::permissions::grant_eu_entity_representative_permissions::{
 use crate::client::permissions::grant_indirect_entity_permissions::{
     GrantIndirectEntityPermissionsRequest, GrantIndirectEntityPermissionsResponse,
 };
-use crate::client::permissions::grant_subunit_permissions::{
-    GrantSubunitPermissionsRequest, GrantSubunitPermissionsResponse,
-};
-use crate::client::permissions::grant_entity_permissions::{
-    GrantEntityPermissionsRequest, GrantEntityPermissionsResponse,
-};
 use crate::client::permissions::grant_person_permissions::{
     GrantPersonPermissionsRequest, GrantPersonPermissionsResponse,
 };
+use crate::client::permissions::grant_subunit_permissions::{
+    GrantSubunitPermissionsRequest, GrantSubunitPermissionsResponse,
+};
+use crate::{GetCertificateMetadataListRequest, GetCertificateMetadataListResponse};
 
 pub mod error;
 
 pub mod auth;
 pub mod get_public_key_certificates;
+pub mod ksef_certificates;
 pub mod ksef_tokens;
 pub mod permissions;
 mod routes;
@@ -269,6 +280,61 @@ impl KsefClient {
         permissions::grant_eu_entity_representative_permissions::grant_eu_entity_representative_permissions(
             self, request,
         )
+    }
+
+    pub fn get_certificates_limits(&self) -> Result<CertificateLimits, KsefError> {
+        ksef_certificates::get_certificates_limits::get_certificates_limits(self)
+    }
+
+    pub fn get_enrollment_data(&self) -> Result<EnrollmentData, KsefError> {
+        ksef_certificates::get_enrollment_data::get_enrollment_data(self)
+    }
+
+    pub fn enroll_certificate(
+        &self,
+        request: EnrollCertificateRequest,
+    ) -> Result<EnrollCertificateResponse, KsefError> {
+        ksef_certificates::enroll_certificate::enroll_certificate(self, request)
+    }
+
+    pub fn generate_csr(&self, enrollment_data: &EnrollmentData) -> Result<CsrResult, KsefError> {
+        ksef_certificates::csr::generate_csr(enrollment_data)
+    }
+
+    pub fn get_enrollment_status(
+        &self,
+        reference_number: &str,
+    ) -> Result<EnrollmentStatusResponse, KsefError> {
+        ksef_certificates::get_enrollment_status::get_enrollment_status(self, reference_number)
+    }
+
+    pub fn retrieve_certificates(
+        &self,
+        serial_numbers: Vec<String>,
+    ) -> Result<Vec<RetrieveCertificatesListItem>, KsefError> {
+        ksef_certificates::retrieve_certificates::retrieve_certificates(self, serial_numbers)
+    }
+
+    pub fn get_certificate_metadata_list(
+        &self,
+        query: GetCertificateMetadataListRequest,
+        page_size: Option<i32>,
+        page_offset: Option<i32>,
+    ) -> Result<GetCertificateMetadataListResponse, KsefError> {
+        ksef_certificates::get_certificate_metadata_list::get_certificate_metadata_list(
+            self,
+            query,
+            page_size,
+            page_offset,
+        )
+    }
+
+    pub fn revoke_certificate(
+        &self,
+        serial_number: &str,
+        reason: RevocationReason,
+    ) -> Result<(), KsefError> {
+        ksef_certificates::revoke_certificate::revoke_certificate(self, serial_number, reason)
     }
 
     pub fn url_for(&self, path: &str) -> String {
