@@ -12,6 +12,7 @@ Szczegółowa dokumentacja znajduje się w katalogu `docs/`.
 *   [Zarządzanie Tokenami KSeF](docs/ksef_tokens.md)
 *   [Zarządzanie Sesjami](docs/sessions.md)
 *   [Zarządzanie Uprawnieniami](docs/permissions.md)
+*   [Certyfikaty KSeF](docs/ksef_certificates.md)
 
 ## Kontakt
 Jeśli masz pytania, sugestie lub potrzebujesz pomocy, skontaktuj się ze mną:
