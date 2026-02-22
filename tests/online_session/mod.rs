@@ -1,1 +1,1 @@
-pub mod open_online_session;
+pub mod online_session_flow;

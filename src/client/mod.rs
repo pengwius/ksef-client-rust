@@ -377,6 +377,10 @@ impl KsefClient {
         )
     }
 
+    pub fn close_online_session(&self, reference_number: &str) -> Result<(), KsefError> {
+        online_session::close_online_session::close_online_session(self, reference_number)
+    }
+
     pub fn generate_encryption_data(&self) -> Result<EncryptionData, KsefError> {
         online_session::encryption::generate_encryption_data(self)
     }
