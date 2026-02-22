@@ -15,6 +15,9 @@ use crate::QuerySessionsResponse;
 use crate::RetrieveCertificatesListItem;
 use crate::RevocationReason;
 use crate::SubjectIdentifierType;
+use crate::client::batch_session::open_batch_session::{
+    OpenBatchSessionRequest, OpenBatchSessionResponse,
+};
 use crate::client::error::KsefError;
 use crate::client::get_public_key_certificates::PublicKeyCertificate;
 use crate::client::ksef_certificates::enroll_certificate::{
@@ -350,6 +353,13 @@ impl KsefClient {
         request: OpenOnlineSessionRequest,
     ) -> Result<OpenOnlineSessionResponse, KsefError> {
         online_session::open_online_session::open_online_session(self, request)
+    }
+
+    pub fn open_batch_session(
+        &self,
+        request: OpenBatchSessionRequest,
+    ) -> Result<OpenBatchSessionResponse, KsefError> {
+        batch_session::open_batch_session::open_batch_session(self, request)
     }
 
     pub fn send_invoice(

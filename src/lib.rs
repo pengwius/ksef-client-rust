@@ -99,3 +99,8 @@ pub use client::batch_session::zip::{
     BatchZipResult, EncryptedBatchPart, FileMetadata, InvoicePayload, calculate_invoice_hash,
     create_zip, encrypt_zip_parts, split_zip,
 };
+
+pub use client::batch_session::open_batch_session::{
+    BatchFile, BatchFilePartInfo, OpenBatchSessionRequest, OpenBatchSessionRequestBuilder,
+    OpenBatchSessionResponse, PartUploadRequest,
+};
