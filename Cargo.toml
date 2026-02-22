@@ -15,6 +15,7 @@ reqwest = { version = "0.12", features = ["json", "rustls-tls", "blocking"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 regex = "1.10"
 base64 = "0.22"
+zip = "2.1"
 
 [[bin]]
 name = "certgen"

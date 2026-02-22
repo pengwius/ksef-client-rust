@@ -15,6 +15,10 @@ use crate::QuerySessionsResponse;
 use crate::RetrieveCertificatesListItem;
 use crate::RevocationReason;
 use crate::SubjectIdentifierType;
+use crate::client::batch_session::open_batch_session::{
+    OpenBatchSessionRequest, OpenBatchSessionResponse,
+};
+use crate::client::batch_session::zip::EncryptedBatchPart;
 use crate::client::error::KsefError;
 use crate::client::get_public_key_certificates::PublicKeyCertificate;
 use crate::client::ksef_certificates::enroll_certificate::{
@@ -52,6 +56,7 @@ use crate::{GetCertificateMetadataListRequest, GetCertificateMetadataListRespons
 pub mod error;
 
 pub mod auth;
+pub mod batch_session;
 pub mod get_public_key_certificates;
 pub mod ksef_certificates;
 pub mod ksef_tokens;
@@ -349,6 +354,25 @@ impl KsefClient {
         request: OpenOnlineSessionRequest,
     ) -> Result<OpenOnlineSessionResponse, KsefError> {
         online_session::open_online_session::open_online_session(self, request)
+    }
+
+    pub fn open_batch_session(
+        &self,
+        request: OpenBatchSessionRequest,
+    ) -> Result<OpenBatchSessionResponse, KsefError> {
+        batch_session::open_batch_session::open_batch_session(self, request)
+    }
+
+    pub fn upload_batch_parts(
+        &self,
+        response: &OpenBatchSessionResponse,
+        parts: &[EncryptedBatchPart],
+    ) -> Result<(), KsefError> {
+        batch_session::upload_batch_parts::upload_batch_parts(self, response, parts)
+    }
+
+    pub fn close_batch_session(&self, reference_number: &str) -> Result<(), KsefError> {
+        batch_session::close_batch_session::close_batch_session(self, reference_number)
     }
 
     pub fn send_invoice(

@@ -30,3 +30,4 @@ pub const CERTIFICATES_QUERY_PATH: &str = "/v2/certificates/query";
 pub const CERTIFICATES_PATH: &str = "/v2/certificates";
 
 pub const OPEN_ONLINE_SESSION_PATH: &str = "/v2/sessions/online";
+pub const OPEN_BATCH_SESSION_PATH: &str = "/v2/sessions/batch";
