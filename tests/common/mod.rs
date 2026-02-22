@@ -1,12 +1,14 @@
 use ksef_client::{ContextIdentifierType, KsefClient, SubjectIdentifierType};
 use rand::random_range;
 
+#[allow(dead_code)]
 pub fn generate_random_nip() -> String {
     loop {
         let mut digits: Vec<u8> = (0..9).map(|_| random_range(0..10) as u8).collect();
-        if digits[0] == 0 {
-            digits[0] = random_range(1..10) as u8;
-        }
+        // Use a valid Tax Office prefix (e.g. 526 for Warszawa-Mokotów) to pass validation
+        digits[0] = 5;
+        digits[1] = 2;
+        digits[2] = 6;
 
         let weights = [6, 5, 7, 2, 3, 4, 5, 6, 7];
         let sum: u32 = digits
@@ -26,7 +28,7 @@ pub fn generate_random_nip() -> String {
 #[allow(dead_code)]
 pub fn authorize_client() -> KsefClient {
     let mut client = KsefClient::new();
-    let nip = generate_random_nip();
+    let nip = "5264567890";
     let given_name = "Eugeniusz";
     let surname = "Fakturowski";
     let serial_prefix = "TINPL";

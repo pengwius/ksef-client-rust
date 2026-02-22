@@ -13,6 +13,7 @@ Detailed documentation can be found in the `docs/` directory.
 *   [Session Management](docs/sessions.en.md)
 *   [Permissions Management](docs/permissions.en.md)
 *   [KSeF Certificates](docs/ksef_certificates.en.md)
+*   [Sending an Invoice in an Interactive Session](docs/online_session.en.md)
 
 ## Contact
 If you have any questions, suggestions, or need assistance, please contact me:

@@ -20,6 +20,12 @@ use crate::client::get_public_key_certificates::PublicKeyCertificate;
 use crate::client::ksef_certificates::enroll_certificate::{
     EnrollCertificateRequest, EnrollCertificateResponse,
 };
+use crate::client::online_session::encryption::EncryptionData;
+use crate::client::online_session::get_invoice_status::GetInvoiceStatusResponse;
+use crate::client::online_session::open_online_session::{
+    OpenOnlineSessionRequest, OpenOnlineSessionResponse,
+};
+use crate::client::online_session::send_invoice::SendInvoiceResponse;
 use crate::client::permissions::grant_authorization_permissions::{
     GrantAuthorizationPermissionsRequest, GrantAuthorizationPermissionsResponse,
 };
@@ -49,6 +55,7 @@ pub mod auth;
 pub mod get_public_key_certificates;
 pub mod ksef_certificates;
 pub mod ksef_tokens;
+pub mod online_session;
 pub mod permissions;
 mod routes;
 pub mod sessions;
@@ -335,6 +342,47 @@ impl KsefClient {
         reason: RevocationReason,
     ) -> Result<(), KsefError> {
         ksef_certificates::revoke_certificate::revoke_certificate(self, serial_number, reason)
+    }
+
+    pub fn open_online_session(
+        &self,
+        request: OpenOnlineSessionRequest,
+    ) -> Result<OpenOnlineSessionResponse, KsefError> {
+        online_session::open_online_session::open_online_session(self, request)
+    }
+
+    pub fn send_invoice(
+        &self,
+        reference_number: &str,
+        invoice_xml: &[u8],
+        encryption_data: &EncryptionData,
+    ) -> Result<SendInvoiceResponse, KsefError> {
+        online_session::send_invoice::send_invoice(
+            self,
+            reference_number,
+            invoice_xml,
+            encryption_data,
+        )
+    }
+
+    pub fn get_invoice_status(
+        &self,
+        session_reference_number: &str,
+        invoice_reference_number: &str,
+    ) -> Result<GetInvoiceStatusResponse, KsefError> {
+        online_session::get_invoice_status::get_invoice_status(
+            self,
+            session_reference_number,
+            invoice_reference_number,
+        )
+    }
+
+    pub fn close_online_session(&self, reference_number: &str) -> Result<(), KsefError> {
+        online_session::close_online_session::close_online_session(self, reference_number)
+    }
+
+    pub fn generate_encryption_data(&self) -> Result<EncryptionData, KsefError> {
+        online_session::encryption::generate_encryption_data(self)
     }
 
     pub fn url_for(&self, path: &str) -> String {

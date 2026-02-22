@@ -13,6 +13,7 @@ Szczegółowa dokumentacja znajduje się w katalogu `docs/`.
 *   [Zarządzanie Sesjami](docs/sessions.md)
 *   [Zarządzanie Uprawnieniami](docs/permissions.md)
 *   [Certyfikaty KSeF](docs/ksef_certificates.md)
+*   [Wysyłanie Faktury w Sesji Interaktywnej](docs/online_session.md)
 
 ## Kontakt
 Jeśli masz pytania, sugestie lub potrzebujesz pomocy, skontaktuj się ze mną:
