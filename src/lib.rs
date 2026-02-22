@@ -94,3 +94,8 @@ pub use client::online_session::open_online_session::{
     OpenOnlineSessionResponse,
 };
 pub use client::online_session::send_invoice::SendInvoiceResponse;
+
+pub use client::batch_session::zip::{
+    BatchZipResult, EncryptedBatchPart, FileMetadata, InvoicePayload, calculate_invoice_hash,
+    create_zip, encrypt_zip_parts, split_zip,
+};

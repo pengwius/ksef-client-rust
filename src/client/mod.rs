@@ -52,6 +52,7 @@ use crate::{GetCertificateMetadataListRequest, GetCertificateMetadataListRespons
 pub mod error;
 
 pub mod auth;
+pub mod batch_session;
 pub mod get_public_key_certificates;
 pub mod ksef_certificates;
 pub mod ksef_tokens;
