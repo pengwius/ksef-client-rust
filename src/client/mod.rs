@@ -18,6 +18,7 @@ use crate::SubjectIdentifierType;
 use crate::client::batch_session::open_batch_session::{
     OpenBatchSessionRequest, OpenBatchSessionResponse,
 };
+use crate::client::batch_session::zip::EncryptedBatchPart;
 use crate::client::error::KsefError;
 use crate::client::get_public_key_certificates::PublicKeyCertificate;
 use crate::client::ksef_certificates::enroll_certificate::{
@@ -360,6 +361,14 @@ impl KsefClient {
         request: OpenBatchSessionRequest,
     ) -> Result<OpenBatchSessionResponse, KsefError> {
         batch_session::open_batch_session::open_batch_session(self, request)
+    }
+
+    pub fn upload_batch_parts(
+        &self,
+        response: &OpenBatchSessionResponse,
+        parts: &[EncryptedBatchPart],
+    ) -> Result<(), KsefError> {
+        batch_session::upload_batch_parts::upload_batch_parts(self, response, parts)
     }
 
     pub fn send_invoice(

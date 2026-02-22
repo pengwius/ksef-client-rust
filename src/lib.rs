@@ -104,3 +104,5 @@ pub use client::batch_session::open_batch_session::{
     BatchFile, BatchFilePartInfo, OpenBatchSessionRequest, OpenBatchSessionRequestBuilder,
     OpenBatchSessionResponse, PartUploadRequest,
 };
+
+pub use client::batch_session::upload_batch_parts::upload_batch_parts;
