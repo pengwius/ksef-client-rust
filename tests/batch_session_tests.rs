@@ -163,4 +163,11 @@ fn test_batch_session_initialization() {
             panic!("Failed to upload batch parts: {:?}", e);
         }
     }
+
+    match client.close_batch_session(&response.reference_number) {
+        Ok(()) => {}
+        Err(e) => {
+            panic!("Failed to close batch session: {:?}", e);
+        }
+    }
 }

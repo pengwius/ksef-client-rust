@@ -371,6 +371,10 @@ impl KsefClient {
         batch_session::upload_batch_parts::upload_batch_parts(self, response, parts)
     }
 
+    pub fn close_batch_session(&self, reference_number: &str) -> Result<(), KsefError> {
+        batch_session::close_batch_session::close_batch_session(self, reference_number)
+    }
+
     pub fn send_invoice(
         &self,
         reference_number: &str,
