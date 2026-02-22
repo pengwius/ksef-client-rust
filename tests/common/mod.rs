@@ -1,6 +1,7 @@
 use ksef_client::{ContextIdentifierType, KsefClient, SubjectIdentifierType};
 use rand::random_range;
 
+#[allow(dead_code)]
 pub fn generate_random_nip() -> String {
     loop {
         let mut digits: Vec<u8> = (0..9).map(|_| random_range(0..10) as u8).collect();
@@ -27,7 +28,7 @@ pub fn generate_random_nip() -> String {
 #[allow(dead_code)]
 pub fn authorize_client() -> KsefClient {
     let mut client = KsefClient::new();
-    let nip = generate_random_nip();
+    let nip = "5264567890";
     let given_name = "Eugeniusz";
     let surname = "Fakturowski";
     let serial_prefix = "TINPL";

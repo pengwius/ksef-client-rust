@@ -21,9 +21,11 @@ use crate::client::ksef_certificates::enroll_certificate::{
     EnrollCertificateRequest, EnrollCertificateResponse,
 };
 use crate::client::online_session::encryption::EncryptionData;
+use crate::client::online_session::get_invoice_status::GetInvoiceStatusResponse;
 use crate::client::online_session::open_online_session::{
     OpenOnlineSessionRequest, OpenOnlineSessionResponse,
 };
+use crate::client::online_session::send_invoice::SendInvoiceResponse;
 use crate::client::permissions::grant_authorization_permissions::{
     GrantAuthorizationPermissionsRequest, GrantAuthorizationPermissionsResponse,
 };
@@ -347,6 +349,32 @@ impl KsefClient {
         request: OpenOnlineSessionRequest,
     ) -> Result<OpenOnlineSessionResponse, KsefError> {
         online_session::open_online_session::open_online_session(self, request)
+    }
+
+    pub fn send_invoice(
+        &self,
+        reference_number: &str,
+        invoice_xml: &[u8],
+        encryption_data: &EncryptionData,
+    ) -> Result<SendInvoiceResponse, KsefError> {
+        online_session::send_invoice::send_invoice(
+            self,
+            reference_number,
+            invoice_xml,
+            encryption_data,
+        )
+    }
+
+    pub fn get_invoice_status(
+        &self,
+        session_reference_number: &str,
+        invoice_reference_number: &str,
+    ) -> Result<GetInvoiceStatusResponse, KsefError> {
+        online_session::get_invoice_status::get_invoice_status(
+            self,
+            session_reference_number,
+            invoice_reference_number,
+        )
     }
 
     pub fn generate_encryption_data(&self) -> Result<EncryptionData, KsefError> {

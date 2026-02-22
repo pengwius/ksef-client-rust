@@ -4,6 +4,8 @@ use openssl::hash::MessageDigest;
 use openssl::pkey::PKey;
 use openssl::rand::rand_bytes;
 use openssl::rsa::Padding;
+use openssl::sha::sha256;
+use openssl::symm::{Cipher, encrypt};
 use openssl::x509::X509;
 
 use crate::client::KsefClient;
@@ -105,4 +107,14 @@ fn get_public_key(client: &KsefClient) -> Result<String, KsefError> {
     })?;
 
     Ok(public_key_pem_str)
+}
+
+pub fn encrypt_invoice(content: &[u8], key: &[u8], iv: &[u8]) -> Result<Vec<u8>, KsefError> {
+    let cipher = Cipher::aes_256_cbc();
+    encrypt(cipher, key, Some(iv), content)
+        .map_err(|e| KsefError::ApplicationError(0, format!("Failed to encrypt invoice: {}", e)))
+}
+
+pub fn hash_invoice(content: &[u8]) -> Vec<u8> {
+    sha256(content).to_vec()
 }
