@@ -1,9 +1,10 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
+use crate::client::routes;
 
 pub fn close_batch_session(client: &KsefClient, reference_number: &str) -> Result<(), KsefError> {
     let fut = async {
-        let path = format!("/v2/sessions/batch/{}/close", reference_number);
+        let path = format!("{}/{}/close", routes::SESSIONS_BATCH_PATH, reference_number);
         let url = client.url_for(&path);
         let http = &client.client;
 

@@ -203,7 +203,7 @@ pub fn open_batch_session(
     request: OpenBatchSessionRequest,
 ) -> Result<OpenBatchSessionResponse, KsefError> {
     let fut = async {
-        let url = client.url_for(routes::OPEN_BATCH_SESSION_PATH);
+        let url = client.url_for(routes::SESSIONS_BATCH_PATH);
         let http = &client.client;
 
         let token = &client.access_token.access_token;

@@ -1,5 +1,6 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
+use crate::client::routes;
 
 pub fn close_online_session(
     client: &KsefClient,
@@ -7,7 +8,8 @@ pub fn close_online_session(
 ) -> Result<(), KsefError> {
     let fut = async {
         let url = client.url_for(&format!(
-            "/v2/sessions/online/{}/close",
+            "{}/{}/close",
+            routes::SESSIONS_ONLINE_PATH,
             session_reference_number
         ));
 

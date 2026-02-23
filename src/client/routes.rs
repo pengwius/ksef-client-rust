@@ -29,5 +29,6 @@ pub const CERTIFICATES_RETRIEVE_PATH: &str = "/v2/certificates/retrieve";
 pub const CERTIFICATES_QUERY_PATH: &str = "/v2/certificates/query";
 pub const CERTIFICATES_PATH: &str = "/v2/certificates";
 
-pub const OPEN_ONLINE_SESSION_PATH: &str = "/v2/sessions/online";
-pub const OPEN_BATCH_SESSION_PATH: &str = "/v2/sessions/batch";
+pub const SESSIONS_PATH: &str = "/v2/sessions";
+pub const SESSIONS_ONLINE_PATH: &str = "/v2/sessions/online";
+pub const SESSIONS_BATCH_PATH: &str = "/v2/sessions/batch";
