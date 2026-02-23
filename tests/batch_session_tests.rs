@@ -171,3 +171,39 @@ fn test_batch_session_initialization() {
         }
     }
 }
+
+#[test]
+fn test_submit_batch_automated() {
+    let client = common::authorize_client();
+
+    let issuer_nip = "5264567890";
+    let invoice_xml_1 = common::generate_fa2_invoice(issuer_nip);
+    let invoice_xml_2 = common::generate_fa2_invoice(issuer_nip);
+
+    let invoices = vec![
+        InvoicePayload {
+            filename: "invoice1.xml".to_string(),
+            content: invoice_xml_1.as_bytes().to_vec(),
+        },
+        InvoicePayload {
+            filename: "invoice2.xml".to_string(),
+            content: invoice_xml_2.as_bytes().to_vec(),
+        },
+    ];
+
+    let result = client
+        .submit_batch(&invoices, Some(10 * 1024 * 1024))
+        .expect("Failed to submit batch");
+
+    println!("Automated batch submission successful: {:?}", result);
+
+    assert!(
+        !result.reference_number.is_empty(),
+        "Reference number should not be empty"
+    );
+    assert!(result.number_of_parts > 0, "Should have at least 1 part");
+    assert!(
+        result.total_size_bytes > 0,
+        "Total size should be greater than 0"
+    );
+}

@@ -15,10 +15,11 @@ use crate::QuerySessionsResponse;
 use crate::RetrieveCertificatesListItem;
 use crate::RevocationReason;
 use crate::SubjectIdentifierType;
+use crate::client::batch_session::full_flow::BatchSubmissionResult;
 use crate::client::batch_session::open_batch_session::{
     OpenBatchSessionRequest, OpenBatchSessionResponse,
 };
-use crate::client::batch_session::zip::EncryptedBatchPart;
+use crate::client::batch_session::zip::{EncryptedBatchPart, InvoicePayload};
 use crate::client::error::KsefError;
 use crate::client::get_public_key_certificates::PublicKeyCertificate;
 use crate::client::ksef_certificates::enroll_certificate::{
@@ -373,6 +374,14 @@ impl KsefClient {
 
     pub fn close_batch_session(&self, reference_number: &str) -> Result<(), KsefError> {
         batch_session::close_batch_session::close_batch_session(self, reference_number)
+    }
+
+    pub fn submit_batch(
+        &self,
+        invoices: &[InvoicePayload],
+        max_part_size_bytes: Option<usize>,
+    ) -> Result<BatchSubmissionResult, KsefError> {
+        batch_session::full_flow::submit_batch(self, invoices, max_part_size_bytes)
     }
 
     pub fn send_invoice(
