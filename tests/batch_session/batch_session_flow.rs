@@ -128,7 +128,7 @@ fn test_batch_session_initialization() {
             &encryption_data.initialization_vector,
         );
 
-    for part in encrypted_parts {
+    for part in encrypted_parts.iter() {
         builder =
             builder.add_file_part(part.ordinal_number, part.metadata.size, &part.metadata.hash);
     }
@@ -137,24 +137,73 @@ fn test_batch_session_initialization() {
         .build()
         .expect("Failed to build OpenBatchSessionRequest");
 
-    let batch_session = match client.open_batch_session(request) {
-        Ok(resp) => resp,
-        Err(e) => {
-            panic!("Batch session initialization failed: {:?}", e);
-        }
-    };
+    let response = client
+        .open_batch_session(request)
+        .expect("Failed to open batch session");
+
+    println!("Opened batch session: {:?}", response);
 
     assert!(
-        !batch_session.reference_number.is_empty(),
+        !response.reference_number.is_empty(),
         "Session reference number should not be empty"
     );
     assert!(
-        !batch_session.part_upload_requests.is_empty(),
+        !response.part_upload_requests.is_empty(),
         "Should have upload requests"
     );
     assert_eq!(
-        batch_session.part_upload_requests.len(),
+        response.part_upload_requests.len(),
         1,
         "Should have 1 upload request"
+    );
+
+    match client.upload_batch_parts(&response, &encrypted_parts) {
+        Ok(()) => {}
+        Err(e) => {
+            panic!("Failed to upload batch parts: {:?}", e);
+        }
+    }
+
+    match client.close_batch_session(&response.reference_number) {
+        Ok(()) => {}
+        Err(e) => {
+            panic!("Failed to close batch session: {:?}", e);
+        }
+    }
+}
+
+#[test]
+fn test_submit_batch_automated() {
+    let client = common::authorize_client();
+
+    let issuer_nip = "5264567890";
+    let invoice_xml_1 = common::generate_fa2_invoice(issuer_nip);
+    let invoice_xml_2 = common::generate_fa2_invoice(issuer_nip);
+
+    let invoices = vec![
+        InvoicePayload {
+            filename: "invoice1.xml".to_string(),
+            content: invoice_xml_1.as_bytes().to_vec(),
+        },
+        InvoicePayload {
+            filename: "invoice2.xml".to_string(),
+            content: invoice_xml_2.as_bytes().to_vec(),
+        },
+    ];
+
+    let result = client
+        .submit_batch(&invoices, Some(10 * 1024 * 1024))
+        .expect("Failed to submit batch");
+
+    println!("Automated batch submission successful: {:?}", result);
+
+    assert!(
+        !result.reference_number.is_empty(),
+        "Reference number should not be empty"
+    );
+    assert!(result.number_of_parts > 0, "Should have at least 1 part");
+    assert!(
+        result.total_size_bytes > 0,
+        "Total size should be greater than 0"
     );
 }
