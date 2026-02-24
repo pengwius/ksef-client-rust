@@ -1,5 +1,6 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
+use crate::client::routes;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -43,8 +44,10 @@ pub fn get_invoice_status(
 ) -> Result<GetInvoiceStatusResponse, KsefError> {
     let fut = async {
         let url = client.url_for(&format!(
-            "/v2/sessions/{}/invoices/{}",
-            session_reference_number, invoice_reference_number
+            "{}/{}/invoices/{}",
+            routes::SESSIONS_PATH,
+            session_reference_number,
+            invoice_reference_number
         ));
 
         let access_token = &client.access_token.access_token;

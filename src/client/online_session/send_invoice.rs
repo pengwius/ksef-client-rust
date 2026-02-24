@@ -1,6 +1,7 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::online_session::encryption::{EncryptionData, encrypt_invoice, hash_invoice};
+use crate::client::routes;
 use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 use serde::{Deserialize, Serialize};
 
@@ -58,7 +59,8 @@ pub fn send_invoice(
 
     let fut = async {
         let url = client.url_for(&format!(
-            "/v2/sessions/online/{}/invoices",
+            "{}/{}/invoices",
+            routes::SESSIONS_ONLINE_PATH,
             session_reference_number
         ));
         let http = &client.client;

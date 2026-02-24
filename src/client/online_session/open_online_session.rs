@@ -136,7 +136,7 @@ pub fn open_online_session(
     request: OpenOnlineSessionRequest,
 ) -> Result<OpenOnlineSessionResponse, KsefError> {
     let fut = async {
-        let url = client.url_for(routes::OPEN_ONLINE_SESSION_PATH);
+        let url = client.url_for(routes::SESSIONS_ONLINE_PATH);
         let http = &client.client;
 
         let token = &client.access_token.access_token;
