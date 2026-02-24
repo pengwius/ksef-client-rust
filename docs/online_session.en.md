@@ -4,7 +4,43 @@
 
 __[Official Documentation](https://github.com/CIRFMF/ksef-docs/blob/main/sesja-interaktywna.md)__
 
-### 1. Opening an interactive session
+The interactive session interface allows you to send an invoice in a single session.
+The library performs the following for you:
+
+1. generating encryption data,
+2. opening an interactive session with the API,
+3. encrypting and sending the invoice,
+4. closing the session.
+
+If you only need a simple wrapper, use `submit_online` which performs the
+entire flow and returns information about the submitted invoice.
+Alternatively you can call the lower‑level functions
+`open_online_session`, `send_invoice` and `close_online_session` yourself
+for more granular control.
+
+### 1. Automated invoice submission
+
+```rust
+let invoice_xml = /* FA(2) or FA(3) XML invoice */;
+
+let result = client
+    .submit_online(invoice_xml.as_bytes())
+    .expect("Failed to submit online session");
+
+println!(
+    "Session reference number: {}",
+    result.session_reference_number
+);
+
+println!(
+    "Invoice reference number: {}",
+    result.invoice_reference_number
+);
+```
+
+### 2. Manual session management
+
+#### 2.1. Opening an interactive session
 
 ```rust
 // Generate encryption data for the interactive session
@@ -29,7 +65,7 @@ let session_reference_number = match client.open_online_session(request) {
 };
 ```
 
-### 2. Sending an invoice
+#### 2.2. Sending an invoice
 
 ```rust
 let issuer_nip = "5264567890"; // Invoice issuer identifier
@@ -48,7 +84,7 @@ let invoice_reference_number = match client.send_invoice(
 };
 ```
 
-### 3. Checking invoice status
+#### 2.3. Checking invoice status
 
 ```rust
 let status = client
@@ -64,7 +100,7 @@ if status.invoice_status.code != 200 {
 }
 ```
 
-### 4. Closing the interactive session
+#### 2.4. Closing the interactive session
 
 ```rust
 match client.close_online_session(&session_reference_number) {

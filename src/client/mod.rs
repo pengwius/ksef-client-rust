@@ -26,6 +26,7 @@ use crate::client::ksef_certificates::enroll_certificate::{
     EnrollCertificateRequest, EnrollCertificateResponse,
 };
 use crate::client::online_session::encryption::EncryptionData;
+use crate::client::online_session::full_flow::OnlineSubmissionResult;
 use crate::client::online_session::get_invoice_status::GetInvoiceStatusResponse;
 use crate::client::online_session::open_online_session::{
     OpenOnlineSessionRequest, OpenOnlineSessionResponse,
@@ -382,6 +383,10 @@ impl KsefClient {
         max_part_size_bytes: Option<usize>,
     ) -> Result<BatchSubmissionResult, KsefError> {
         batch_session::full_flow::submit_batch(self, invoices, max_part_size_bytes)
+    }
+
+    pub fn submit_online(&self, invoice: &[u8]) -> Result<OnlineSubmissionResult, KsefError> {
+        online_session::full_flow::submit_online(self, invoice)
     }
 
     pub fn send_invoice(
