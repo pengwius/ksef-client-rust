@@ -60,3 +60,39 @@ fn test_online_session_flow() {
         }
     }
 }
+
+#[test]
+fn test_submit_online_automated() {
+    let client = common::authorize_client();
+
+    let issuer_nip = "5264567890";
+    let invoice_xml = common::generate_fa2_invoice(issuer_nip);
+
+    let result = client
+        .submit_online(invoice_xml.as_bytes())
+        .expect("Failed to submit online session");
+
+    println!("Online submission result: {:?}", result);
+
+    assert!(
+        !result.session_reference_number.is_empty(),
+        "Session reference number should not be empty"
+    );
+    assert!(
+        !result.invoice_reference_number.is_empty(),
+        "Invoice reference number should not be empty"
+    );
+
+    let status = client
+        .get_invoice_status(
+            &result.session_reference_number,
+            &result.invoice_reference_number,
+        )
+        .expect("Failed to get invoice status");
+
+    println!(
+        "Final Invoice status for {}: {:#?}",
+        result.invoice_reference_number, status
+    );
+    assert!(status.invoice_status.code == 200);
+}

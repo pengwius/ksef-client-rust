@@ -4,7 +4,43 @@ Polska Wersja / [English version](online_session.en.md)
 
 __[Oficjalna Dokumentacja](https://github.com/CIRFMF/ksef-docs/blob/main/sesja-interaktywna.md)__
 
-### 1. Otwieranie sesji interaktywnej
+Interfejs sesji interaktywnej pozwala przesłać fakturę w jednej sesji.
+Biblioteka wykonuje za Ciebie:
+
+1. wygenerowanie danych szyfrujących,
+2. otwarcie sesji interaktywnej u API,
+3. zaszyfrowanie i przesłanie faktury,
+4. zamknięcie sesji.
+
+Jeżeli potrzebujesz tylko prostego opakowania, użyj `submit_online`, które
+dokonuje całego przepływu i zwraca informacje o wysłanej fakturze.
+Alternatywnie możesz wywołać niskopoziomowe funkcje
+`open_online_session`, `send_invoice` i `close_online_session`
+samodzielnie, jeżeli chcesz mieć większą kontrolę.
+
+### 1. Zautomatyzowana wysyłka faktury
+
+```rust
+let invoice_xml = /* faktura XML FA(2) lub FA(3) */;
+
+let result = client
+    .submit_online(invoice_xml.as_bytes())
+    .expect("Failed to submit online session");
+
+println!(
+    "Session reference number: {}",
+    result.session_reference_number
+);
+
+println!(
+    "Invoice reference number: {}",
+    result.invoice_reference_number
+);
+```
+
+### 2. Ręczne zarządzanie sesją
+
+#### 2.1. Otwieranie sesji interaktywnej
 
 ```rust
 // Generowanie danych szyfrujących dla sesji interaktywnej
@@ -29,7 +65,7 @@ let session_reference_number = match client.open_online_session(request) {
 };
 ```
 
-### 2. Wysyłanie faktury
+#### 2.2. Wysyłanie faktury
 
 ```rust
 let issuer_nip = "5264567890"; // Identyfikator wystawcy faktury
@@ -48,7 +84,7 @@ let invoice_reference_number = match client.send_invoice(
 };
 ```
 
-### 3. Sprawdzenie statusu faktury
+#### 2.3. Sprawdzenie statusu faktury
 
 ```rust
 let status = client
@@ -64,7 +100,7 @@ if status.invoice_status.code != 200 {
 }
 ```
 
-### 4. Zamknięcie sesji interaktywnej
+#### 2.4. Zamknięcie sesji interaktywnej
 
 ```rust
 match client.close_online_session(&session_reference_number) {
