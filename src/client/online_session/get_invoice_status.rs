@@ -37,71 +37,60 @@ pub struct InvoiceStatus {
     pub extensions: Option<HashMap<String, String>>,
 }
 
-pub fn get_invoice_status(
+pub async fn get_invoice_status(
     client: &KsefClient,
     session_reference_number: &str,
     invoice_reference_number: &str,
 ) -> Result<GetInvoiceStatusResponse, KsefError> {
-    let fut = async {
-        let url = client.url_for(&format!(
-            "{}/{}/invoices/{}",
-            routes::SESSIONS_PATH,
-            session_reference_number,
-            invoice_reference_number
-        ));
+    let url = client.url_for(&format!(
+        "{}/{}/invoices/{}",
+        routes::SESSIONS_PATH,
+        session_reference_number,
+        invoice_reference_number
+    ));
 
-        let access_token = &client.access_token.access_token;
-        if access_token.is_empty() {
-            return Err(KsefError::ApplicationError(
-                0,
-                "No access token available".to_string(),
+    let access_token = &client.access_token.access_token;
+    if access_token.is_empty() {
+        return Err(KsefError::ApplicationError(
+            0,
+            "No access token available".to_string(),
+        ));
+    }
+
+    let timeout = Duration::from_secs(120);
+    let interval = Duration::from_secs(2);
+    let start = std::time::Instant::now();
+
+    loop {
+        if start.elapsed() > timeout {
+            return Err(KsefError::RuntimeError(
+                "Invoice status polling timed out".to_string(),
             ));
         }
 
-        let timeout = Duration::from_secs(120);
-        let interval = Duration::from_secs(2);
-        let start = std::time::Instant::now();
+        let resp = client
+            .client
+            .get(&url)
+            .header("Accept", "application/json")
+            .bearer_auth(access_token)
+            .send()
+            .await
+            .map_err(KsefError::RequestError)?;
 
-        loop {
-            if start.elapsed() > timeout {
-                return Err(KsefError::RuntimeError(
-                    "Invoice status polling timed out".to_string(),
-                ));
-            }
-
-            let resp = client
-                .client
-                .get(&url)
-                .header("Accept", "application/json")
-                .bearer_auth(access_token)
-                .send()
-                .await
-                .map_err(KsefError::RequestError)?;
-
-            let status = resp.status();
-            if !status.is_success() {
-                let body = resp.text().await.unwrap_or_default();
-                return Err(KsefError::ApiError(status.as_u16(), body));
-            }
-
-            let parsed: GetInvoiceStatusResponse =
-                resp.json().await.map_err(KsefError::RequestError)?;
-
-            if parsed.invoice_status.code == 100 || parsed.invoice_status.code == 150 {
-                sleep(interval).await;
-                continue;
-            }
-
-            return Ok(parsed);
+        let status = resp.status();
+        if !status.is_success() {
+            let body = resp.text().await.unwrap_or_default();
+            return Err(KsefError::ApiError(status.as_u16(), body));
         }
-    };
 
-    match tokio::runtime::Handle::try_current() {
-        Ok(handle) => handle.block_on(fut),
-        Err(_) => {
-            let rt = tokio::runtime::Runtime::new()
-                .map_err(|e| KsefError::RuntimeError(e.to_string()))?;
-            rt.block_on(fut)
+        let parsed: GetInvoiceStatusResponse =
+            resp.json().await.map_err(KsefError::RequestError)?;
+
+        if parsed.invoice_status.code == 100 || parsed.invoice_status.code == 150 {
+            sleep(interval).await;
+            continue;
         }
+
+        return Ok(parsed);
     }
 }

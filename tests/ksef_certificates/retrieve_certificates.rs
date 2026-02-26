@@ -2,12 +2,12 @@ use crate::common;
 use ksef_client::error::KsefError;
 use ksef_client::{CertificateType, EnrollCertificateRequest};
 
-#[test]
-fn test_retrieve_certificates() {
-    let client = common::authorize_client();
+#[tokio::test]
+async fn test_retrieve_certificates() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
 
     println!("Getting enrollment data...");
-    let enrollment_data = match client.get_enrollment_data() {
+    let enrollment_data = match client.get_enrollment_data().await {
         Ok(data) => data,
         Err(e) => panic!("Failed to get enrollment data: {:?}", e),
     };
@@ -26,7 +26,7 @@ fn test_retrieve_certificates() {
     };
 
     println!("Sending enrollment request...");
-    let reference_number = match client.enroll_certificate(request) {
+    let reference_number = match client.enroll_certificate(request).await {
         Ok(response) => {
             println!(
                 "Enrollment successful. Reference Number: {}",
@@ -46,7 +46,7 @@ fn test_retrieve_certificates() {
         }
     };
 
-    let serial_number = match client.get_enrollment_status(&reference_number) {
+    let serial_number = match client.get_enrollment_status(&reference_number).await {
         Ok(status_resp) => {
             println!(
                 "Status: Code={}, Desc={}",
@@ -67,7 +67,7 @@ fn test_retrieve_certificates() {
 
     let serials_to_retrieve = vec![serial_number.clone()];
 
-    match client.retrieve_certificates(serials_to_retrieve) {
+    match client.retrieve_certificates(serials_to_retrieve).await {
         Ok(retrieved_list) => {
             println!("Retrieved {} certificates.", retrieved_list.len());
 

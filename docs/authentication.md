@@ -22,12 +22,12 @@ use ksef_client::{KsefClient, ContextIdentifierType, SubjectIdentifierType};
 // Inicjalizacja klienta
 let mut client = KsefClient::new();
 
-// Budowa obiektu żądania 
+// Budowa obiektu żądania
 let auth_request = client.get_auth_token_request(
     "1234567890",                             // NIP kontekstu
     ContextIdentifierType::Nip,               // Typ identyfikatora kontekstu
     SubjectIdentifierType::CertificateSubject // Logowanie certyfikatem
-)?;
+).await?;
 
 // Serializacja do XML
 let unsigned_xml = auth_request.to_xml();
@@ -75,7 +75,7 @@ let signed_xml = match client.xades.sign(&unsigned_xml) {
 ### 3. Wysłanie podpisanego XML
 Podpisany dokument wysyłamy do API.
 ```rust
-match client.authenticate_by_xades_signature(signed_xml) {
+match client.authenticate_by_xades_signature(signed_xml).await {
     Ok(()) => {}
     Err(e) => {
         eprintln!("Unable to submit signed XML for authentication: {}", e);
@@ -92,7 +92,7 @@ Po pierwszym logowaniu podpisem XAdES można wygenerować długoterminowy token 
 **Generowanie nowego tokena (wymaga zalogowania przez XAdES):**
 ```rust
 // Parametr load określa, czy wygenerowany token ma być automatycznie załadowany do stanu klienta (self.ksef_token). Funkcja też zawsze zwraca wygenerowany token.
-let ksef_token = match client.new_ksef_token(true) {
+let ksef_token = match client.new_ksef_token(true, Default::default(), "Test token").await {
     Ok(token) => {
         println!("    KSeF Token: {:?}", token.token);
         token
@@ -120,7 +120,7 @@ let my_token = KsefToken {
 // Załaduj token do stanu klienta
 client.load_ksef_token(my_token);
 
-match client.authenticate_by_ksef_token() {
+match client.authenticate_by_ksef_token().await {
     Ok(()) => {
          let auth_token = client.auth_token();
          println!("    Auth Token: {}", auth_token.authentication_token);
@@ -135,7 +135,7 @@ match client.authenticate_by_ksef_token() {
 Proces weryfikacji podpisu jest asynchroniczny. Metoda `get_auth_status` blokuje wykonanie i odpytuje API w pętli (zaimplementowanej wewnętrznie), dopóki status nie zmieni się na pozytywny lub wystąpi błąd/timeout.
 
 ```rust
- let is_authenticated: bool = match client.get_auth_status() {
+ let is_authenticated: bool = match client.get_auth_status().await {
     Ok(status) => status,
     Err(e) => {
         eprintln!("Unable to get authentication status: {}", e);
@@ -166,7 +166,8 @@ use ksef_client::{
 use std::time::Duration;
 use std::thread;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // === CZEŚĆ 1: LOGOWANIE XADES ===
     println!("--- 1. Logowanie XAdES ---");
     let mut client = KsefClient::new(); // Domyślnie środowisko testowe
@@ -182,18 +183,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         nip,
         ContextIdentifierType::Nip,
         SubjectIdentifierType::CertificateSubject
-    )?;
+    ).await?;
     let unsigned_xml = auth_request.to_xml();
 
     // 3. Podpisanie requestu
     let signed_xml = client.xades.sign(&unsigned_xml)?;
 
     // 4. Wysłanie signed XML
-    client.authenticate_by_xades_signature(signed_xml)?;
+    client.authenticate_by_xades_signature(signed_xml).await?;
     println!("Wysłano żądanie logowania. Reference number: {}", client.auth_token().reference_number);
 
     // 5. Czekanie na zakończenie procesu logowania (get_auth_status odpytuje cyklicznie)
-    if client.get_auth_status()? {
+    if client.get_auth_status().await? {
         println!("Zalogowano pomyślnie przez XAdES.");
         println!("Access Token: {}", client.access_token().access_token);
     } else {
@@ -204,7 +205,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // === CZEŚĆ 2: GENEROWANIE TOKENA KSEF ===
     println!("\n--- 2. Generowanie Tokena KSeF ---");
     // Generujemy token i ładujemy go od razu do klienta
-    let new_token = client.new_ksef_token(true)?;
+    let new_token = client.new_ksef_token(true, Default::default(), "Test token").await?;
     println!("Wygenerowano nowy token KSeF: {}", new_token.token);
     println!("Reference number tokena: {}", new_token.reference_number);
 
@@ -230,11 +231,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     client2.load_ksef_token(ksef_token);
 
     // Logujemy się tokenem
-    client2.authenticate_by_ksef_token()?;
+    client2.authenticate_by_ksef_token().await?;
     println!("Wysłano żądanie logowania tokenem. Reference number sesji: {}", client2.auth_token().reference_number);
 
     // Sprawdzamy status
-    if client2.get_auth_status()? {
+    if client2.get_auth_status().await? {
         println!("Zalogowano pomyślnie przez Token KSeF.");
         println!("Access Token (sesja z tokena): {}", client2.access_token().access_token);
     } else {

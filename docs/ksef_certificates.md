@@ -7,7 +7,7 @@ __[Oficjalna Dokumentacja](https://github.com/CIRFMF/ksef-docs/blob/main/certyfi
 ### 1. Sprawdzanie limitów
 
 ```rust
-let cert_limits = match client.get_certificates_limits() {
+let cert_limits = match client.get_certificates_limits().await {
     Ok(limits) => limits,
     Err(e) => panic!("Failed to retrieve certificate limits: {:?}", e),
 };
@@ -16,7 +16,7 @@ let cert_limits = match client.get_certificates_limits() {
 ### 2. Pobieranie danych do wniosku certyfikacyjnego
 
 ```rust
-let enrollment_data = match client.get_enrollment_data() {
+let enrollment_data = match client.get_enrollment_data().await {
     Ok(data) => data,
     Err(e) => panic!("Failed to retrieve enrollment data: {:?}", e),
 };
@@ -45,7 +45,7 @@ let request = EnrollCertificateRequest {
     valid_from: None,
 };
 
-let reference_number = match client.enroll_certificate(request) {
+let reference_number = match client.enroll_certificate(request).await {
     Ok(response) => response.reference_number,
     Err(e) => panic!("Failed to enroll certificate: {:?}", e),
 };
@@ -56,7 +56,7 @@ let reference_number = match client.enroll_certificate(request) {
 `reference_number` zwracany jest przez `enroll_certificate` w punkcie 4. Metoda `get_enrollment_status` blokuje wykonanie i odpytuje API w pętli (pooling), dopóki status nie zmieni się na finalny (sukces lub błąd).
 
 ```rust
-match client.get_enrollment_status(&reference_number) {
+match client.get_enrollment_status(&reference_number).await {
     Ok(status_resp) => {
         if let Some(serial) = status_resp.certificate_serial_number {
             println!("Certyfikat wygenerowany! Numer seryjny: {}", serial);
@@ -75,7 +75,7 @@ Metoda pozwala pobrać treść certyfikatów na podstawie ich numerów seryjnych
 ```rust
 let serials = vec![ /* numery seryjne certyfikatów, które chcemy pobrać */ ];
 
-let certificates = match client.retrieve_certificates(serials) {
+let certificates = match client.retrieve_certificates(serials).await {
     Ok(certs) => certs,
     Err(e) => panic!("Failed to retrieve certificates: {:?}", e),
 };
@@ -112,7 +112,7 @@ let query = GetCertificateMetadataListRequest {
     ..Default::default()
 };
 
-let certificates_metadata_list = match client.get_certificate_metadata_list(query, Some(10), Some(0)) {
+let certificates_metadata_list = match client.get_certificate_metadata_list(query, Some(10), Some(0)).await {
     Ok(response) => {
         if response.has_more {
             println!("There are more certificates to get.");
@@ -139,7 +139,7 @@ Jako powód unieważnienia (`RevocationReason`) możemy podać:
 ```rust
 use ksef_client::RevocationReason;
 
-match client.revoke_certificate(&serial, RevocationReason::Unspecified) {
+match client.revoke_certificate(&serial, RevocationReason::Unspecified).await {
     Ok(()) => {
         println!("Certificate revoked successfully.");
     }

@@ -24,7 +24,7 @@ for more granular control.
 let invoice_xml = /* FA(2) or FA(3) XML invoice */;
 
 let result = client
-    .submit_online(invoice_xml.as_bytes())
+    .submit_online(invoice_xml.as_bytes()).await
     .expect("Failed to submit online session");
 
 println!(
@@ -45,7 +45,7 @@ println!(
 ```rust
 // Generate encryption data for the interactive session
 let encryption_data = client
-    .generate_encryption_data()
+    .generate_encryption_data().await
     .expect("Failed to generate encryption data");
 
 let request = OpenOnlineSessionRequestBuilder::new()
@@ -56,7 +56,7 @@ let request = OpenOnlineSessionRequestBuilder::new()
     .build()
     .expect("Failed to build OpenOnlineSessionRequest");
 
-let session_reference_number = match client.open_online_session(request) {
+let session_reference_number = match client.open_online_session(request).await {
     Ok(response) => response.reference_number,
     Err(error) => {
         eprintln!("Failed to open online session: {}", error);
@@ -75,7 +75,7 @@ let invoice_reference_number = match client.send_invoice(
     &session_reference_number,
     invoice_xml.as_bytes(),
     &encryption_data,
-) {
+).await {
     Ok(response) => response.reference_number,
     Err(error) => {
         eprintln!("Failed to send invoice: {}", error);
@@ -88,7 +88,7 @@ let invoice_reference_number = match client.send_invoice(
 
 ```rust
 let status = client
-    .get_invoice_status(&session_reference_number, &invoice_reference_number)
+    .get_invoice_status(&session_reference_number, &invoice_reference_number).await
     .expect("Failed to get invoice status");
 
 if status.invoice_status.code != 200 {
@@ -103,7 +103,7 @@ if status.invoice_status.code != 200 {
 #### 2.4. Closing the interactive session
 
 ```rust
-match client.close_online_session(&session_reference_number) {
+match client.close_online_session(&session_reference_number).await {
     Ok(()) => {}
     Err(e) => {
         panic!("Failed to close online session: {:?}", e);

@@ -57,7 +57,8 @@ struct Args {
     out_dir: String,
 }
 
-fn main() -> ExitCode {
+#[tokio::main]
+async fn main() -> ExitCode {
     let args = Args::parse();
 
     let output_mode = if args.output.to_lowercase() == "file" {
@@ -87,11 +88,14 @@ fn main() -> ExitCode {
     println!("[3] Getting AuthTokenRequest...");
     let mut client = KsefClient::new();
 
-    let auth_token_request = match client.get_auth_token_request(
-        &nip,
-        ContextIdentifierType::Nip,
-        SubjectIdentifierType::CertificateSubject,
-    ) {
+    let auth_token_request = match client
+        .get_auth_token_request(
+            &nip,
+            ContextIdentifierType::Nip,
+            SubjectIdentifierType::CertificateSubject,
+        )
+        .await
+    {
         Ok(req) => req,
         Err(e) => {
             eprintln!("Unable to get AuthTokenRequest: {}", e);
@@ -150,7 +154,7 @@ fn main() -> ExitCode {
     }
 
     println!("[7] Sending signed XML to KSeF...");
-    match client.authenticate_by_xades_signature(signed_xml) {
+    match client.authenticate_by_xades_signature(signed_xml).await {
         Ok(()) => {}
         Err(e) => {
             eprintln!("Unable to submit signed XML for authentication: {}", e);
@@ -167,7 +171,7 @@ fn main() -> ExitCode {
     println!("    ReferenceNumber: {}", auth_tokens.reference_number);
 
     println!("[8] Requesting authentication status (polling)...");
-    let is_authenticated: bool = match client.get_auth_status() {
+    let is_authenticated: bool = match client.get_auth_status().await {
         Ok(status) => status,
         Err(e) => {
             eprintln!("Unable to get authentication status: {}", e);
@@ -183,7 +187,7 @@ fn main() -> ExitCode {
     }
 
     println!("[9] Getting access token...");
-    match client.get_access_token() {
+    match client.get_access_token().await {
         Ok(()) => {}
         Err(e) => {
             eprintln!("Unable to get access token: {}", e);

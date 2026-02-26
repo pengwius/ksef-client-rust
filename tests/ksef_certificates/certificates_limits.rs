@@ -1,11 +1,11 @@
 use crate::common;
 
-#[test]
-fn test_get_certificates_limits() {
-    let client = common::authorize_client();
+#[tokio::test]
+async fn test_get_certificates_limits() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
 
     println!("Getting certificate limits...");
-    match client.get_certificates_limits() {
+    match client.get_certificates_limits().await {
         Ok(limits) => {
             println!("Certificate limits retrieved successfully.");
             println!("Can request: {}", limits.can_request);

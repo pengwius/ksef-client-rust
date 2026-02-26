@@ -1,12 +1,12 @@
 use crate::common;
 use ksef_client::{CertificateType, EnrollCertificateRequest, GetCertificateMetadataListRequest};
 
-#[test]
-fn test_get_certificate_metadata_list() {
-    let client = common::authorize_client();
+#[tokio::test]
+async fn test_get_certificate_metadata_list() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
 
     println!("Getting enrollment data...");
-    let enrollment_data = match client.get_enrollment_data() {
+    let enrollment_data = match client.get_enrollment_data().await {
         Ok(data) => data,
         Err(e) => panic!("Failed to get enrollment data: {:?}", e),
     };
@@ -25,7 +25,7 @@ fn test_get_certificate_metadata_list() {
     };
 
     println!("Sending enrollment request...");
-    let reference_number = match client.enroll_certificate(request) {
+    let reference_number = match client.enroll_certificate(request).await {
         Ok(response) => {
             println!(
                 "Enrollment successful. Reference Number: {}",
@@ -51,7 +51,7 @@ fn test_get_certificate_metadata_list() {
         "Checking enrollment status for ref: {} (waiting for completion...)",
         reference_number
     );
-    let status_resp = match client.get_enrollment_status(&reference_number) {
+    let status_resp = match client.get_enrollment_status(&reference_number).await {
         Ok(resp) => resp,
         Err(e) => panic!("Failed to get enrollment status: {:?}", e),
     };
@@ -73,7 +73,10 @@ fn test_get_certificate_metadata_list() {
             ..Default::default()
         };
 
-        match client.get_certificate_metadata_list(query, Some(10), Some(0)) {
+        match client
+            .get_certificate_metadata_list(query, Some(10), Some(0))
+            .await
+        {
             Ok(response) => {
                 println!(
                     "Query successful. Retrieved {} certificates.",

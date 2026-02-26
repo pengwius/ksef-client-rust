@@ -3,37 +3,26 @@ use crate::client::error::KsefError;
 use crate::client::ksef_tokens::models::{DetailedKsefToken, QueryTokensResponse};
 use crate::client::routes;
 
-pub fn get_ksef_tokens(client: &KsefClient) -> Result<Vec<DetailedKsefToken>, KsefError> {
-    let fut = async {
-        let url = client.url_for(routes::TOKENS_PATH);
+pub async fn get_ksef_tokens(client: &KsefClient) -> Result<Vec<DetailedKsefToken>, KsefError> {
+    let url = client.url_for(routes::TOKENS_PATH);
 
-        let access_token = &client.access_token.access_token;
+    let access_token = &client.access_token.access_token;
 
-        let resp = client
-            .client
-            .get(&url)
-            .header("Accept", "application/json")
-            .bearer_auth(access_token)
-            .send()
-            .await
-            .map_err(KsefError::RequestError)?;
+    let resp = client
+        .client
+        .get(&url)
+        .header("Accept", "application/json")
+        .bearer_auth(access_token)
+        .send()
+        .await
+        .map_err(KsefError::RequestError)?;
 
-        let status = resp.status();
-        if !status.is_success() {
-            let body = resp.text().await.unwrap_or_default();
-            return Err(KsefError::ApiError(status.as_u16(), body));
-        }
-
-        let parsed: QueryTokensResponse = resp.json().await.map_err(KsefError::RequestError)?;
-        Ok(parsed.tokens)
-    };
-
-    match tokio::runtime::Handle::try_current() {
-        Ok(handle) => handle.block_on(fut),
-        Err(_) => {
-            let rt = tokio::runtime::Runtime::new()
-                .map_err(|e| KsefError::RuntimeError(e.to_string()))?;
-            rt.block_on(fut)
-        }
+    let status = resp.status();
+    if !status.is_success() {
+        let body = resp.text().await.unwrap_or_default();
+        return Err(KsefError::ApiError(status.as_u16(), body));
     }
+
+    let parsed: QueryTokensResponse = resp.json().await.map_err(KsefError::RequestError)?;
+    Ok(parsed.tokens)
 }

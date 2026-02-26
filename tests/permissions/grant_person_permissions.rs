@@ -4,10 +4,10 @@ use ksef_client::{
     SubjectDetails, SubjectDetailsType, SubjectIdentifier,
 };
 
-#[test]
-fn test_grant_person_permissions() {
-    let client = common::authorize_client();
-    let target_nip = common::generate_random_nip();
+#[tokio::test]
+async fn test_grant_person_permissions() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
+    let target_nip: String = common::generate_random_nip().await;
 
     let request = GrantPersonPermissionsRequest::builder()
         .with_subject_identifier(SubjectIdentifier {
@@ -31,7 +31,7 @@ fn test_grant_person_permissions() {
         .build()
         .expect("Failed to build request");
 
-    match client.grant_person_permissions(request) {
+    match client.grant_person_permissions(request).await {
         Ok(resp) => {
             println!(
                 "Granted permissions successfully. Reference number: {}",

@@ -2,12 +2,12 @@ use crate::common;
 use ksef_client::error::KsefError;
 use ksef_client::{CertificateType, EnrollCertificateRequest};
 
-#[test]
-fn test_enroll_certificate() {
-    let client = common::authorize_client();
+#[tokio::test]
+async fn test_enroll_certificate() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
 
     println!("Getting enrollment data...");
-    let enrollment_data = match client.get_enrollment_data() {
+    let enrollment_data = match client.get_enrollment_data().await {
         Ok(data) => data,
         Err(e) => panic!("Failed to get enrollment data: {:?}", e),
     };
@@ -28,7 +28,7 @@ fn test_enroll_certificate() {
     };
 
     println!("Sending enrollment request...");
-    match client.enroll_certificate(request) {
+    match client.enroll_certificate(request).await {
         Ok(response) => {
             println!("Enrollment successful!");
             println!("Reference Number: {}", response.reference_number);

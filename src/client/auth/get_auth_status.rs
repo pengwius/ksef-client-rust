@@ -14,56 +14,46 @@ struct StatusObject {
     description: String,
 }
 
-pub fn get_auth_status(client: &mut KsefClient) -> Result<bool, KsefError> {
+pub async fn get_auth_status(client: &mut KsefClient) -> Result<bool, KsefError> {
     let start_time = std::time::Instant::now();
     let timeout = std::time::Duration::from_secs(120);
-
-    let rt = tokio::runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()
-        .map_err(|e| KsefError::RuntimeError(e.to_string()))?;
 
     loop {
         if start_time.elapsed() >= timeout {
             return Err(KsefError::TimeoutError);
         }
 
-        let fut = async {
-            let url = client.url_for(
-                format!(
-                    "{}/{}",
-                    routes::AUTH_PATH,
-                    &client.auth_token.reference_number
-                )
-                .as_str(),
-            );
+        let url = client.url_for(
+            format!(
+                "{}/{}",
+                routes::AUTH_PATH,
+                &client.auth_token.reference_number
+            )
+            .as_str(),
+        );
 
-            let resp = client
-                .client
-                .get(&url)
-                .header("Accept", "application/json")
-                .bearer_auth(&client.auth_token.authentication_token)
-                .send()
-                .await?;
+        let resp = client
+            .client
+            .get(&url)
+            .header("Accept", "application/json")
+            .bearer_auth(&client.auth_token.authentication_token)
+            .send()
+            .await?;
 
-            let status = resp.status();
-            if !status.is_success() {
-                let body = resp.text().await.unwrap_or_default();
-                return Err(KsefError::ApiError(status.as_u16(), body));
-            }
+        let status = resp.status();
+        if !status.is_success() {
+            let body = resp.text().await.unwrap_or_default();
+            return Err(KsefError::ApiError(status.as_u16(), body));
+        }
 
-            let parsed: StatusResponse = resp.json().await?;
-            Ok(parsed)
-        };
+        let parsed: StatusResponse = resp.json().await?;
 
-        let status_response = rt.block_on(fut)?;
-
-        match status_response.status.code {
+        match parsed.status.code {
             100 => {
-                std::thread::sleep(std::time::Duration::from_secs(1));
+                tokio::time::sleep(std::time::Duration::from_secs(1)).await;
                 continue;
             }
-            200 => match client.get_access_token() {
+            200 => match client.get_access_token().await {
                 Ok(()) => return Ok(true),
                 Err(e) => {
                     return Err(KsefError::Unexpected(format!(
@@ -74,8 +64,8 @@ pub fn get_auth_status(client: &mut KsefClient) -> Result<bool, KsefError> {
             },
             _ => {
                 return Err(KsefError::ApplicationError(
-                    status_response.status.code,
-                    status_response.status.description,
+                    parsed.status.code,
+                    parsed.status.description,
                 ));
             }
         }

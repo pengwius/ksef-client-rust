@@ -66,54 +66,43 @@ pub enum CertificateSubjectIdentifierType {
     Fingerprint,
 }
 
-pub fn get_certificate_metadata_list(
+pub async fn get_certificate_metadata_list(
     client: &KsefClient,
     query: GetCertificateMetadataListRequest,
     page_size: Option<i32>,
     page_offset: Option<i32>,
 ) -> Result<GetCertificateMetadataListResponse, KsefError> {
-    let fut = async {
-        let url = client.url_for(routes::CERTIFICATES_QUERY_PATH);
+    let url = client.url_for(routes::CERTIFICATES_QUERY_PATH);
 
-        let mut query_params = Vec::new();
-        if let Some(size) = page_size {
-            query_params.push(("pageSize", size.to_string()));
-        }
-        if let Some(offset) = page_offset {
-            query_params.push(("pageOffset", offset.to_string()));
-        }
-
-        let access_token = &client.access_token.access_token;
-
-        let resp = client
-            .client
-            .post(&url)
-            .query(&query_params)
-            .header("Accept", "application/json")
-            .header("Content-Type", "application/json")
-            .bearer_auth(access_token)
-            .json(&query)
-            .send()
-            .await
-            .map_err(KsefError::RequestError)?;
-
-        let status = resp.status();
-        if !status.is_success() {
-            let body = resp.text().await.unwrap_or_default();
-            return Err(KsefError::ApiError(status.as_u16(), body));
-        }
-
-        let parsed: GetCertificateMetadataListResponse =
-            resp.json().await.map_err(KsefError::RequestError)?;
-        Ok(parsed)
-    };
-
-    match tokio::runtime::Handle::try_current() {
-        Ok(handle) => handle.block_on(fut),
-        Err(_) => {
-            let rt = tokio::runtime::Runtime::new()
-                .map_err(|e| KsefError::RuntimeError(e.to_string()))?;
-            rt.block_on(fut)
-        }
+    let mut query_params = Vec::new();
+    if let Some(size) = page_size {
+        query_params.push(("pageSize", size.to_string()));
     }
+    if let Some(offset) = page_offset {
+        query_params.push(("pageOffset", offset.to_string()));
+    }
+
+    let access_token = &client.access_token.access_token;
+
+    let resp = client
+        .client
+        .post(&url)
+        .query(&query_params)
+        .header("Accept", "application/json")
+        .header("Content-Type", "application/json")
+        .bearer_auth(access_token)
+        .json(&query)
+        .send()
+        .await
+        .map_err(KsefError::RequestError)?;
+
+    let status = resp.status();
+    if !status.is_success() {
+        let body = resp.text().await.unwrap_or_default();
+        return Err(KsefError::ApiError(status.as_u16(), body));
+    }
+
+    let parsed: GetCertificateMetadataListResponse =
+        resp.json().await.map_err(KsefError::RequestError)?;
+    Ok(parsed)
 }

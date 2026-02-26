@@ -2,10 +2,10 @@ mod common;
 
 use ksef_client::{ContextIdentifierType, KsefClient, KsefTokenPermissions, SubjectIdentifierType};
 
-#[test]
-fn test_ksef_token_lifecycle() {
+#[tokio::test]
+async fn test_ksef_token_lifecycle() {
     let mut client = KsefClient::new();
-    let nip = common::generate_random_nip();
+    let nip: String = common::generate_random_nip().await;
     let given_name = "Eugeniusz";
     let surname = "Fakturowski";
     let serial_prefix = "TINPL";
@@ -19,6 +19,7 @@ fn test_ksef_token_lifecycle() {
             ContextIdentifierType::Nip,
             SubjectIdentifierType::CertificateSubject,
         )
+        .await
         .expect("Failed to get auth token request");
 
     let unsigned_xml = auth_token_request.to_xml();
@@ -33,12 +34,12 @@ fn test_ksef_token_lifecycle() {
         .sign(&unsigned_xml)
         .expect("Failed to sign XML");
 
-    if let Err(e) = client.authenticate_by_xades_signature(signed_xml) {
+    if let Err(e) = client.authenticate_by_xades_signature(signed_xml).await {
         println!("Authentication failed (expected for random NIP): {:?}", e);
         return;
     }
 
-    if let Err(_) = client.get_access_token() {
+    if let Err(_) = client.get_access_token().await {
         println!("Could not retrieve access token immediately, skipping KSeF token tests.");
         return;
     }
@@ -61,7 +62,10 @@ fn test_ksef_token_lifecycle() {
 
     let ksef_token_description = "Test KSeF token for Rust client".to_string();
 
-    match client.new_ksef_token(true, ksef_token_permissions, &ksef_token_description) {
+    match client
+        .new_ksef_token(true, ksef_token_permissions, &ksef_token_description)
+        .await
+    {
         Ok(token) => {
             assert!(
                 !token.token.is_empty(),
@@ -78,7 +82,7 @@ fn test_ksef_token_lifecycle() {
     let ksef_token = client.ksef_token.clone();
 
     println!("Listing KSeF tokens...");
-    match client.get_ksef_tokens() {
+    match client.get_ksef_tokens().await {
         Ok(tokens) => {
             assert!(!tokens.is_empty(), "Should have at least one token");
             let found = tokens
@@ -90,7 +94,10 @@ fn test_ksef_token_lifecycle() {
     }
 
     println!("Getting KSeF token status...");
-    match client.get_ksef_token_status(&ksef_token.reference_number) {
+    match client
+        .get_ksef_token_status(&ksef_token.reference_number)
+        .await
+    {
         Ok(status) => {
             assert_eq!(status.reference_number, ksef_token.reference_number);
         }
@@ -101,7 +108,7 @@ fn test_ksef_token_lifecycle() {
     client.ksef_token.context_type = Some(ContextIdentifierType::Nip);
     client.ksef_token.context_value = Some(nip.clone());
 
-    match client.authenticate_by_ksef_token() {
+    match client.authenticate_by_ksef_token().await {
         Ok(()) => {
             let auth_token = client.auth_token();
             assert!(!auth_token.authentication_token.is_empty());
@@ -111,14 +118,17 @@ fn test_ksef_token_lifecycle() {
     }
 
     println!("Revoking KSeF token...");
-    match client.revoke_ksef_token(&ksef_token.reference_number) {
+    match client.revoke_ksef_token(&ksef_token.reference_number).await {
         Ok(()) => {
             println!("KSeF token revoked");
         }
         Err(e) => panic!("Failed to revoke KSeF token: {:?}", e),
     }
 
-    match client.get_ksef_token_status(&ksef_token.reference_number) {
+    match client
+        .get_ksef_token_status(&ksef_token.reference_number)
+        .await
+    {
         Ok(status) => {
             println!("Token status after revocation: {:?}", status.status);
         }

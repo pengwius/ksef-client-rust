@@ -1,11 +1,11 @@
 use crate::common;
 
-#[test]
-fn test_get_enrollment_data() {
-    let client = common::authorize_client();
+#[tokio::test]
+async fn test_get_enrollment_data() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
 
     println!("Getting enrollment data...");
-    match client.get_enrollment_data() {
+    match client.get_enrollment_data().await {
         Ok(data) => {
             println!("Enrollment data retrieved successfully.");
             println!("Common Name: {}", data.common_name);

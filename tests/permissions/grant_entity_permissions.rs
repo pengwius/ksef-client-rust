@@ -5,10 +5,10 @@ use ksef_client::{
     EntitySubjectDetails, GrantEntityPermissionsRequest,
 };
 
-#[test]
-fn test_grant_entity_permissions() {
-    let client = common::authorize_client();
-    let target_nip = common::generate_random_nip();
+#[tokio::test]
+async fn test_grant_entity_permissions() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
+    let target_nip: String = common::generate_random_nip().await;
 
     let request = GrantEntityPermissionsRequest::builder()
         .with_subject_identifier(EntityIdentifier {
@@ -32,7 +32,7 @@ fn test_grant_entity_permissions() {
         .build()
         .expect("Failed to build request");
 
-    match client.grant_entity_permissions(request) {
+    match client.grant_entity_permissions(request).await {
         Ok(resp) => {
             println!(
                 "Granted entity permissions successfully. Reference number: {}",

@@ -3,7 +3,7 @@ use ksef_client::{ContextIdentifierType, KsefClient, SubjectIdentifierType};
 use rand::random_range;
 
 #[allow(dead_code)]
-pub fn generate_random_nip() -> String {
+pub async fn generate_random_nip() -> String {
     loop {
         let mut digits: Vec<u8> = (0..9).map(|_| random_range(0..10) as u8).collect();
         // Use a valid Tax Office prefix (e.g. 526 for Warszawa-Mokotów) to pass validation
@@ -27,7 +27,7 @@ pub fn generate_random_nip() -> String {
 }
 
 #[allow(dead_code)]
-pub fn authorize_client() -> KsefClient {
+pub async fn authorize_client() -> KsefClient {
     let mut client = KsefClient::new();
     let nip = "5264567890";
     let given_name = "Eugeniusz";
@@ -41,6 +41,7 @@ pub fn authorize_client() -> KsefClient {
             ContextIdentifierType::Nip,
             SubjectIdentifierType::CertificateSubject,
         )
+        .await
         .expect("Failed to get auth token request");
 
     let unsigned_xml = auth_token_request.to_xml();
@@ -55,7 +56,7 @@ pub fn authorize_client() -> KsefClient {
         .sign(&unsigned_xml)
         .expect("Failed to sign XML");
 
-    match client.authenticate_by_xades_signature(signed_xml) {
+    match client.authenticate_by_xades_signature(signed_xml).await {
         Ok(_) => {}
         Err(e) => {
             eprintln!("Authentication request submission failed: {:?}", e);
@@ -63,7 +64,7 @@ pub fn authorize_client() -> KsefClient {
         }
     }
 
-    match client.get_auth_status() {
+    match client.get_auth_status().await {
         Ok(true) => {}
         Ok(false) => {
             eprintln!("Authentication status check failed: Authentication not successful");
@@ -74,13 +75,13 @@ pub fn authorize_client() -> KsefClient {
         }
     }
 
-    let _ = client.get_access_token();
+    let _ = client.get_access_token().await;
 
     client
 }
 
 #[allow(dead_code)]
-pub fn generate_fa2_invoice(issuer_nip: &str) -> String {
+pub async fn generate_fa2_invoice(issuer_nip: &str) -> String {
     let number: u16 = random_range(10000..=65535);
     let inv_number = format!("{}", number);
 

@@ -88,7 +88,7 @@ pub use client::permissions::grant_person_permissions::{
 pub use client::sessions::{AuthenticationMethod, QuerySessionsResponse, Session, SessionStatus};
 
 pub use client::online_session::encryption::EncryptionData;
-pub use client::online_session::full_flow::{OnlineSubmissionResult};
+pub use client::online_session::full_flow::OnlineSubmissionResult;
 pub use client::online_session::get_invoice_status::{GetInvoiceStatusResponse, InvoiceStatus};
 pub use client::online_session::open_online_session::{
     Encryption, FormCode, OpenOnlineSessionRequest, OpenOnlineSessionRequestBuilder,

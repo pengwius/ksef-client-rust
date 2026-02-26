@@ -1,10 +1,10 @@
 use crate::common;
 
-#[test]
-fn test_revoke_current_session() {
-    let client = common::authorize_client();
+#[tokio::test]
+async fn test_revoke_current_session() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
 
-    match client.revoke_current_session() {
+    match client.revoke_current_session().await {
         Ok(()) => {
             println!("Successfully revoked current session");
         }

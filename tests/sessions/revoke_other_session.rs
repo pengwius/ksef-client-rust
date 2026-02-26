@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use ksef_client::{ContextIdentifierType, KsefClient, SubjectIdentifierType};
 
-fn authorize_with_nip(nip: &str) -> KsefClient {
+async fn authorize_with_nip(nip: &str) -> KsefClient {
     let mut client = KsefClient::new();
     let given_name = "Test";
     let surname = "User";
@@ -17,6 +17,7 @@ fn authorize_with_nip(nip: &str) -> KsefClient {
             ContextIdentifierType::Nip,
             SubjectIdentifierType::CertificateSubject,
         )
+        .await
         .expect("Failed to get auth token request");
 
     let unsigned_xml = auth_token_request.to_xml();
@@ -33,9 +34,10 @@ fn authorize_with_nip(nip: &str) -> KsefClient {
 
     client
         .authenticate_by_xades_signature(signed_xml)
+        .await
         .expect("Failed to submit XAdES auth request");
 
-    match client.get_auth_status() {
+    match client.get_auth_status().await {
         Ok(true) => {}
         Ok(false) => panic!("Authentication not successful"),
         Err(e) => panic!("Error checking auth status: {:?}", e),
@@ -46,12 +48,12 @@ fn authorize_with_nip(nip: &str) -> KsefClient {
     client
 }
 
-#[test]
-fn test_revoke_other_session_by_reference() {
-    let nip = common::generate_random_nip();
+#[tokio::test]
+async fn test_revoke_other_session_by_reference() {
+    let nip: String = common::generate_random_nip().await;
 
-    let client1 = authorize_with_nip(&nip);
-    let client2 = authorize_with_nip(&nip);
+    let client1: ksef_client::KsefClient = authorize_with_nip(&nip).await;
+    let client2: ksef_client::KsefClient = authorize_with_nip(&nip).await;
 
     let ref1 = client1.auth_token().reference_number.clone();
     let ref2 = client2.auth_token().reference_number.clone();
@@ -66,12 +68,14 @@ fn test_revoke_other_session_by_reference() {
 
     client1
         .revoke_session(&ref2)
+        .await
         .expect("client1 failed to revoke client2 session by reference");
 
     std::thread::sleep(Duration::from_millis(500));
 
     let resp = client1
         .get_active_sessions(None)
+        .await
         .expect("Failed to list active sessions after revoke");
     let sessions = resp.items;
 

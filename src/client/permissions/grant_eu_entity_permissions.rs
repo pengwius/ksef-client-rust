@@ -82,7 +82,9 @@ impl GrantEuEntityPermissionsRequestBuilder {
             description: self.description.ok_or("description is required")?,
             eu_entity_name: self.eu_entity_name.ok_or("eu_entity_name is required")?,
             subject_details: self.subject_details.ok_or("subject_details is required")?,
-            eu_entity_details: self.eu_entity_details.ok_or("eu_entity_details is required")?,
+            eu_entity_details: self
+                .eu_entity_details
+                .ok_or("eu_entity_details is required")?,
         })
     }
 }
@@ -198,41 +200,30 @@ pub struct GrantEuEntityPermissionsResponse {
     pub reference_number: String,
 }
 
-pub fn grant_eu_entity_permissions(
+pub async fn grant_eu_entity_permissions(
     client: &KsefClient,
     request: GrantEuEntityPermissionsRequest,
 ) -> Result<GrantEuEntityPermissionsResponse, KsefError> {
-    let fut = async {
-        let url = client.url_for(routes::PERMISSIONS_EU_ENTITIES_GRANTS_PATH);
-        let access_token = &client.access_token.access_token;
+    let url = client.url_for(routes::PERMISSIONS_EU_ENTITIES_GRANTS_PATH);
+    let access_token = &client.access_token.access_token;
 
-        let resp = client
-            .client
-            .post(&url)
-            .header("Accept", "application/json")
-            .bearer_auth(access_token)
-            .json(&request)
-            .send()
-            .await
-            .map_err(KsefError::RequestError)?;
+    let resp = client
+        .client
+        .post(&url)
+        .header("Accept", "application/json")
+        .bearer_auth(access_token)
+        .json(&request)
+        .send()
+        .await
+        .map_err(KsefError::RequestError)?;
 
-        let status = resp.status();
-        if !status.is_success() {
-            let body = resp.text().await.unwrap_or_default();
-            return Err(KsefError::ApiError(status.as_u16(), body));
-        }
-
-        let parsed: GrantEuEntityPermissionsResponse =
-            resp.json().await.map_err(KsefError::RequestError)?;
-        Ok(parsed)
-    };
-
-    match tokio::runtime::Handle::try_current() {
-        Ok(handle) => handle.block_on(fut),
-        Err(_) => {
-            let rt = tokio::runtime::Runtime::new()
-                .map_err(|e| KsefError::RuntimeError(e.to_string()))?;
-            rt.block_on(fut)
-        }
+    let status = resp.status();
+    if !status.is_success() {
+        let body = resp.text().await.unwrap_or_default();
+        return Err(KsefError::ApiError(status.as_u16(), body));
     }
+
+    let parsed: GrantEuEntityPermissionsResponse =
+        resp.json().await.map_err(KsefError::RequestError)?;
+    Ok(parsed)
 }
