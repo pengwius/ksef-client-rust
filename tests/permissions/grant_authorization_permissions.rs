@@ -5,10 +5,10 @@ use ksef_client::{
     AuthorizationSubjectIdentifierType, GrantAuthorizationPermissionsRequest,
 };
 
-#[test]
-fn test_grant_authorization_permissions() {
-    let client = common::authorize_client();
-    let target_nip = common::generate_random_nip();
+#[tokio::test]
+async fn test_grant_authorization_permissions() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
+    let target_nip: String = common::generate_random_nip().await;
 
     let request = GrantAuthorizationPermissionsRequest::builder()
         .with_subject_identifier(AuthorizationSubjectIdentifier {
@@ -23,7 +23,7 @@ fn test_grant_authorization_permissions() {
         .build()
         .expect("Failed to build request");
 
-    match client.grant_authorization_permissions(request) {
+    match client.grant_authorization_permissions(request).await {
         Ok(resp) => {
             println!(
                 "Granted authorization permissions successfully. Reference number: {}",

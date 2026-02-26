@@ -190,8 +190,8 @@ impl AuthTokenRequestBuilder {
             .subject_identifier_type
             .ok_or_else(|| "subject identifier type is required".to_string())?;
 
-        if let SubjectIdentifierType::CertificateFingerprint = subject_type {
-            if self
+        if let SubjectIdentifierType::CertificateFingerprint = subject_type
+            && self
                 .certificate_fingerprint
                 .as_ref()
                 .map(|s| s.trim().is_empty())
@@ -199,7 +199,6 @@ impl AuthTokenRequestBuilder {
             {
                 return Err("certificate_fingerprint is required when subject type is certificateFingerprint".to_string());
             }
-        }
 
         Ok(AuthTokenRequest {
             challenge,

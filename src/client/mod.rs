@@ -77,6 +77,12 @@ pub struct KsefClient {
     pub ksef_token: KsefToken,
 }
 
+impl Default for KsefClient {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl KsefClient {
     pub fn new() -> Self {
         Self::new_with_base("https://api-test.ksef.mf.gov.pl")
@@ -93,17 +99,17 @@ impl KsefClient {
         }
     }
 
-    pub fn get_auth_challenge(&self) -> Result<AuthChallenge, KsefError> {
-        auth::auth_challenge::get_auth_challenge(self)
+    pub async fn get_auth_challenge(&self) -> Result<AuthChallenge, KsefError> {
+        auth::auth_challenge::get_auth_challenge(self).await
     }
 
-    pub fn get_auth_token_request(
+    pub async fn get_auth_token_request(
         &self,
         id: &str,
         id_type: ContextIdentifierType,
         subject_type: SubjectIdentifierType,
     ) -> Result<AuthTokenRequest, KsefError> {
-        let challenge = match self.get_auth_challenge() {
+        let challenge = match self.get_auth_challenge().await {
             Ok(ch) => ch.challenge,
             Err(e) => {
                 return Err(KsefError::ApplicationError(
@@ -132,8 +138,11 @@ impl KsefClient {
         Ok(auth_token_request)
     }
 
-    pub fn authenticate_by_xades_signature(&mut self, signed_xml: String) -> Result<(), KsefError> {
-        match auth::xades_auth::submit_xades_auth_request(self, signed_xml) {
+    pub async fn authenticate_by_xades_signature(
+        &mut self,
+        signed_xml: String,
+    ) -> Result<(), KsefError> {
+        match auth::xades_auth::submit_xades_auth_request(self, signed_xml).await {
             Ok(tokens) => {
                 self.auth_token = tokens;
                 Ok(())
@@ -142,8 +151,8 @@ impl KsefClient {
         }
     }
 
-    pub fn authenticate_by_ksef_token(&mut self) -> Result<(), KsefError> {
-        match auth::ksef_token_auth::submit_ksef_token_auth_request(self) {
+    pub async fn authenticate_by_ksef_token(&mut self) -> Result<(), KsefError> {
+        match auth::ksef_token_auth::submit_ksef_token_auth_request(self).await {
             Ok(tokens) => {
                 self.auth_token = tokens;
                 Ok(())
@@ -152,12 +161,12 @@ impl KsefClient {
         }
     }
 
-    pub fn get_auth_status(&mut self) -> Result<bool, KsefError> {
-        auth::get_auth_status::get_auth_status(self)
+    pub async fn get_auth_status(&mut self) -> Result<bool, KsefError> {
+        auth::get_auth_status::get_auth_status(self).await
     }
 
-    pub fn get_access_token(&mut self) -> Result<(), KsefError> {
-        match auth::get_access_token::get_access_token(self) {
+    pub async fn get_access_token(&mut self) -> Result<(), KsefError> {
+        match auth::get_access_token::get_access_token(self).await {
             Ok(tokens) => {
                 self.access_token = tokens;
                 Ok(())
@@ -166,8 +175,8 @@ impl KsefClient {
         }
     }
 
-    pub fn refresh_access_token(&mut self) -> Result<(), KsefError> {
-        match auth::get_access_token::refresh_access_token(self) {
+    pub async fn refresh_access_token(&mut self) -> Result<(), KsefError> {
+        match auth::get_access_token::refresh_access_token(self).await {
             Ok(token) => {
                 self.access_token = token;
                 Ok(())
@@ -176,17 +185,19 @@ impl KsefClient {
         }
     }
 
-    pub fn get_public_key_certificates(&self) -> Result<Vec<PublicKeyCertificate>, KsefError> {
-        get_public_key_certificates::get_public_key_certificates(self)
+    pub async fn get_public_key_certificates(
+        &self,
+    ) -> Result<Vec<PublicKeyCertificate>, KsefError> {
+        get_public_key_certificates::get_public_key_certificates(self).await
     }
 
-    pub fn new_ksef_token(
+    pub async fn new_ksef_token(
         &mut self,
         load: bool,
         permissions: KsefTokenPermissions,
         description: &str,
     ) -> Result<KsefToken, KsefError> {
-        match ksef_tokens::new_ksef_token::new_ksef_token(self, permissions, description) {
+        match ksef_tokens::new_ksef_token::new_ksef_token(self, permissions, description).await {
             Ok(token) => {
                 if load {
                     self.ksef_token = token.clone();
@@ -201,19 +212,20 @@ impl KsefClient {
         self.ksef_token = token;
     }
 
-    pub fn get_ksef_tokens(&mut self) -> Result<Vec<DetailedKsefToken>, KsefError> {
-        ksef_tokens::get_ksef_tokens::get_ksef_tokens(self)
+    pub async fn get_ksef_tokens(&mut self) -> Result<Vec<DetailedKsefToken>, KsefError> {
+        ksef_tokens::get_ksef_tokens::get_ksef_tokens(self).await
     }
 
-    pub fn get_ksef_token_status(
+    pub async fn get_ksef_token_status(
         &self,
         token_reference_number: &str,
     ) -> Result<DetailedKsefToken, KsefError> {
         ksef_tokens::get_ksef_token_status::get_ksef_token_status(self, token_reference_number)
+            .await
     }
 
-    pub fn revoke_ksef_token(&self, token_reference_number: &str) -> Result<(), KsefError> {
-        ksef_tokens::revoke_ksef_token::revoke_ksef_token(self, token_reference_number)
+    pub async fn revoke_ksef_token(&self, token_reference_number: &str) -> Result<(), KsefError> {
+        ksef_tokens::revoke_ksef_token::revoke_ksef_token(self, token_reference_number).await
     }
 
     pub fn auth_token(&self) -> &AuthTokens {
@@ -228,108 +240,111 @@ impl KsefClient {
         &self.ksef_token
     }
 
-    pub fn get_active_sessions(
+    pub async fn get_active_sessions(
         &self,
         continuation_token: Option<&str>,
     ) -> Result<QuerySessionsResponse, KsefError> {
-        sessions::get_active_sessions::get_active_sessions(self, continuation_token)
+        sessions::get_active_sessions::get_active_sessions(self, continuation_token).await
     }
 
-    pub fn revoke_current_session(&self) -> Result<(), KsefError> {
-        sessions::revoke_current_session::revoke_current_session(self)
+    pub async fn revoke_current_session(&self) -> Result<(), KsefError> {
+        sessions::revoke_current_session::revoke_current_session(self).await
     }
 
-    pub fn revoke_session(&self, reference_number: &str) -> Result<(), KsefError> {
-        sessions::revoke_session::revoke_session(self, reference_number)
+    pub async fn revoke_session(&self, reference_number: &str) -> Result<(), KsefError> {
+        sessions::revoke_session::revoke_session(self, reference_number).await
     }
 
-    pub fn grant_person_permissions(
+    pub async fn grant_person_permissions(
         &self,
         request: GrantPersonPermissionsRequest,
     ) -> Result<GrantPersonPermissionsResponse, KsefError> {
-        permissions::grant_person_permissions::grant_person_permissions(self, request)
+        permissions::grant_person_permissions::grant_person_permissions(self, request).await
     }
 
-    pub fn grant_entity_permissions(
+    pub async fn grant_entity_permissions(
         &self,
         request: GrantEntityPermissionsRequest,
     ) -> Result<GrantEntityPermissionsResponse, KsefError> {
-        permissions::grant_entity_permissions::grant_entity_permissions(self, request)
+        permissions::grant_entity_permissions::grant_entity_permissions(self, request).await
     }
 
-    pub fn grant_authorization_permissions(
+    pub async fn grant_authorization_permissions(
         &self,
         request: GrantAuthorizationPermissionsRequest,
     ) -> Result<GrantAuthorizationPermissionsResponse, KsefError> {
         permissions::grant_authorization_permissions::grant_authorization_permissions(self, request)
+            .await
     }
 
-    pub fn grant_indirect_entity_permissions(
+    pub async fn grant_indirect_entity_permissions(
         &self,
         request: GrantIndirectEntityPermissionsRequest,
     ) -> Result<GrantIndirectEntityPermissionsResponse, KsefError> {
         permissions::grant_indirect_entity_permissions::grant_indirect_entity_permissions(
             self, request,
         )
+        .await
     }
 
-    pub fn grant_subunit_permissions(
+    pub async fn grant_subunit_permissions(
         &self,
         request: GrantSubunitPermissionsRequest,
     ) -> Result<GrantSubunitPermissionsResponse, KsefError> {
-        permissions::grant_subunit_permissions::grant_subunit_permissions(self, request)
+        permissions::grant_subunit_permissions::grant_subunit_permissions(self, request).await
     }
 
-    pub fn grant_eu_entity_permissions(
+    pub async fn grant_eu_entity_permissions(
         &self,
         request: GrantEuEntityPermissionsRequest,
     ) -> Result<GrantEuEntityPermissionsResponse, KsefError> {
-        permissions::grant_eu_entity_permissions::grant_eu_entity_permissions(self, request)
+        permissions::grant_eu_entity_permissions::grant_eu_entity_permissions(self, request).await
     }
 
-    pub fn grant_eu_entity_representative_permissions(
+    pub async fn grant_eu_entity_representative_permissions(
         &self,
         request: GrantEuEntityRepresentativePermissionsRequest,
     ) -> Result<GrantEuEntityRepresentativePermissionsResponse, KsefError> {
         permissions::grant_eu_entity_representative_permissions::grant_eu_entity_representative_permissions(
             self, request,
-        )
+        ).await
     }
 
-    pub fn get_certificates_limits(&self) -> Result<CertificateLimits, KsefError> {
-        ksef_certificates::get_certificates_limits::get_certificates_limits(self)
+    pub async fn get_certificates_limits(&self) -> Result<CertificateLimits, KsefError> {
+        ksef_certificates::get_certificates_limits::get_certificates_limits(self).await
     }
 
-    pub fn get_enrollment_data(&self) -> Result<EnrollmentData, KsefError> {
-        ksef_certificates::get_enrollment_data::get_enrollment_data(self)
+    pub async fn get_enrollment_data(&self) -> Result<EnrollmentData, KsefError> {
+        ksef_certificates::get_enrollment_data::get_enrollment_data(self).await
     }
 
-    pub fn enroll_certificate(
+    pub async fn enroll_certificate(
         &self,
         request: EnrollCertificateRequest,
     ) -> Result<EnrollCertificateResponse, KsefError> {
-        ksef_certificates::enroll_certificate::enroll_certificate(self, request)
+        ksef_certificates::enroll_certificate::enroll_certificate(self, request).await
     }
 
     pub fn generate_csr(&self, enrollment_data: &EnrollmentData) -> Result<CsrResult, KsefError> {
         ksef_certificates::csr::generate_csr(enrollment_data)
     }
 
-    pub fn get_enrollment_status(
+    pub async fn get_enrollment_status(
         &self,
         reference_number: &str,
     ) -> Result<EnrollmentStatusResponse, KsefError> {
         ksef_certificates::get_enrollment_status::get_enrollment_status(self, reference_number)
+            .await
     }
 
-    pub fn retrieve_certificates(
+    pub async fn retrieve_certificates(
         &self,
         serial_numbers: Vec<String>,
     ) -> Result<Vec<RetrieveCertificatesListItem>, KsefError> {
-        ksef_certificates::retrieve_certificates::retrieve_certificates(self, serial_numbers)
+        ksef_certificates::retrieve_certificates::retrieve_certificates(self, serial_numbers).await
     }
 
-    pub fn get_certificate_metadata_list(
+    pub async fn get_certificate_metadata_list(
         &self,
         query: GetCertificateMetadataListRequest,
         page_size: Option<i32>,
@@ -341,55 +356,56 @@ impl KsefClient {
             page_size,
             page_offset,
         )
+        .await
     }
 
-    pub fn revoke_certificate(
+    pub async fn revoke_certificate(
         &self,
         serial_number: &str,
         reason: RevocationReason,
     ) -> Result<(), KsefError> {
-        ksef_certificates::revoke_certificate::revoke_certificate(self, serial_number, reason)
+        ksef_certificates::revoke_certificate::revoke_certificate(self, serial_number, reason).await
     }
 
-    pub fn open_online_session(
+    pub async fn open_online_session(
         &self,
         request: OpenOnlineSessionRequest,
     ) -> Result<OpenOnlineSessionResponse, KsefError> {
-        online_session::open_online_session::open_online_session(self, request)
+        online_session::open_online_session::open_online_session(self, request).await
     }
 
-    pub fn open_batch_session(
+    pub async fn open_batch_session(
         &self,
         request: OpenBatchSessionRequest,
     ) -> Result<OpenBatchSessionResponse, KsefError> {
-        batch_session::open_batch_session::open_batch_session(self, request)
+        batch_session::open_batch_session::open_batch_session(self, request).await
     }
 
-    pub fn upload_batch_parts(
+    pub async fn upload_batch_parts(
         &self,
         response: &OpenBatchSessionResponse,
         parts: &[EncryptedBatchPart],
     ) -> Result<(), KsefError> {
-        batch_session::upload_batch_parts::upload_batch_parts(self, response, parts)
+        batch_session::upload_batch_parts::upload_batch_parts(self, response, parts).await
     }
 
-    pub fn close_batch_session(&self, reference_number: &str) -> Result<(), KsefError> {
-        batch_session::close_batch_session::close_batch_session(self, reference_number)
+    pub async fn close_batch_session(&self, reference_number: &str) -> Result<(), KsefError> {
+        batch_session::close_batch_session::close_batch_session(self, reference_number).await
     }
 
-    pub fn submit_batch(
+    pub async fn submit_batch(
         &self,
         invoices: &[InvoicePayload],
         max_part_size_bytes: Option<usize>,
     ) -> Result<BatchSubmissionResult, KsefError> {
-        batch_session::full_flow::submit_batch(self, invoices, max_part_size_bytes)
+        batch_session::full_flow::submit_batch(self, invoices, max_part_size_bytes).await
     }
 
-    pub fn submit_online(&self, invoice: &[u8]) -> Result<OnlineSubmissionResult, KsefError> {
-        online_session::full_flow::submit_online(self, invoice)
+    pub async fn submit_online(&self, invoice: &[u8]) -> Result<OnlineSubmissionResult, KsefError> {
+        online_session::full_flow::submit_online(self, invoice).await
     }
 
-    pub fn send_invoice(
+    pub async fn send_invoice(
         &self,
         reference_number: &str,
         invoice_xml: &[u8],
@@ -401,9 +417,10 @@ impl KsefClient {
             invoice_xml,
             encryption_data,
         )
+        .await
     }
 
-    pub fn get_invoice_status(
+    pub async fn get_invoice_status(
         &self,
         session_reference_number: &str,
         invoice_reference_number: &str,
@@ -413,14 +430,15 @@ impl KsefClient {
             session_reference_number,
             invoice_reference_number,
         )
+        .await
     }
 
-    pub fn close_online_session(&self, reference_number: &str) -> Result<(), KsefError> {
-        online_session::close_online_session::close_online_session(self, reference_number)
+    pub async fn close_online_session(&self, reference_number: &str) -> Result<(), KsefError> {
+        online_session::close_online_session::close_online_session(self, reference_number).await
     }
 
-    pub fn generate_encryption_data(&self) -> Result<EncryptionData, KsefError> {
-        online_session::encryption::generate_encryption_data(self)
+    pub async fn generate_encryption_data(&self) -> Result<EncryptionData, KsefError> {
+        online_session::encryption::generate_encryption_data(self).await
     }
 
     pub fn url_for(&self, path: &str) -> String {

@@ -2,10 +2,10 @@ mod common;
 
 use ksef_client::{ContextIdentifierType, KsefClient, SubjectIdentifierType};
 
-#[test]
-fn test_auth_token_request_generation() {
+#[tokio::test]
+async fn test_auth_token_request_generation() {
     let client = KsefClient::new();
-    let nip = common::generate_random_nip();
+    let nip: String = common::generate_random_nip().await;
 
     let auth_token_request = client
         .get_auth_token_request(
@@ -13,6 +13,7 @@ fn test_auth_token_request_generation() {
             ContextIdentifierType::Nip,
             SubjectIdentifierType::CertificateSubject,
         )
+        .await
         .expect("Failed to get auth token request");
 
     let xml = auth_token_request.to_xml();
@@ -20,10 +21,10 @@ fn test_auth_token_request_generation() {
     assert!(xml.contains(&nip));
 }
 
-#[test]
-fn test_xades_signature_generation() {
+#[tokio::test]
+async fn test_xades_signature_generation() {
     let mut client = KsefClient::new();
-    let nip = common::generate_random_nip();
+    let nip: String = common::generate_random_nip().await;
 
     let auth_token_request = client
         .get_auth_token_request(
@@ -31,6 +32,7 @@ fn test_xades_signature_generation() {
             ContextIdentifierType::Nip,
             SubjectIdentifierType::CertificateSubject,
         )
+        .await
         .expect("Failed to get auth token request");
 
     let unsigned_xml = auth_token_request.to_xml();
@@ -49,10 +51,10 @@ fn test_xades_signature_generation() {
     assert!(signed_xml.contains("xades:SignedProperties"));
 }
 
-#[test]
-fn test_authentication_submission() {
+#[tokio::test]
+async fn test_authentication_submission() {
     let mut client = KsefClient::new();
-    let nip = common::generate_random_nip();
+    let nip: String = common::generate_random_nip().await;
 
     let auth_token_request = client
         .get_auth_token_request(
@@ -60,6 +62,7 @@ fn test_authentication_submission() {
             ContextIdentifierType::Nip,
             SubjectIdentifierType::CertificateSubject,
         )
+        .await
         .expect("Failed to get auth token request");
 
     let unsigned_xml = auth_token_request.to_xml();
@@ -74,7 +77,7 @@ fn test_authentication_submission() {
         .sign(&unsigned_xml)
         .expect("Failed to sign XML");
 
-    match client.authenticate_by_xades_signature(signed_xml) {
+    match client.authenticate_by_xades_signature(signed_xml).await {
         Ok(_) => {
             let auth_token = client.auth_token();
             assert!(!auth_token.authentication_token.is_empty());

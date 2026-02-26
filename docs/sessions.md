@@ -9,7 +9,7 @@ __[Oficjalna Dokumentacja](https://github.com/CIRFMF/ksef-docs/blob/main/auth/se
 Funkcja `get_active_sessions` zwraca listę aktywnych sesji. Przyjmuje ona opcjonalny parametr `continuation_token`, który umożliwia paginację wyników w przypadku dużej liczby sesji. `continuation_token` znajduje się w obiekcie `QuerySessionsResponse` zwracanym przez funkcję i można go użyć do pobrania kolejnej strony wyników. Jeśli nie posiadasz tokena kontynuacji, wywołaj `get_active_sessions(None)`, aby pobrać pierwszą stronę wyników.
 
 ```rust
-match client.get_active_sessions(None) {
+match client.get_active_sessions(None).await {
     Ok(resp) => {
         let sessions = resp.items;
         println!("Retrieved {} active sessions", sessions.len());
@@ -25,7 +25,7 @@ match client.get_active_sessions(None) {
 Funkcja `revoke_current_session` unieważnia bieżącą sesję — tj. sesję powiązaną z tokenem użytym do wywołania tej metody. Po jej wykonaniu powiązany refresh token przestaje działać; aktywne access tokeny pozostają ważne do momentu wygaśnięcia.
 
 ```rust
-match client.revoke_current_session() {
+match client.revoke_current_session().await {
     Ok(()) => println!("Current session revoked successfully"),
     Err(e) => panic!("Failed to revoke current session: {:?}", e),
 }
@@ -36,7 +36,7 @@ match client.revoke_current_session() {
 Funkcja `revoke_session` unieważnia wskazaną sesję na podstawie numeru referencyjnego (`reference_number`). Numer referencyjny można pobrać z listy aktywnych sesji (`Session.reference_number`). Wykonanie tej operacji może wymagać odpowiednich uprawnień.
 
 ```rust
-match client.revoke_session("session_reference_number") {
+match client.revoke_session("session_reference_number").await {
     Ok(()) => println!("Session revoked successfully"),
     Err(e) => panic!("Failed to revoke session: {:?}", e),
 }

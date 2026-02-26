@@ -9,9 +9,9 @@ use ksef_client::{
     EuEntityRepresentativeSubjectIdentifierType, GrantEuEntityRepresentativePermissionsRequest,
 };
 
-#[test]
-fn test_grant_eu_entity_representative_permissions_entity_by_fingerprint() {
-    let client = common::authorize_client();
+#[tokio::test]
+async fn test_grant_eu_entity_representative_permissions_entity_by_fingerprint() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
 
     let fingerprint = "0000000000000000000000000000000000000000000000000000000000000000";
 
@@ -37,7 +37,10 @@ fn test_grant_eu_entity_representative_permissions_entity_by_fingerprint() {
         .build()
         .expect("Failed to build request");
 
-    match client.grant_eu_entity_representative_permissions(request) {
+    match client
+        .grant_eu_entity_representative_permissions(request)
+        .await
+    {
         Ok(resp) => {
             assert!(
                 !resp.reference_number.is_empty(),
@@ -57,12 +60,12 @@ fn test_grant_eu_entity_representative_permissions_entity_by_fingerprint() {
     }
 }
 
-#[test]
-fn test_grant_eu_entity_representative_permissions_person_with_nip() {
-    let client = common::authorize_client();
+#[tokio::test]
+async fn test_grant_eu_entity_representative_permissions_person_with_nip() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
 
     let fingerprint = "1111111111111111111111111111111111111111111111111111111111111111";
-    let person_nip = common::generate_random_nip();
+    let person_nip = common::generate_random_nip().await;
 
     let request = GrantEuEntityRepresentativePermissionsRequest::builder()
         .with_subject_identifier(EuEntityRepresentativeSubjectIdentifier {
@@ -88,7 +91,10 @@ fn test_grant_eu_entity_representative_permissions_person_with_nip() {
         .build()
         .expect("Failed to build request");
 
-    match client.grant_eu_entity_representative_permissions(request) {
+    match client
+        .grant_eu_entity_representative_permissions(request)
+        .await
+    {
         Ok(resp) => {
             assert!(
                 !resp.reference_number.is_empty(),
@@ -108,9 +114,9 @@ fn test_grant_eu_entity_representative_permissions_person_with_nip() {
     }
 }
 
-#[test]
-fn test_grant_eu_entity_representative_permissions_person_without_id() {
-    let client = common::authorize_client();
+#[tokio::test]
+async fn test_grant_eu_entity_representative_permissions_person_without_id() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
 
     let fingerprint = "2222222222222222222222222222222222222222222222222222222222222222";
 
@@ -140,7 +146,10 @@ fn test_grant_eu_entity_representative_permissions_person_without_id() {
         .build()
         .expect("Failed to build request");
 
-    match client.grant_eu_entity_representative_permissions(request) {
+    match client
+        .grant_eu_entity_representative_permissions(request)
+        .await
+    {
         Ok(resp) => {
             assert!(
                 !resp.reference_number.is_empty(),

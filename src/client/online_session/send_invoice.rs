@@ -29,7 +29,7 @@ pub struct SendInvoiceResponse {
     pub reference_number: String,
 }
 
-pub fn send_invoice(
+pub async fn send_invoice(
     client: &KsefClient,
     session_reference_number: &str,
     invoice_xml: &[u8],
@@ -56,49 +56,38 @@ pub fn send_invoice(
         offline_mode: false,
         hash_of_corrected_invoice: None,
     };
+    let url = client.url_for(&format!(
+        "{}/{}/invoices",
+        routes::SESSIONS_ONLINE_PATH,
+        session_reference_number
+    ));
+    let http = &client.client;
 
-    let fut = async {
-        let url = client.url_for(&format!(
-            "{}/{}/invoices",
-            routes::SESSIONS_ONLINE_PATH,
-            session_reference_number
+    let token = &client.access_token.access_token;
+    if token.is_empty() {
+        return Err(KsefError::ApplicationError(
+            0,
+            "No access token available".to_string(),
         ));
-        let http = &client.client;
-
-        let token = &client.access_token.access_token;
-        if token.is_empty() {
-            return Err(KsefError::ApplicationError(
-                0,
-                "No access token available".to_string(),
-            ));
-        }
-
-        let resp = http
-            .post(&url)
-            .header("Accept", "application/json")
-            .bearer_auth(token)
-            .json(&request)
-            .send()
-            .await?;
-
-        let status = resp.status();
-
-        if !status.is_success() {
-            let code = status.as_u16();
-            let body = resp.text().await.unwrap_or_default();
-            return Err(KsefError::ApiError(code, body));
-        }
-
-        let parsed: SendInvoiceResponse = resp.json().await?;
-
-        Ok(parsed)
-    };
-
-    match tokio::runtime::Handle::try_current() {
-        Ok(handle) => handle.block_on(fut),
-        Err(_) => {
-            let rt = tokio::runtime::Runtime::new()?;
-            rt.block_on(fut)
-        }
     }
+
+    let resp = http
+        .post(&url)
+        .header("Accept", "application/json")
+        .bearer_auth(token)
+        .json(&request)
+        .send()
+        .await?;
+
+    let status = resp.status();
+
+    if !status.is_success() {
+        let code = status.as_u16();
+        let body = resp.text().await.unwrap_or_default();
+        return Err(KsefError::ApiError(code, body));
+    }
+
+    let parsed: SendInvoiceResponse = resp.json().await?;
+
+    Ok(parsed)
 }

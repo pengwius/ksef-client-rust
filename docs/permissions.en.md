@@ -54,7 +54,7 @@ let request = GrantPersonPermissionsRequest::builder()
     .build()
     .expect("Failed to build request - missing required fields");
 
-match client.grant_person_permissions(request) {
+match client.grant_person_permissions(request).await {
     Ok(resp) => println!("Permissions granted. Reference number: {}", resp.reference_number),
     Err(e) => eprintln!("Error: {:?}", e),
 }
@@ -103,7 +103,7 @@ let request = GrantEntityPermissionsRequest::builder()
     .build()
     .expect("Error building request");
 
-match client.grant_entity_permissions(request) {
+match client.grant_entity_permissions(request).await {
     Ok(resp) => println!("Permissions granted. Reference number: {}", resp.reference_number),
     Err(e) => eprintln!("Error: {:?}", e),
 }
@@ -143,7 +143,7 @@ let request = GrantAuthorizationPermissionsRequest::builder()
     .build()
     .expect("Error building request");
 
-match client.grant_authorization_permissions(request) {
+match client.grant_authorization_permissions(request).await {
     Ok(resp) => println!("Permissions granted. Reference number: {}", resp.reference_number),
     Err(e) => eprintln!("Error: {:?}", e),
 }
@@ -198,7 +198,7 @@ let request = GrantIndirectEntityPermissionsRequest::builder()
     .build()
     .expect("Error building request");
 
-match client.grant_indirect_entity_permissions(request) {
+match client.grant_indirect_entity_permissions(request).await {
     Ok(resp) => println!("Permissions granted. Reference number: {}", resp.reference_number),
     Err(e) => eprintln!("Error: {:?}", e),
 }
@@ -253,7 +253,7 @@ let request = GrantSubunitPermissionsRequest::builder()
     .build()
     .expect("Error building request");
 
-match client.grant_subunit_permissions(request) {
+match client.grant_subunit_permissions(request).await {
     Ok(resp) => println!("Permissions granted. Reference number: {}", resp.reference_number),
     Err(e) => eprintln!("Error: {:?}", e),
 }
@@ -312,7 +312,7 @@ let request = GrantEuEntityPermissionsRequest::builder()
     .build()
     .expect("Error building request");
 
-match client.grant_eu_entity_permissions(request) {
+match client.grant_eu_entity_permissions(request).await {
     Ok(resp) => println!("Permissions granted. Reference number: {}", resp.reference_number),
     Err(e) => eprintln!("Error: {:?}", e),
 }
@@ -364,7 +364,7 @@ let request = GrantEuEntityRepresentativePermissionsRequest::builder()
     .build()
     .expect("Error building request");
 
-match client.grant_eu_entity_representative_permissions(request) {
+match client.grant_eu_entity_representative_permissions(request).await {
     Ok(resp) => println!("Permissions granted. Reference number: {}", resp.reference_number),
     Err(e) => eprintln!("Error: {:?}", e),
 }

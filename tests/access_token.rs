@@ -1,8 +1,8 @@
 mod common;
 
-#[test]
-fn test_access_token_retrieval() {
-    let client = common::authorize_client();
+#[tokio::test]
+async fn test_access_token_retrieval() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
 
     let tokens = client.access_token();
 
@@ -16,9 +16,9 @@ fn test_access_token_retrieval() {
     );
 }
 
-#[test]
-fn test_access_token_refresh() {
-    let mut client = common::authorize_client();
+#[tokio::test]
+async fn test_access_token_refresh() {
+    let mut client: ksef_client::KsefClient = common::authorize_client().await;
 
     let initial_access_token = client.access_token().access_token.clone();
     assert!(
@@ -27,7 +27,7 @@ fn test_access_token_refresh() {
     );
 
     println!("Refreshing access token...");
-    match client.refresh_access_token() {
+    match client.refresh_access_token().await {
         Ok(_) => {
             let new_tokens = client.access_token();
             assert!(

@@ -29,7 +29,7 @@ let description = "My token description";
 
 // The 'true' parameter means the generated token will be automatically loaded into the client,
 // enabling subsequent login with it (in a new session) or performing operations in its context.
-let ksef_token = match client.new_ksef_token(true, permissions, description) {
+let ksef_token = match client.new_ksef_token(true, permissions, description).await {
     Ok(token) => {
         println!("    KSeF Token: {}", token.token);
         println!("    Reference Number: {}", token.reference_number);
@@ -47,7 +47,7 @@ let ksef_token = match client.new_ksef_token(true, permissions, description) {
 To log in with a token, it must be loaded into the client (via the `load_ksef_token` method or automatically upon generation).
 
 ```rust
-match client.authenticate_by_ksef_token() {
+match client.authenticate_by_ksef_token().await {
     Ok(()) => {
         println!("    Authentication request sent successfully!");
         let auth_token = client.auth_token();
@@ -68,7 +68,7 @@ match client.authenticate_by_ksef_token() {
 Returns a list of tokens associated with the entity.
 
 ```rust
-match client.get_ksef_tokens() {
+match client.get_ksef_tokens().await {
     Ok(tokens) => {
         println!("Found {} tokens.", tokens.len());
         for t in tokens {
@@ -87,7 +87,7 @@ match client.get_ksef_tokens() {
 ```rust
 let ksef_token_reference_number = &ksef_token.reference_number;
 
-match client.get_ksef_token_status(ksef_token_reference_number.as_str()) {
+match client.get_ksef_token_status(ksef_token_reference_number.as_str()).await {
     Ok(token_status) => {
         println!(
             "    KSeF Token Status\n{}",
@@ -108,7 +108,7 @@ Tokens that are no longer needed or have been compromised should be revoked.
 ```rust
 let ksef_token_reference_number = &ksef_token.reference_number;
 
-match client.revoke_ksef_token(ksef_token_reference_number.as_str()) {
+match client.revoke_ksef_token(ksef_token_reference_number.as_str()).await {
     Ok(()) => {
         println!("    KSeF token revoked successfully.");
     }
@@ -126,7 +126,7 @@ The code below assumes that the client (`client`) is already logged in (e.g., us
 ```rust
 use ksef_client::{KsefClient, KsefTokenPermissions};
 
-fn token_lifecycle_example(client: &mut KsefClient) -> Result<(), Box<dyn std::error::Error>> {
+async fn token_lifecycle_example(client: &mut KsefClient) -> Result<(), Box<dyn std::error::Error>> {
     println!("--- Starting Token Lifecycle ---");
 
     // 1. Generate new token
@@ -141,19 +141,19 @@ fn token_lifecycle_example(client: &mut KsefClient) -> Result<(), Box<dyn std::e
         enforcement_operations: false,
     };
 
-    let new_token = client.new_ksef_token(false, permissions, "Lifecycle test token")?; // false - do not load as active auth token for this session
+    let new_token = client.new_ksef_token(false, permissions, "Lifecycle test token").await?; // false - do not load as active auth token for this session
     println!("   Generated token: {}", new_token.token);
     println!("   Reference number: {}", new_token.reference_number);
 
     // 2. Check status of newly created token
     println!("\n2. Getting token status...");
-    let status = client.get_ksef_token_status(&new_token.reference_number)?;
+    let status = client.get_ksef_token_status(&new_token.reference_number).await?;
     println!("   Token status: active? {}", status.active);
     println!("   Description: {}", status.description);
 
     // 3. List all tokens
     println!("\n3. Listing all tokens...");
-    let tokens_list = client.get_ksef_tokens()?;
+    let tokens_list = client.get_ksef_tokens().await?;
     println!("   Number of tokens in system: {}", tokens_list.len());
     
     let exists = tokens_list.iter().any(|t| t.reference_number == new_token.reference_number);
@@ -161,13 +161,13 @@ fn token_lifecycle_example(client: &mut KsefClient) -> Result<(), Box<dyn std::e
 
     // 4. Revoke token
     println!("\n4. Revoking token...");
-    client.revoke_ksef_token(&new_token.reference_number)?;
+    client.revoke_ksef_token(&new_token.reference_number).await?;
     println!("   Token revoked.");
 
     // 5. Verify revocation (optional)
     // Note: Status update in KSeF system might take a moment.
     println!("\n5. Verifying status after revocation...");
-    let final_status = client.get_ksef_token_status(&new_token.reference_number)?;
+    let final_status = client.get_ksef_token_status(&new_token.reference_number).await?;
     println!("   Token status: active? {}", final_status.active);
 
     println!("\n--- Token Lifecycle Completed ---");

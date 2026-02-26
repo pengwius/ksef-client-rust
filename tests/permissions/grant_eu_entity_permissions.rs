@@ -7,9 +7,9 @@ use ksef_client::{
     EuEntitySubjectIdentifier, EuEntitySubjectIdentifierType, GrantEuEntityPermissionsRequest,
 };
 
-#[test]
-fn test_grant_eu_entity_permissions_entity_by_fingerprint() {
-    let client = common::authorize_client();
+#[tokio::test]
+async fn test_grant_eu_entity_permissions_entity_by_fingerprint() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
 
     let fingerprint = "0000000000000000000000000000000000000000000000000000000000000000";
     let parent_nip = "1111111111";
@@ -43,7 +43,7 @@ fn test_grant_eu_entity_permissions_entity_by_fingerprint() {
         .build()
         .expect("Failed to build request");
 
-    match client.grant_eu_entity_permissions(request) {
+    match client.grant_eu_entity_permissions(request).await {
         Ok(resp) => {
             println!(
                 "Granted EU entity permissions (Entity) successfully. Reference number: {}",
@@ -56,15 +56,15 @@ fn test_grant_eu_entity_permissions_entity_by_fingerprint() {
     }
 }
 
-#[test]
-fn test_grant_eu_entity_permissions_person_with_nip() {
-    let client = common::authorize_client();
+#[tokio::test]
+async fn test_grant_eu_entity_permissions_person_with_nip() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
 
     let fingerprint = "1111111111111111111111111111111111111111111111111111111111111111";
     let parent_nip = "1111111111";
     let vat_ue = "DE123456789";
     let context_value = format!("{}-{}", parent_nip, vat_ue);
-    let person_nip = common::generate_random_nip();
+    let person_nip = common::generate_random_nip().await;
 
     let request = GrantEuEntityPermissionsRequest::builder()
         .with_subject_identifier(EuEntitySubjectIdentifier {
@@ -97,7 +97,7 @@ fn test_grant_eu_entity_permissions_person_with_nip() {
         .build()
         .expect("Failed to build request");
 
-    match client.grant_eu_entity_permissions(request) {
+    match client.grant_eu_entity_permissions(request).await {
         Ok(resp) => {
             println!(
                 "Granted EU entity permissions (Person with NIP) successfully. Reference number: {}",
@@ -113,9 +113,9 @@ fn test_grant_eu_entity_permissions_person_with_nip() {
     }
 }
 
-#[test]
-fn test_grant_eu_entity_permissions_person_without_id() {
-    let client = common::authorize_client();
+#[tokio::test]
+async fn test_grant_eu_entity_permissions_person_without_id() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
 
     let fingerprint = "2222222222222222222222222222222222222222222222222222222222222222";
     let parent_nip = "1111111111";
@@ -155,7 +155,7 @@ fn test_grant_eu_entity_permissions_person_without_id() {
         .build()
         .expect("Failed to build request");
 
-    match client.grant_eu_entity_permissions(request) {
+    match client.grant_eu_entity_permissions(request).await {
         Ok(resp) => {
             println!(
                 "Granted EU entity permissions (Person without ID) successfully. Reference number: {}",

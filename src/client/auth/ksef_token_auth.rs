@@ -39,8 +39,10 @@ struct TokenObject {
     token: String,
 }
 
-pub fn submit_ksef_token_auth_request(client: &mut KsefClient) -> Result<AuthTokens, KsefError> {
-    let challenge = match client.get_auth_challenge() {
+pub async fn submit_ksef_token_auth_request(
+    client: &mut KsefClient,
+) -> Result<AuthTokens, KsefError> {
+    let challenge = match client.get_auth_challenge().await {
         Ok(challenge) => challenge,
         Err(e) => return Err(e),
     };
@@ -57,7 +59,7 @@ pub fn submit_ksef_token_auth_request(client: &mut KsefClient) -> Result<AuthTok
         .clone()
         .ok_or_else(|| KsefError::ApplicationError(0, "Context value not set".to_string()))?;
 
-    let certificates = client.get_public_key_certificates()?;
+    let certificates = client.get_public_key_certificates().await?;
     let encryption_cert = certificates
         .iter()
         .find(|c| {
@@ -82,7 +84,7 @@ pub fn submit_ksef_token_auth_request(client: &mut KsefClient) -> Result<AuthTok
         .map_err(|e| KsefError::Unexpected(format!("UTF-8 error: {}", e)))?;
 
     let encrypted_token = encrypt_token(&token, challenge.timestamp_ms, &pem)
-        .map_err(|e| KsefError::OpenSslError(e))?;
+        .map_err(KsefError::OpenSslError)?;
 
     let context_type_str = match context_type {
         ContextIdentifierType::Nip => "Nip",
@@ -98,45 +100,30 @@ pub fn submit_ksef_token_auth_request(client: &mut KsefClient) -> Result<AuthTok
         },
         encrypted_token,
     };
+    let url = client.url_for(routes::AUTH_KSEF_TOKEN_PATH);
+    let resp = client
+        .client
+        .post(&url)
+        .header("Accept", "application/json")
+        .header("Content-Type", "application/json")
+        .json(&request_body)
+        .send()
+        .await
+        .map_err(KsefError::RequestError)?;
 
-    let fut = async {
-        let url = client.url_for(routes::AUTH_KSEF_TOKEN_PATH);
-        let resp = client
-            .client
-            .post(&url)
-            .header("Accept", "application/json")
-            .header("Content-Type", "application/json")
-            .json(&request_body)
-            .send()
-            .await
-            .map_err(KsefError::RequestError)?;
+    let status = resp.status();
+    if !status.is_success() {
+        let body = resp.text().await.unwrap_or_default();
+        return Err(KsefError::ApiError(status.as_u16(), body));
+    }
 
-        let status = resp.status();
-        if !status.is_success() {
-            let body = resp.text().await.unwrap_or_default();
-            return Err(KsefError::ApiError(status.as_u16(), body));
-        }
-
-        let parsed: AuthResponse = resp.json().await.map_err(KsefError::RequestError)?;
-        Ok(AuthTokens {
-            authentication_token: parsed.authentication_token.token,
-            reference_number: parsed.reference_number,
-        })
+    let parsed: AuthResponse = resp.json().await.map_err(KsefError::RequestError)?;
+    let tokens = AuthTokens {
+        authentication_token: parsed.authentication_token.token,
+        reference_number: parsed.reference_number,
     };
 
-    let tokens = match tokio::runtime::Handle::try_current() {
-        Ok(handle) => handle.block_on(fut)?,
-        Err(_) => {
-            let rt = tokio::runtime::Runtime::new()
-                .map_err(|e| KsefError::RuntimeError(e.to_string()))?;
-            rt.block_on(fut)?
-        }
-    };
-
-    client.auth_token = AuthTokens {
-        authentication_token: tokens.authentication_token.clone(),
-        reference_number: tokens.reference_number.clone(),
-    };
+    client.auth_token = tokens.clone();
 
     Ok(tokens)
 }

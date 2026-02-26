@@ -198,56 +198,46 @@ impl Default for OpenBatchSessionRequestBuilder {
     }
 }
 
-pub fn open_batch_session(
+pub async fn open_batch_session(
     client: &KsefClient,
     request: OpenBatchSessionRequest,
 ) -> Result<OpenBatchSessionResponse, KsefError> {
-    let fut = async {
-        let url = client.url_for(routes::SESSIONS_BATCH_PATH);
-        let http = &client.client;
+    let url = client.url_for(routes::SESSIONS_BATCH_PATH);
+    let http = &client.client;
 
-        let token = &client.access_token.access_token;
-        if token.is_empty() {
-            return Err(KsefError::ApplicationError(
-                0,
-                "No access token available".to_string(),
-            ));
-        }
-
-        let resp = http
-            .post(&url)
-            .header("Accept", "application/json")
-            .bearer_auth(token);
-
-        let body = serde_json::to_string(&request).unwrap_or_default();
-        println!("OpenBatchSessionRequest body: {}", body);
-
-        let resp = resp
-            .body(body)
-            .header("Content-Type", "application/json")
-            .send()
-            .await?;
-
-        let status = resp.status();
-
-        if !status.is_success() {
-            let code = status.as_u16();
-            let body = resp.text().await.unwrap_or_default();
-            return Err(KsefError::ApiError(code, body));
-        }
-
-        let parsed: OpenBatchSessionResponse = resp.json().await?;
-
-        Ok(parsed)
-    };
-
-    match tokio::runtime::Handle::try_current() {
-        Ok(handle) => handle.block_on(fut),
-        Err(_) => {
-            let rt = tokio::runtime::Runtime::new()?;
-            rt.block_on(fut)
-        }
+    let token = &client.access_token.access_token;
+    if token.is_empty() {
+        return Err(KsefError::ApplicationError(
+            0,
+            "No access token available".to_string(),
+        ));
     }
+
+    let resp = http
+        .post(&url)
+        .header("Accept", "application/json")
+        .bearer_auth(token);
+
+    let body = serde_json::to_string(&request).unwrap_or_default();
+    println!("OpenBatchSessionRequest body: {}", body);
+
+    let resp = resp
+        .body(body)
+        .header("Content-Type", "application/json")
+        .send()
+        .await?;
+
+    let status = resp.status();
+
+    if !status.is_success() {
+        let code = status.as_u16();
+        let body = resp.text().await.unwrap_or_default();
+        return Err(KsefError::ApiError(code, body));
+    }
+
+    let parsed: OpenBatchSessionResponse = resp.json().await?;
+
+    Ok(parsed)
 }
 
 #[cfg(test)]

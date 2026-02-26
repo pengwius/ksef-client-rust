@@ -8,11 +8,11 @@ use openssl::symm::{Cipher, decrypt};
 use std::io::Cursor;
 use zip::ZipArchive;
 
-#[test]
-fn test_batch_zip_flow() {
+#[tokio::test]
+async fn test_batch_zip_flow() {
     let issuer_nip = "5264567890";
-    let invoice_xml_1 = common::generate_fa2_invoice(issuer_nip);
-    let invoice_xml_2 = common::generate_fa2_invoice(issuer_nip);
+    let invoice_xml_1: String = common::generate_fa2_invoice(issuer_nip).await;
+    let invoice_xml_2: String = common::generate_fa2_invoice(issuer_nip).await;
 
     let invoices = vec![
         InvoicePayload {
@@ -95,12 +95,12 @@ fn test_batch_zip_flow() {
     }
 }
 
-#[test]
-fn test_batch_session_initialization() {
-    let client = common::authorize_client();
+#[tokio::test]
+async fn test_batch_session_initialization() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
 
     let issuer_nip = "5264567890";
-    let invoice_xml = common::generate_fa2_invoice(issuer_nip);
+    let invoice_xml: String = common::generate_fa2_invoice(issuer_nip).await;
 
     let invoices = vec![InvoicePayload {
         filename: "invoice.xml".to_string(),
@@ -111,6 +111,7 @@ fn test_batch_session_initialization() {
 
     let encryption_data = client
         .generate_encryption_data()
+        .await
         .expect("Failed to generate encryption data");
 
     let parts = vec![zip_result.content.clone()];
@@ -139,6 +140,7 @@ fn test_batch_session_initialization() {
 
     let response = client
         .open_batch_session(request)
+        .await
         .expect("Failed to open batch session");
 
     println!("Opened batch session: {:?}", response);
@@ -157,14 +159,14 @@ fn test_batch_session_initialization() {
         "Should have 1 upload request"
     );
 
-    match client.upload_batch_parts(&response, &encrypted_parts) {
+    match client.upload_batch_parts(&response, &encrypted_parts).await {
         Ok(()) => {}
         Err(e) => {
             panic!("Failed to upload batch parts: {:?}", e);
         }
     }
 
-    match client.close_batch_session(&response.reference_number) {
+    match client.close_batch_session(&response.reference_number).await {
         Ok(()) => {}
         Err(e) => {
             panic!("Failed to close batch session: {:?}", e);
@@ -172,13 +174,13 @@ fn test_batch_session_initialization() {
     }
 }
 
-#[test]
-fn test_submit_batch_automated() {
-    let client = common::authorize_client();
+#[tokio::test]
+async fn test_submit_batch_automated() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
 
     let issuer_nip = "5264567890";
-    let invoice_xml_1 = common::generate_fa2_invoice(issuer_nip);
-    let invoice_xml_2 = common::generate_fa2_invoice(issuer_nip);
+    let invoice_xml_1: String = common::generate_fa2_invoice(issuer_nip).await;
+    let invoice_xml_2: String = common::generate_fa2_invoice(issuer_nip).await;
 
     let invoices = vec![
         InvoicePayload {
@@ -193,6 +195,7 @@ fn test_submit_batch_automated() {
 
     let result = client
         .submit_batch(&invoices, Some(10 * 1024 * 1024))
+        .await
         .expect("Failed to submit batch");
 
     println!("Automated batch submission successful: {:?}", result);

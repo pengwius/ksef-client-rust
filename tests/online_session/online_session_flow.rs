@@ -2,12 +2,13 @@ use crate::common;
 
 use ksef_client::OpenOnlineSessionRequestBuilder;
 
-#[test]
-fn test_online_session_flow() {
-    let client = common::authorize_client();
+#[tokio::test]
+async fn test_online_session_flow() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
 
     let encryption_data = client
         .generate_encryption_data()
+        .await
         .expect("Failed to generate encryption data");
 
     let request = OpenOnlineSessionRequestBuilder::new()
@@ -20,6 +21,7 @@ fn test_online_session_flow() {
 
     let response = client
         .open_online_session(request)
+        .await
         .expect("Failed to open online session");
 
     println!("Opened online session: {:?}", response);
@@ -30,13 +32,15 @@ fn test_online_session_flow() {
     );
 
     let issuer_nip = "5264567890";
-    let invoice_xml = common::generate_fa2_invoice(issuer_nip);
+    let invoice_xml: String = common::generate_fa2_invoice(issuer_nip).await;
 
-    let send_result = client.send_invoice(
-        &response.reference_number,
-        invoice_xml.as_bytes(),
-        &encryption_data,
-    );
+    let send_result = client
+        .send_invoice(
+            &response.reference_number,
+            invoice_xml.as_bytes(),
+            &encryption_data,
+        )
+        .await;
 
     let invoice_reference_number = match send_result {
         Ok(resp) => resp.reference_number,
@@ -47,13 +51,17 @@ fn test_online_session_flow() {
 
     let status = client
         .get_invoice_status(&response.reference_number, &invoice_reference_number)
+        .await
         .expect("Failed to get invoice status");
 
     println!("Final Invoice status: {:#?}", status);
 
     assert!(status.invoice_status.code == 200);
 
-    match client.close_online_session(&response.reference_number) {
+    match client
+        .close_online_session(&response.reference_number)
+        .await
+    {
         Ok(()) => {}
         Err(e) => {
             panic!("Failed to get session status after close: {:?}", e);
@@ -61,15 +69,16 @@ fn test_online_session_flow() {
     }
 }
 
-#[test]
-fn test_submit_online_automated() {
-    let client = common::authorize_client();
+#[tokio::test]
+async fn test_submit_online_automated() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
 
     let issuer_nip = "5264567890";
-    let invoice_xml = common::generate_fa2_invoice(issuer_nip);
+    let invoice_xml: String = common::generate_fa2_invoice(issuer_nip).await;
 
     let result = client
         .submit_online(invoice_xml.as_bytes())
+        .await
         .expect("Failed to submit online session");
 
     println!("Online submission result: {:?}", result);
@@ -88,6 +97,7 @@ fn test_submit_online_automated() {
             &result.session_reference_number,
             &result.invoice_reference_number,
         )
+        .await
         .expect("Failed to get invoice status");
 
     println!(

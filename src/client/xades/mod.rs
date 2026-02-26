@@ -7,15 +7,11 @@ pub mod gen_selfsign_cert;
 pub mod sign;
 pub mod utils;
 
+#[derive(Default)]
 pub struct XadesSigner {
     pkcs12: Option<ParsedPkcs12_2>,
 }
 
-impl Default for XadesSigner {
-    fn default() -> Self {
-        XadesSigner { pkcs12: None }
-    }
-}
 
 impl XadesSigner {
     pub fn gen_selfsign_cert(

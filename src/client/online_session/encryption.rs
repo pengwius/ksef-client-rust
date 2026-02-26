@@ -17,8 +17,8 @@ pub struct EncryptionData {
     pub symmetric_key: Vec<u8>,
 }
 
-pub fn generate_encryption_data(client: &KsefClient) -> Result<EncryptionData, KsefError> {
-    let public_key_pem = match get_public_key(client) {
+pub async fn generate_encryption_data(client: &KsefClient) -> Result<EncryptionData, KsefError> {
+    let public_key_pem = match get_public_key(client).await {
         Ok(key) => key,
         Err(e) => return Err(e),
     };
@@ -72,8 +72,8 @@ pub fn generate_encryption_data(client: &KsefClient) -> Result<EncryptionData, K
     })
 }
 
-fn get_public_key(client: &KsefClient) -> Result<String, KsefError> {
-    let certs = client.get_public_key_certificates()?;
+async fn get_public_key(client: &KsefClient) -> Result<String, KsefError> {
+    let certs = client.get_public_key_certificates().await?;
     let cert = certs
         .iter()
         .find(|c| {

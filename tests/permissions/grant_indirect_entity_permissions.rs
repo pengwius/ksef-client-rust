@@ -6,10 +6,10 @@ use ksef_client::{
     IndirectSubjectIdentifierType, IndirectTargetIdentifier, IndirectTargetIdentifierType,
 };
 
-#[test]
-fn test_grant_indirect_entity_permissions() {
-    let client = common::authorize_client();
-    let target_nip = common::generate_random_nip();
+#[tokio::test]
+async fn test_grant_indirect_entity_permissions() {
+    let client: ksef_client::KsefClient = common::authorize_client().await;
+    let target_nip: String = common::generate_random_nip().await;
 
     let request = GrantIndirectEntityPermissionsRequest::builder()
         .with_subject_identifier(IndirectSubjectIdentifier {
@@ -37,7 +37,7 @@ fn test_grant_indirect_entity_permissions() {
         .build()
         .expect("Failed to build request");
 
-    match client.grant_indirect_entity_permissions(request) {
+    match client.grant_indirect_entity_permissions(request).await {
         Ok(resp) => {
             println!(
                 "Granted indirect entity permissions successfully. Reference number: {}",

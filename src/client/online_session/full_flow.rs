@@ -13,11 +13,11 @@ pub struct OnlineSubmissionResult {
     pub invoice_reference_number: String,
 }
 
-pub fn submit_online(
+pub async fn submit_online(
     client: &KsefClient,
     invoice: &[u8],
 ) -> Result<OnlineSubmissionResult, KsefError> {
-    let encryption_data = generate_encryption_data(client)?;
+    let encryption_data = generate_encryption_data(client).await?;
 
     let request = OpenOnlineSessionRequestBuilder::new()
         .with_encryption(
@@ -26,13 +26,14 @@ pub fn submit_online(
         )
         .build()?;
 
-    let session_response = open_online_session(client, request)?;
+    let session_response = open_online_session(client, request).await?;
     let session_reference_number = session_response.reference_number.clone();
 
-    let send_result = send_invoice(client, &session_reference_number, invoice, &encryption_data)?;
+    let send_result =
+        send_invoice(client, &session_reference_number, invoice, &encryption_data).await?;
     let invoice_reference_number = send_result.reference_number;
 
-    close_online_session(client, &session_reference_number)?;
+    close_online_session(client, &session_reference_number).await?;
 
     Ok(OnlineSubmissionResult {
         session_reference_number,

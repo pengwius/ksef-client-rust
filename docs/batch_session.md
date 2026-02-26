@@ -52,7 +52,7 @@ jeśli Twoja aplikacja tego wymaga.
 
 ```rust
 let result = client
-    .submit_batch(&invoices, Some(10 * 1024 * 1024))
+    .submit_batch(&invoices, Some(10 * 1024 * 1024)).await
     .expect("Failed to submit batch");
 
 println!(
@@ -69,7 +69,7 @@ Możesz także pracować bezpośrednio z poszczególnymi elementami składowymi:
 ```rust
 let zip = create_zip(&invoices)?;
 let parts = split_zip(&zip.content, 50 * 1024 * 1024); // domyślny podział
-let enc = generate_encryption_data(&client)?;
+let enc = client.generate_encryption_data().await?;
 let encrypted = encrypt_zip_parts(&parts, &enc.symmetric_key, &enc.initialization_vector)?;
 
 let open_req = OpenBatchSessionRequestBuilder::new()
@@ -79,7 +79,7 @@ let open_req = OpenBatchSessionRequestBuilder::new()
     // ... dodaj więcej części ...
     .build()?;
 
-let response = client.open_batch_session(open_req)?;
-client.upload_batch_parts(&response, &encrypted)?;
-client.close_batch_session(&response.reference_number)?;
+let response = client.open_batch_session(open_req).await?;
+client.upload_batch_parts(&response, &encrypted).await?;
+client.close_batch_session(&response.reference_number).await?;
 ```

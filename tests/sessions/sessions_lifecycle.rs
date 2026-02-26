@@ -4,7 +4,7 @@ use crate::common;
 
 use ksef_client::{ContextIdentifierType, KsefClient, SubjectIdentifierType};
 
-fn authorize_client_for_nip(nip: &str) -> KsefClient {
+async fn authorize_client_for_nip(nip: &str) -> KsefClient {
     let mut client = KsefClient::new();
     let given_name = "Test";
     let surname = "User";
@@ -17,6 +17,7 @@ fn authorize_client_for_nip(nip: &str) -> KsefClient {
             ContextIdentifierType::Nip,
             SubjectIdentifierType::CertificateSubject,
         )
+        .await
         .expect("Failed to get auth token request");
 
     let unsigned_xml = auth_token_request.to_xml();
@@ -31,14 +32,14 @@ fn authorize_client_for_nip(nip: &str) -> KsefClient {
         .sign(&unsigned_xml)
         .expect("Failed to sign XML");
 
-    match client.authenticate_by_xades_signature(signed_xml) {
+    match client.authenticate_by_xades_signature(signed_xml).await {
         Ok(_) => {}
         Err(e) => {
             panic!("Authentication request submission failed: {:?}", e);
         }
     }
 
-    match client.get_auth_status() {
+    match client.get_auth_status().await {
         Ok(true) => {}
         Ok(false) => {
             panic!("Authentication not successful");
@@ -53,12 +54,12 @@ fn authorize_client_for_nip(nip: &str) -> KsefClient {
     client
 }
 
-#[test]
-fn test_revoke_session_by_reference() {
-    let nip = common::generate_random_nip();
+#[tokio::test]
+async fn test_revoke_session_by_reference() {
+    let nip: String = common::generate_random_nip().await;
 
-    let client_a = authorize_client_for_nip(&nip);
-    let client_b = authorize_client_for_nip(&nip);
+    let client_a = authorize_client_for_nip(&nip).await;
+    let client_b = authorize_client_for_nip(&nip).await;
 
     let ref_a = client_a.auth_token().reference_number.clone();
     let ref_b = client_b.auth_token().reference_number.clone();
@@ -71,7 +72,7 @@ fn test_revoke_session_by_reference() {
         "Expected two distinct session reference numbers"
     );
 
-    match client_a.revoke_session(&ref_b) {
+    match client_a.revoke_session(&ref_b).await {
         Ok(()) => {
             println!("Client A revoked Client B's session (reference {})", ref_b);
         }
@@ -84,6 +85,7 @@ fn test_revoke_session_by_reference() {
 
     let resp = client_a
         .get_active_sessions(None)
+        .await
         .expect("Failed to query active sessions");
     let sessions = resp.items;
 
@@ -103,12 +105,12 @@ fn test_revoke_session_by_reference() {
     }
 }
 
-#[test]
-fn test_two_session_lifecycle_revoke_other_and_self() {
-    let nip = common::generate_random_nip();
+#[tokio::test]
+async fn test_two_session_lifecycle_revoke_other_and_self() {
+    let nip: String = common::generate_random_nip().await;
 
-    let client1 = authorize_client_for_nip(&nip);
-    let client2 = authorize_client_for_nip(&nip);
+    let client1 = authorize_client_for_nip(&nip).await;
+    let client2 = authorize_client_for_nip(&nip).await;
 
     let ref1 = client1.auth_token().reference_number.clone();
     let ref2 = client2.auth_token().reference_number.clone();
@@ -122,12 +124,14 @@ fn test_two_session_lifecycle_revoke_other_and_self() {
 
     client1
         .revoke_session(&ref2)
+        .await
         .expect("client1 failed to revoke client2 by reference");
 
     std::thread::sleep(Duration::from_millis(300));
 
     let resp_after_revoke = client1
         .get_active_sessions(None)
+        .await
         .expect("Failed to query sessions after revoke");
     let sessions_after = resp_after_revoke.items;
     let sess2 = sessions_after.iter().find(|s| s.reference_number == ref2);
@@ -148,7 +152,7 @@ fn test_two_session_lifecycle_revoke_other_and_self() {
         );
     }
 
-    match client2.revoke_current_session() {
+    match client2.revoke_current_session().await {
         Ok(()) => {
             println!("client2 revoke_current_session returned Ok");
         }
@@ -163,6 +167,7 @@ fn test_two_session_lifecycle_revoke_other_and_self() {
     std::thread::sleep(Duration::from_millis(300));
     let final_resp = client1
         .get_active_sessions(None)
+        .await
         .expect("Failed to query sessions final");
     let final_sessions = final_resp.items;
     let final_sess2 = final_sessions.iter().find(|s| s.reference_number == ref2);
@@ -177,7 +182,7 @@ fn test_two_session_lifecycle_revoke_other_and_self() {
         println!("Final check: session {} not present (revoked)", ref2);
     }
 
-    match client1.revoke_current_session() {
+    match client1.revoke_current_session().await {
         Ok(()) => {
             println!("client1 revoked its own session successfully");
         }
@@ -189,6 +194,7 @@ fn test_two_session_lifecycle_revoke_other_and_self() {
     std::thread::sleep(Duration::from_millis(300));
     let end_resp = client2
         .get_active_sessions(None)
+        .await
         .expect("Failed to query sessions after client1 self-revoke");
     let end_sessions = end_resp.items;
     let end_sess1 = end_sessions.iter().find(|s| s.reference_number == ref1);

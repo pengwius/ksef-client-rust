@@ -15,7 +15,7 @@ pub struct BatchSubmissionResult {
     pub total_size_bytes: usize,
 }
 
-pub fn submit_batch(
+pub async fn submit_batch(
     client: &KsefClient,
     invoices: &[InvoicePayload],
     max_part_size_bytes: Option<usize>,
@@ -26,7 +26,7 @@ pub fn submit_batch(
     let max_size = max_part_size_bytes.unwrap_or(50 * 1024 * 1024);
     let raw_parts = split_zip(&zip_result.content, max_size);
 
-    let encryption_data = generate_encryption_data(client)?;
+    let encryption_data = generate_encryption_data(client).await?;
 
     let encrypted_parts = encrypt_zip_parts(
         &raw_parts,
@@ -48,12 +48,12 @@ pub fn submit_batch(
 
     let open_request = builder.build()?;
 
-    let session_response = open_batch_session(client, open_request)?;
+    let session_response = open_batch_session(client, open_request).await?;
     let reference_number = session_response.reference_number.clone();
 
-    upload_batch_parts(client, &session_response, &encrypted_parts)?;
+    upload_batch_parts(client, &session_response, &encrypted_parts).await?;
 
-    close_batch_session(client, &reference_number)?;
+    close_batch_session(client, &reference_number).await?;
 
     Ok(BatchSubmissionResult {
         reference_number,
