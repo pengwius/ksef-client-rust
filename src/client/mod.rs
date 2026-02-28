@@ -21,6 +21,7 @@ use crate::client::batch_session::open_batch_session::{
 };
 use crate::client::batch_session::zip::{EncryptedBatchPart, InvoicePayload};
 use crate::client::error::KsefError;
+use crate::client::fetching_invoices::fetch_invoice::FetchInvoiceResponse;
 use crate::client::fetching_invoices::fetch_invoice_metadata::{
     FetchInvoiceMetadataRequest, FetchInvoiceMetadataResponse,
 };
@@ -450,6 +451,13 @@ impl KsefClient {
         request: FetchInvoiceMetadataRequest,
     ) -> Result<FetchInvoiceMetadataResponse, KsefError> {
         fetching_invoices::fetch_invoice_metadata::fetch_invoice_metadata(self, request).await
+    }
+
+    pub async fn fetch_invoice(
+        &self,
+        ksef_number: &str,
+    ) -> Result<FetchInvoiceResponse, KsefError> {
+        fetching_invoices::fetch_invoice::fetch_invoice(self, ksef_number).await
     }
 
     pub fn url_for(&self, path: &str) -> String {

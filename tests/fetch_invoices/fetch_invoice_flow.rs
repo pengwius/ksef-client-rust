@@ -5,7 +5,7 @@ use ksef_client::{
 };
 
 #[tokio::test]
-async fn test_fetch_invoice_metadata_flow() {
+async fn test_fetch_invoice_flow() {
     let client = common::authorize_client().await;
     let nip = "5264567890";
 
@@ -82,6 +82,8 @@ async fn test_fetch_invoice_metadata_flow() {
 
     let metadata_resp = client.fetch_invoice_metadata(query_req.clone()).await;
 
+    let mut ksef_number = "".to_string();
+
     match metadata_resp {
         Ok(resp) => {
             if !resp.invoices.is_empty() {
@@ -97,10 +99,35 @@ async fn test_fetch_invoice_metadata_flow() {
                         assert_eq!(found_invoice.seller.nip, nip, "Seller NIP should match");
                     }
                 }
+
+                ksef_number = resp.invoices.last().unwrap().ksef_number.clone();
             }
         }
         Err(e) => {
             println!("Error fetching metadata: {:?}", e);
         }
     }
+
+    let fetch_resp = client
+        .fetch_invoice(&ksef_number)
+        .await
+        .expect("Failed to fetch invoice content");
+
+    println!("Fetched invoice content size: {}", fetch_resp.content.len());
+    println!("Fetched invoice hash: {}", fetch_resp.hash);
+
+    assert!(
+        !fetch_resp.content.is_empty(),
+        "Invoice content should not be empty"
+    );
+    assert!(
+        !fetch_resp.hash.is_empty(),
+        "Invoice hash should not be empty"
+    );
+
+    let content_str = String::from_utf8_lossy(&fetch_resp.content);
+    assert!(
+        content_str.contains("Faktura"),
+        "Content should contain 'Faktura' tag"
+    );
 }

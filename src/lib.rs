@@ -110,6 +110,7 @@ pub use client::batch_session::close_batch_session::close_batch_session;
 pub use client::batch_session::full_flow::{BatchSubmissionResult, submit_batch};
 pub use client::batch_session::upload_batch_parts::upload_batch_parts;
 
+pub use client::fetching_invoices::fetch_invoice::FetchInvoiceResponse;
 pub use client::fetching_invoices::fetch_invoice_metadata::{
     AmountFilter, AmountType, AuthorizedSubjectMetadata, BuyerIdentifier, BuyerIdentifierMetadata,
     BuyerIdentifierType, BuyerMetadata, DateRange, DateType, FetchInvoiceMetadataRequest,

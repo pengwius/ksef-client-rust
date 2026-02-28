@@ -219,7 +219,6 @@ pub async fn open_batch_session(
         .bearer_auth(token);
 
     let body = serde_json::to_string(&request).unwrap_or_default();
-    println!("OpenBatchSessionRequest body: {}", body);
 
     let resp = resp
         .body(body)
