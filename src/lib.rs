@@ -120,3 +120,6 @@ pub use client::fetching_invoices::fetch_invoice_metadata::{
     InvoicingMode, QueryCriteria, SellerMetadata, SubjectType, ThirdSubjectIdentifier,
     ThirdSubjectMetadata,
 };
+pub use client::fetching_invoices::incremental_fetch::{
+    FetchedInvoice, IncrementalFetchState, fetch_invoices_incrementally,
+};

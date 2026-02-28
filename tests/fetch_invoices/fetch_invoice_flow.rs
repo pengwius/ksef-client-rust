@@ -1,6 +1,7 @@
 use crate::common;
 use ksef_client::{
-    DateRange, DateType, FetchInvoiceMetadataRequest, InvoicePayload, QueryCriteria, SubjectType,
+    DateRange, DateType, FetchInvoiceMetadataRequest, IncrementalFetchState, InvoicePayload,
+    QueryCriteria, SubjectType, fetch_invoices_incrementally,
 };
 use std::io::Read;
 
@@ -161,5 +162,36 @@ async fn test_fetch_invoice_flow() {
     assert!(
         !exported_parts.is_empty(),
         "Should have exported at least one part"
+    );
+
+    println!("Starting incremental invoice fetch...");
+
+    let mut state = IncrementalFetchState::new();
+    let subject_types = vec![SubjectType::Subject1];
+    let default_start = chrono::Utc::now() - chrono::Duration::days(1);
+    let window_end = Some(chrono::Utc::now() + chrono::Duration::days(1));
+
+    let fetched_invoices = fetch_invoices_incrementally(
+        &client,
+        &mut state,
+        subject_types,
+        window_end,
+        default_start,
+    )
+    .await
+    .expect("Failed to fetch invoices incrementally");
+
+    println!("Incrementally fetched {} invoices", fetched_invoices.len());
+
+    for invoice in &fetched_invoices {
+        println!(
+            "Fetched invoice: {} (KSeF: {})",
+            invoice.metadata.invoice_number, invoice.metadata.ksef_number
+        );
+    }
+
+    assert!(
+        !fetched_invoices.is_empty(),
+        "Should have fetched at least one invoice incrementally"
     );
 }

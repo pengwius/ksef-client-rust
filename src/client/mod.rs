@@ -484,6 +484,23 @@ impl KsefClient {
         fetching_invoices::export_invoices::export_invoices(self, query).await
     }
 
+    pub async fn export_invoices_incrementally(
+        &self,
+        state: &mut fetching_invoices::incremental_fetch::IncrementalFetchState,
+        subject_types: Vec<fetching_invoices::fetch_invoice_metadata::SubjectType>,
+        window_end: Option<chrono::DateTime<chrono::Utc>>,
+        default_start: chrono::DateTime<chrono::Utc>,
+    ) -> Result<Vec<fetching_invoices::incremental_fetch::FetchedInvoice>, KsefError> {
+        fetching_invoices::incremental_fetch::fetch_invoices_incrementally(
+            self,
+            state,
+            subject_types,
+            window_end,
+            default_start,
+        )
+        .await
+    }
+
     pub fn url_for(&self, path: &str) -> String {
         format!(
             "{}/{}",

@@ -1,6 +1,6 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
-use crate::client::fetching_invoices::fetch_invoice_metadata::QueryCriteria;
+use crate::client::fetching_invoices::fetch_invoice_metadata::{InvoiceMetadata, QueryCriteria};
 use crate::client::routes;
 use openssl::symm::{Cipher, decrypt};
 use serde::{Deserialize, Serialize};
@@ -103,6 +103,12 @@ pub struct ExportedPart {
 pub struct ExportResult {
     pub status: ExportInvoicesStatusResponse,
     pub parts: Vec<ExportedPart>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct InvoicePackageMetadata {
+    #[serde(rename = "invoices")]
+    pub invoices: Vec<InvoiceMetadata>,
 }
 
 pub async fn start_export_invoices(
