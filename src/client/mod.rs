@@ -21,9 +21,12 @@ use crate::client::batch_session::open_batch_session::{
 };
 use crate::client::batch_session::zip::{EncryptedBatchPart, InvoicePayload};
 use crate::client::error::KsefError;
+use crate::client::fetching_invoices::export_invoices::{
+    ExportInvoicesRequest, ExportInvoicesResponse, ExportInvoicesStatusResponse,
+};
 use crate::client::fetching_invoices::fetch_invoice::FetchInvoiceResponse;
 use crate::client::fetching_invoices::fetch_invoice_metadata::{
-    FetchInvoiceMetadataRequest, FetchInvoiceMetadataResponse,
+    FetchInvoiceMetadataRequest, FetchInvoiceMetadataResponse, QueryCriteria,
 };
 use crate::client::get_public_key_certificates::PublicKeyCertificate;
 use crate::client::ksef_certificates::enroll_certificate::{
@@ -458,6 +461,27 @@ impl KsefClient {
         ksef_number: &str,
     ) -> Result<FetchInvoiceResponse, KsefError> {
         fetching_invoices::fetch_invoice::fetch_invoice(self, ksef_number).await
+    }
+
+    pub async fn start_export_invoices(
+        &self,
+        request: ExportInvoicesRequest,
+    ) -> Result<ExportInvoicesResponse, KsefError> {
+        fetching_invoices::export_invoices::start_export_invoices(self, request).await
+    }
+
+    pub async fn get_export_status(
+        &self,
+        reference_number: &str,
+    ) -> Result<ExportInvoicesStatusResponse, KsefError> {
+        fetching_invoices::export_invoices::get_export_status(self, reference_number).await
+    }
+
+    pub async fn export_invoices(
+        &self,
+        query: QueryCriteria,
+    ) -> Result<fetching_invoices::export_invoices::ExportResult, KsefError> {
+        fetching_invoices::export_invoices::export_invoices(self, query).await
     }
 
     pub fn url_for(&self, path: &str) -> String {

@@ -35,3 +35,4 @@ pub const SESSIONS_BATCH_PATH: &str = "/v2/sessions/batch";
 
 pub const INVOICES_QUERY_METADATA_PATH: &str = "/v2/invoices/query/metadata";
 pub const INVOICES_PATH: &str = "/v2/invoices/ksef";
+pub const INVOICES_EXPORTS_PATH: &str = "/v2/invoices/exports";

@@ -1,8 +1,8 @@
 use crate::common;
-
 use ksef_client::{
     DateRange, DateType, FetchInvoiceMetadataRequest, InvoicePayload, QueryCriteria, SubjectType,
 };
+use std::io::Read;
 
 #[tokio::test]
 async fn test_fetch_invoice_flow() {
@@ -129,5 +129,37 @@ async fn test_fetch_invoice_flow() {
     assert!(
         content_str.contains("Faktura"),
         "Content should contain 'Faktura' tag"
+    );
+
+    println!("Starting invoice export...");
+
+    let export_result = client
+        .export_invoices(query_req.query.clone())
+        .await
+        .expect("Failed to export invoices and wait for completion");
+
+    let exported_parts = export_result.parts;
+    println!("Exported {} parts", exported_parts.len());
+
+    for part in exported_parts.iter() {
+        println!("Processing part: {}", part.metadata.part_name);
+        let cursor = std::io::Cursor::new(&part.content);
+        let mut archive = zip::ZipArchive::new(cursor).expect("Failed to open zip archive");
+
+        let mut file = archive.by_index(0).expect("Failed to read file in zip");
+
+        let mut xml_content = String::new();
+        file.read_to_string(&mut xml_content)
+            .expect("Failed to read XML content from zip");
+
+        assert!(
+            xml_content.contains("</Faktura>"),
+            "Exported XML content should contain 'Faktura' tag"
+        );
+    }
+
+    assert!(
+        !exported_parts.is_empty(),
+        "Should have exported at least one part"
     );
 }
