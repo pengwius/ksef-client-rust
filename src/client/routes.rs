@@ -32,3 +32,5 @@ pub const CERTIFICATES_PATH: &str = "/v2/certificates";
 pub const SESSIONS_PATH: &str = "/v2/sessions";
 pub const SESSIONS_ONLINE_PATH: &str = "/v2/sessions/online";
 pub const SESSIONS_BATCH_PATH: &str = "/v2/sessions/batch";
+
+pub const INVOICES_QUERY_METADATA_PATH: &str = "/v2/invoices/query/metadata";

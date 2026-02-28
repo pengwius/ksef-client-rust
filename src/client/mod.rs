@@ -21,6 +21,9 @@ use crate::client::batch_session::open_batch_session::{
 };
 use crate::client::batch_session::zip::{EncryptedBatchPart, InvoicePayload};
 use crate::client::error::KsefError;
+use crate::client::fetching_invoices::fetch_invoice_metadata::{
+    FetchInvoiceMetadataRequest, FetchInvoiceMetadataResponse,
+};
 use crate::client::get_public_key_certificates::PublicKeyCertificate;
 use crate::client::ksef_certificates::enroll_certificate::{
     EnrollCertificateRequest, EnrollCertificateResponse,
@@ -59,6 +62,7 @@ pub mod error;
 
 pub mod auth;
 pub mod batch_session;
+pub mod fetching_invoices;
 pub mod get_public_key_certificates;
 pub mod ksef_certificates;
 pub mod ksef_tokens;
@@ -439,6 +443,13 @@ impl KsefClient {
 
     pub async fn generate_encryption_data(&self) -> Result<EncryptionData, KsefError> {
         online_session::encryption::generate_encryption_data(self).await
+    }
+
+    pub async fn fetch_invoice_metadata(
+        &self,
+        request: FetchInvoiceMetadataRequest,
+    ) -> Result<FetchInvoiceMetadataResponse, KsefError> {
+        fetching_invoices::fetch_invoice_metadata::fetch_invoice_metadata(self, request).await
     }
 
     pub fn url_for(&self, path: &str) -> String {
