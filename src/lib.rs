@@ -106,6 +106,19 @@ pub use client::batch_session::open_batch_session::{
     OpenBatchSessionResponse, PartUploadRequest,
 };
 
-pub use client::batch_session::close_batch_session::close_batch_session;
-pub use client::batch_session::full_flow::{BatchSubmissionResult, submit_batch};
-pub use client::batch_session::upload_batch_parts::upload_batch_parts;
+pub use client::batch_session::full_flow::BatchSubmissionResult;
+
+pub use client::fetching_invoices::export_invoices::{
+    EncryptionInfo, ExportInvoicesRequest, ExportInvoicesResponse, ExportInvoicesStatusResponse,
+    ExportPackage, ExportPackagePart, ExportResult, ExportStatus, ExportedPart,
+};
+pub use client::fetching_invoices::fetch_invoice::FetchInvoiceResponse;
+pub use client::fetching_invoices::fetch_invoice_metadata::{
+    AmountFilter, AmountType, AuthorizedSubjectMetadata, BuyerIdentifier, BuyerIdentifierMetadata,
+    BuyerIdentifierType, BuyerMetadata, DateRange, DateRangeBuilder, DateType,
+    FetchInvoiceMetadataRequest, FetchInvoiceMetadataRequestBuilder, FetchInvoiceMetadataResponse,
+    FormType, InvoiceFormCode, InvoiceMetadata, InvoiceType, InvoicingMode, QueryCriteria,
+    QueryCriteriaBuilder, SellerMetadata, SubjectType, ThirdSubjectIdentifier,
+    ThirdSubjectMetadata,
+};
+pub use client::fetching_invoices::incremental_fetch::{FetchedInvoice, IncrementalFetchState};

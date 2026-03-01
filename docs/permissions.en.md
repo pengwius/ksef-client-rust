@@ -1,4 +1,4 @@
-[Polish Version](permissions.md) / English version
+[Polska wersja](permissions.md) / English version
 
 # Permissions Management
 

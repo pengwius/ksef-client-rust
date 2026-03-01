@@ -21,6 +21,13 @@ use crate::client::batch_session::open_batch_session::{
 };
 use crate::client::batch_session::zip::{EncryptedBatchPart, InvoicePayload};
 use crate::client::error::KsefError;
+use crate::client::fetching_invoices::export_invoices::{
+    ExportInvoicesRequest, ExportInvoicesResponse, ExportInvoicesStatusResponse,
+};
+use crate::client::fetching_invoices::fetch_invoice::FetchInvoiceResponse;
+use crate::client::fetching_invoices::fetch_invoice_metadata::{
+    FetchInvoiceMetadataRequest, FetchInvoiceMetadataResponse, QueryCriteria,
+};
 use crate::client::get_public_key_certificates::PublicKeyCertificate;
 use crate::client::ksef_certificates::enroll_certificate::{
     EnrollCertificateRequest, EnrollCertificateResponse,
@@ -59,6 +66,7 @@ pub mod error;
 
 pub mod auth;
 pub mod batch_session;
+pub mod fetching_invoices;
 pub mod get_public_key_certificates;
 pub mod ksef_certificates;
 pub mod ksef_tokens;
@@ -439,6 +447,58 @@ impl KsefClient {
 
     pub async fn generate_encryption_data(&self) -> Result<EncryptionData, KsefError> {
         online_session::encryption::generate_encryption_data(self).await
+    }
+
+    pub async fn fetch_invoice_metadata(
+        &self,
+        request: FetchInvoiceMetadataRequest,
+    ) -> Result<FetchInvoiceMetadataResponse, KsefError> {
+        fetching_invoices::fetch_invoice_metadata::fetch_invoice_metadata(self, request).await
+    }
+
+    pub async fn fetch_invoice(
+        &self,
+        ksef_number: &str,
+    ) -> Result<FetchInvoiceResponse, KsefError> {
+        fetching_invoices::fetch_invoice::fetch_invoice(self, ksef_number).await
+    }
+
+    pub async fn start_export_invoices(
+        &self,
+        request: ExportInvoicesRequest,
+    ) -> Result<ExportInvoicesResponse, KsefError> {
+        fetching_invoices::export_invoices::start_export_invoices(self, request).await
+    }
+
+    pub async fn get_export_status(
+        &self,
+        reference_number: &str,
+    ) -> Result<ExportInvoicesStatusResponse, KsefError> {
+        fetching_invoices::export_invoices::get_export_status(self, reference_number).await
+    }
+
+    pub async fn export_invoices(
+        &self,
+        query: QueryCriteria,
+    ) -> Result<fetching_invoices::export_invoices::ExportResult, KsefError> {
+        fetching_invoices::export_invoices::export_invoices(self, query).await
+    }
+
+    pub async fn export_invoices_incrementally(
+        &self,
+        state: &mut fetching_invoices::incremental_fetch::IncrementalFetchState,
+        subject_types: Vec<fetching_invoices::fetch_invoice_metadata::SubjectType>,
+        window_end: Option<chrono::DateTime<chrono::Utc>>,
+        default_start: chrono::DateTime<chrono::Utc>,
+    ) -> Result<Vec<fetching_invoices::incremental_fetch::FetchedInvoice>, KsefError> {
+        fetching_invoices::incremental_fetch::fetch_invoices_incrementally(
+            self,
+            state,
+            subject_types,
+            window_end,
+            default_start,
+        )
+        .await
     }
 
     pub fn url_for(&self, path: &str) -> String {
