@@ -1,11 +1,5 @@
+use crate::client::models::ContextIdentifierType;
 use crate::client::xades::utils::xml_escape;
-
-#[derive(Debug, Clone)]
-pub enum ContextIdentifierType {
-    Nip,
-    InternalId,
-    NipVatUe,
-}
 
 #[derive(Debug, Clone)]
 pub enum SubjectIdentifierType {
@@ -196,9 +190,12 @@ impl AuthTokenRequestBuilder {
                 .as_ref()
                 .map(|s| s.trim().is_empty())
                 .unwrap_or(true)
-            {
-                return Err("certificate_fingerprint is required when subject type is certificateFingerprint".to_string());
-            }
+        {
+            return Err(
+                "certificate_fingerprint is required when subject type is certificateFingerprint"
+                    .to_string(),
+            );
+        }
 
         Ok(AuthTokenRequest {
             challenge,

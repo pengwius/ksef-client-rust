@@ -1,15 +1,10 @@
 use crate::client::error::KsefError;
+use crate::client::models::InvoicePayload;
 use crate::client::online_session::encryption::encrypt_invoice;
 use openssl::sha::sha256;
 use std::io::{Cursor, Write};
 use zip::ZipWriter;
 use zip::write::SimpleFileOptions;
-
-#[derive(Debug, Clone)]
-pub struct InvoicePayload {
-    pub filename: String,
-    pub content: Vec<u8>,
-}
 
 #[derive(Debug, Clone)]
 pub struct FileMetadata {

@@ -63,11 +63,20 @@ pub async fn get_auth_challenge(client: &KsefClient) -> Result<AuthChallenge, Ks
 
 #[cfg(test)]
 mod tests {
+    use crate::Environment;
+    use crate::{ContextIdentifier, ContextIdentifierType};
+
     use super::*;
 
     #[tokio::test]
     async fn get_auth_challenge_test() {
-        let client = KsefClient::new();
+        let nip = "5264567890";
+        let context = ContextIdentifier {
+            id_type: ContextIdentifierType::Nip,
+            value: nip.to_string(),
+        };
+
+        let client = KsefClient::new(Environment::Test, context);
         let result = get_auth_challenge(&client).await;
         assert!(
             result.is_ok(),

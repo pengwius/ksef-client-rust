@@ -2,21 +2,24 @@ use crate::common;
 
 use std::time::Duration;
 
-use ksef_client::{ContextIdentifierType, KsefClient, SubjectIdentifierType};
+use ksef_client::{
+    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
+};
 
 async fn authorize_with_nip(nip: &str) -> KsefClient {
-    let mut client = KsefClient::new();
+    let context = ContextIdentifier {
+        id_type: ContextIdentifierType::Nip,
+        value: nip.to_string(),
+    };
+    let mut client = KsefClient::new(Environment::Test, context);
+
     let given_name = "Test";
     let surname = "User";
     let serial_prefix = "TINPL";
     let common_name = "Test User";
 
     let auth_token_request = client
-        .get_auth_token_request(
-            nip,
-            ContextIdentifierType::Nip,
-            SubjectIdentifierType::CertificateSubject,
-        )
+        .get_auth_token_request(SubjectIdentifierType::CertificateSubject)
         .await
         .expect("Failed to get auth token request");
 

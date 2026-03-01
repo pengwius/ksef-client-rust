@@ -1,10 +1,11 @@
+use crate::InvoicePayload;
 use crate::client::KsefClient;
 use crate::client::batch_session::close_batch_session::close_batch_session;
 use crate::client::batch_session::open_batch_session::{
     OpenBatchSessionRequestBuilder, open_batch_session,
 };
 use crate::client::batch_session::upload_batch_parts::upload_batch_parts;
-use crate::client::batch_session::zip::{InvoicePayload, create_zip, encrypt_zip_parts, split_zip};
+use crate::client::batch_session::zip::{create_zip, encrypt_zip_parts, split_zip};
 use crate::client::error::KsefError;
 use crate::client::online_session::encryption::generate_encryption_data;
 

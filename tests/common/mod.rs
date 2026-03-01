@@ -1,5 +1,7 @@
 use chrono::{Duration, Utc};
-use ksef_client::{ContextIdentifierType, KsefClient, SubjectIdentifierType};
+use ksef_client::{
+    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
+};
 use rand::random_range;
 
 #[allow(dead_code)]
@@ -28,19 +30,20 @@ pub async fn generate_random_nip() -> String {
 
 #[allow(dead_code)]
 pub async fn authorize_client() -> KsefClient {
-    let mut client = KsefClient::new();
     let nip = "5264567890";
+    let context = ContextIdentifier {
+        id_type: ContextIdentifierType::Nip,
+        value: nip.to_string(),
+    };
+    let mut client = KsefClient::new(Environment::Test, context);
+
     let given_name = "Eugeniusz";
     let surname = "Fakturowski";
     let serial_prefix = "TINPL";
     let common_name = "Eugeniusz Fakturowski";
 
     let auth_token_request = client
-        .get_auth_token_request(
-            &nip,
-            ContextIdentifierType::Nip,
-            SubjectIdentifierType::CertificateSubject,
-        )
+        .get_auth_token_request(SubjectIdentifierType::CertificateSubject)
         .await
         .expect("Failed to get auth token request");
 

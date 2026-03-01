@@ -1,11 +1,18 @@
 mod common;
 
-use ksef_client::{ContextIdentifierType, KsefClient, KsefTokenPermissions, SubjectIdentifierType};
+use ksef_client::{
+    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, KsefTokenPermissions,
+    SubjectIdentifierType,
+};
 
 #[tokio::test]
 async fn test_ksef_token_lifecycle() {
-    let mut client = KsefClient::new();
     let nip: String = common::generate_random_nip().await;
+    let context = ContextIdentifier {
+        id_type: ContextIdentifierType::Nip,
+        value: nip.clone(),
+    };
+    let mut client = KsefClient::new(Environment::Test, context);
     let given_name = "Eugeniusz";
     let surname = "Fakturowski";
     let serial_prefix = "TINPL";
@@ -14,11 +21,7 @@ async fn test_ksef_token_lifecycle() {
     println!("Starting KSeF token test for NIP: {}", nip);
 
     let auth_token_request = client
-        .get_auth_token_request(
-            &nip,
-            ContextIdentifierType::Nip,
-            SubjectIdentifierType::CertificateSubject,
-        )
+        .get_auth_token_request(SubjectIdentifierType::CertificateSubject)
         .await
         .expect("Failed to get auth token request");
 

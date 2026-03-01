@@ -1,6 +1,8 @@
 use chrono::Utc;
 use clap::Parser;
-use ksef_client::{ContextIdentifierType, KsefClient, SubjectIdentifierType};
+use ksef_client::{
+    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
+};
 use std::fs;
 use std::path::PathBuf;
 use std::process::ExitCode;
@@ -86,14 +88,14 @@ async fn main() -> ExitCode {
     println!("    CommonName: {}", &args.common_name);
 
     println!("[3] Getting AuthTokenRequest...");
-    let mut client = KsefClient::new();
+    let context = ContextIdentifier {
+        id_type: ContextIdentifierType::Nip,
+        value: nip.clone(),
+    };
+    let mut client = KsefClient::new(Environment::Test, context);
 
     let auth_token_request = match client
-        .get_auth_token_request(
-            &nip,
-            ContextIdentifierType::Nip,
-            SubjectIdentifierType::CertificateSubject,
-        )
+        .get_auth_token_request(SubjectIdentifierType::CertificateSubject)
         .await
     {
         Ok(req) => req,

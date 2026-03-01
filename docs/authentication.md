@@ -17,17 +17,23 @@ Należy przygotować dokument XML z identyfikatorem kontekstu, sposobem identyfi
 | `subject_type` | `SubjectIdentifierType` | Sposób identyfikacji podmiotu. Może przyjąć `SubjectIdentifierType::CertificateSubject` lub `SubjectIdentifierType::CertificateFingerprint`. |
 
 ```rust
-use ksef_client::{KsefClient, ContextIdentifierType, SubjectIdentifierType};
+use ksef_client::{
+    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
+};
 
 // Inicjalizacja klienta
-let mut client = KsefClient::new();
+let context = ContextIdentifier {
+    id_type: ContextIdentifierType::Nip,
+    value: "1234567890".to_string(),
+};
+let mut client = KsefClient::new(Environment::Test, context);
 
 // Budowa obiektu żądania
-let auth_request = client.get_auth_token_request(
-    "1234567890",                             // NIP kontekstu
-    ContextIdentifierType::Nip,               // Typ identyfikatora kontekstu
-    SubjectIdentifierType::CertificateSubject // Logowanie certyfikatem
-).await?;
+let auth_request = client
+    .get_auth_token_request(
+        SubjectIdentifierType::CertificateSubject, // Logowanie certyfikatem
+    )
+    .await?;
 
 // Serializacja do XML
 let unsigned_xml = auth_request.to_xml();
@@ -161,29 +167,32 @@ Poniżej znajduje się kompletny kod realizujący scenariusz:
 
 ```rust
 use ksef_client::{
-    ContextIdentifierType, KsefClient, SubjectIdentifierType, KsefToken
+    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
+    KsefToken,
 };
 use std::time::Duration;
 use std::thread;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // === CZEŚĆ 1: LOGOWANIE XADES ===
+    // === CZĘŚĆ 1: LOGOWANIE XADES ===
     println!("--- 1. Logowanie XAdES ---");
-    let mut client = KsefClient::new(); // Domyślnie środowisko testowe
     let nip = "1234567890";
+    let context = ContextIdentifier {
+        id_type: ContextIdentifierType::Nip,
+        value: nip.to_string(),
+    };
+    let mut client = KsefClient::new(Environment::Test, context);
 
-    // 1. Generowanie certyfikatu self-signed (tylko dla testów!)
+    // 1. Generujemy certyfikat self-signed (tylko do testów!)
     client.xades.gen_selfsign_cert(
         "Jan", "Kowalski", "TINPL", nip, "Jan Kowalski Test"
     )?;
 
     // 2. Przygotowanie requestu autoryzacyjnego
-    let auth_request = client.get_auth_token_request(
-        nip,
-        ContextIdentifierType::Nip,
-        SubjectIdentifierType::CertificateSubject
-    ).await?;
+    let auth_request = client
+        .get_auth_token_request(SubjectIdentifierType::CertificateSubject)
+        .await?;
     let unsigned_xml = auth_request.to_xml();
 
     // 3. Podpisanie requestu
@@ -218,7 +227,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- 3. Logowanie Tokenem KSeF (nowa sesja) ---");
     
     // Symulujemy nową sesję - nowa instancja klienta
-    let mut client2 = KsefClient::new();
+    let context2 = ContextIdentifier {
+        id_type: ContextIdentifierType::Nip,
+        value: nip.to_string(),
+    };
+    let mut client2 = KsefClient::new(Environment::Test, context2);
 
     // Odtwarzamy obiekt tokena (normalnie z bazy danych)
     let ksef_token = KsefToken {

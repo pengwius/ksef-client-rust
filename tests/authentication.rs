@@ -1,18 +1,20 @@
 mod common;
 
-use ksef_client::{ContextIdentifierType, KsefClient, SubjectIdentifierType};
+use ksef_client::{
+    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
+};
 
 #[tokio::test]
 async fn test_auth_token_request_generation() {
-    let client = KsefClient::new();
     let nip: String = common::generate_random_nip().await;
+    let context = ContextIdentifier {
+        id_type: ContextIdentifierType::Nip,
+        value: nip.clone(),
+    };
+    let client = KsefClient::new(Environment::Test, context);
 
     let auth_token_request = client
-        .get_auth_token_request(
-            &nip,
-            ContextIdentifierType::Nip,
-            SubjectIdentifierType::CertificateSubject,
-        )
+        .get_auth_token_request(SubjectIdentifierType::CertificateSubject)
         .await
         .expect("Failed to get auth token request");
 
@@ -23,15 +25,15 @@ async fn test_auth_token_request_generation() {
 
 #[tokio::test]
 async fn test_xades_signature_generation() {
-    let mut client = KsefClient::new();
     let nip: String = common::generate_random_nip().await;
+    let context = ContextIdentifier {
+        id_type: ContextIdentifierType::Nip,
+        value: nip.clone(),
+    };
+    let mut client = KsefClient::new(Environment::Test, context);
 
     let auth_token_request = client
-        .get_auth_token_request(
-            &nip,
-            ContextIdentifierType::Nip,
-            SubjectIdentifierType::CertificateSubject,
-        )
+        .get_auth_token_request(SubjectIdentifierType::CertificateSubject)
         .await
         .expect("Failed to get auth token request");
 
@@ -53,15 +55,15 @@ async fn test_xades_signature_generation() {
 
 #[tokio::test]
 async fn test_authentication_submission() {
-    let mut client = KsefClient::new();
     let nip: String = common::generate_random_nip().await;
+    let context = ContextIdentifier {
+        id_type: ContextIdentifierType::Nip,
+        value: nip.clone(),
+    };
+    let mut client = KsefClient::new(Environment::Test, context);
 
     let auth_token_request = client
-        .get_auth_token_request(
-            &nip,
-            ContextIdentifierType::Nip,
-            SubjectIdentifierType::CertificateSubject,
-        )
+        .get_auth_token_request(SubjectIdentifierType::CertificateSubject)
         .await
         .expect("Failed to get auth token request");
 

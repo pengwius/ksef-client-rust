@@ -4,7 +4,7 @@ pub use client::KsefClient;
 pub use client::auth::auth_challenge::AuthChallenge;
 pub use client::auth::auth_token_request::{
     AuthTokenRequest, AuthTokenRequestBuilder, AuthenticationTokenAllowedIps,
-    AuthenticationTokenAuthorizationPolicy, ContextIdentifierType, SubjectIdentifierType,
+    AuthenticationTokenAuthorizationPolicy, SubjectIdentifierType,
 };
 pub use client::auth::get_access_token::AccessTokens;
 pub use client::auth::xades_auth::AuthTokens;
@@ -91,14 +91,13 @@ pub use client::online_session::encryption::EncryptionData;
 pub use client::online_session::full_flow::OnlineSubmissionResult;
 pub use client::online_session::get_invoice_status::{GetInvoiceStatusResponse, InvoiceStatus};
 pub use client::online_session::open_online_session::{
-    Encryption, FormCode, OpenOnlineSessionRequest, OpenOnlineSessionRequestBuilder,
-    OpenOnlineSessionResponse,
+    OpenOnlineSessionRequest, OpenOnlineSessionRequestBuilder, OpenOnlineSessionResponse,
 };
 pub use client::online_session::send_invoice::SendInvoiceResponse;
 
 pub use client::batch_session::zip::{
-    BatchZipResult, EncryptedBatchPart, FileMetadata, InvoicePayload, calculate_invoice_hash,
-    create_zip, encrypt_zip_parts, split_zip,
+    BatchZipResult, EncryptedBatchPart, FileMetadata, calculate_invoice_hash, create_zip,
+    encrypt_zip_parts, split_zip,
 };
 
 pub use client::batch_session::open_batch_session::{
@@ -122,3 +121,6 @@ pub use client::fetching_invoices::fetch_invoice_metadata::{
     ThirdSubjectMetadata,
 };
 pub use client::fetching_invoices::incremental_fetch::{FetchedInvoice, IncrementalFetchState};
+pub use client::models::{
+    ContextIdentifier, ContextIdentifierType, Encryption, Environment, FormCode, InvoicePayload,
+};

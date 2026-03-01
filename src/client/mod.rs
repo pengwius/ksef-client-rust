@@ -4,11 +4,13 @@ use crate::AuthTokenRequest;
 use crate::AuthTokenRequestBuilder;
 use crate::AuthTokens;
 use crate::CertificateLimits;
-use crate::ContextIdentifierType;
+use crate::ContextIdentifier;
 use crate::CsrResult;
 use crate::DetailedKsefToken;
 use crate::EnrollmentData;
 use crate::EnrollmentStatusResponse;
+use crate::Environment;
+use crate::InvoicePayload;
 use crate::KsefToken;
 use crate::KsefTokenPermissions;
 use crate::QuerySessionsResponse;
@@ -19,7 +21,7 @@ use crate::client::batch_session::full_flow::BatchSubmissionResult;
 use crate::client::batch_session::open_batch_session::{
     OpenBatchSessionRequest, OpenBatchSessionResponse,
 };
-use crate::client::batch_session::zip::{EncryptedBatchPart, InvoicePayload};
+use crate::client::batch_session::zip::EncryptedBatchPart;
 use crate::client::error::KsefError;
 use crate::client::fetching_invoices::export_invoices::{
     ExportInvoicesRequest, ExportInvoicesResponse, ExportInvoicesStatusResponse,
@@ -70,6 +72,7 @@ pub mod fetching_invoices;
 pub mod get_public_key_certificates;
 pub mod ksef_certificates;
 pub mod ksef_tokens;
+pub mod models;
 pub mod online_session;
 pub mod permissions;
 mod routes;
@@ -78,6 +81,8 @@ pub mod xades;
 
 pub struct KsefClient {
     pub base_url: String,
+    pub environment: Option<Environment>,
+    pub context: ContextIdentifier,
     pub client: reqwest::Client,
     pub xades: xades::XadesSigner,
     pub auth_token: AuthTokens,
@@ -85,20 +90,16 @@ pub struct KsefClient {
     pub ksef_token: KsefToken,
 }
 
-impl Default for KsefClient {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl KsefClient {
-    pub fn new() -> Self {
-        Self::new_with_base("https://api-test.ksef.mf.gov.pl")
+    pub fn new(environment: Environment, context: ContextIdentifier) -> Self {
+        Self::new_with_base(environment.base_url(), context).with_environment(environment)
     }
 
-    pub fn new_with_base(base: &str) -> Self {
+    pub fn new_with_base(base: &str, context: ContextIdentifier) -> Self {
         KsefClient {
             base_url: base.trim_end_matches('/').to_string(),
+            environment: None,
+            context,
             client: reqwest::Client::new(),
             xades: xades::XadesSigner::default(),
             auth_token: AuthTokens::default(),
@@ -107,14 +108,17 @@ impl KsefClient {
         }
     }
 
+    fn with_environment(mut self, environment: Environment) -> Self {
+        self.environment = Some(environment);
+        self
+    }
+
     pub async fn get_auth_challenge(&self) -> Result<AuthChallenge, KsefError> {
         auth::auth_challenge::get_auth_challenge(self).await
     }
 
     pub async fn get_auth_token_request(
         &self,
-        id: &str,
-        id_type: ContextIdentifierType,
         subject_type: SubjectIdentifierType,
     ) -> Result<AuthTokenRequest, KsefError> {
         let challenge = match self.get_auth_challenge().await {
@@ -129,7 +133,7 @@ impl KsefClient {
 
         let built = AuthTokenRequestBuilder::new()
             .with_challenge(&challenge)
-            .with_context(id_type, id)
+            .with_context(self.context.id_type.clone(), &self.context.value)
             .with_subject_type(subject_type)
             .build();
 

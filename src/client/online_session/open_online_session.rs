@@ -1,5 +1,6 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
+use crate::client::models::{Encryption, FormCode};
 use crate::client::routes;
 use serde::{Deserialize, Serialize};
 
@@ -9,24 +10,6 @@ pub struct OpenOnlineSessionRequest {
     pub form_code: FormCode,
     #[serde(rename = "encryption")]
     pub encryption: Encryption,
-}
-
-#[derive(Debug, Serialize)]
-pub struct FormCode {
-    #[serde(rename = "systemCode")]
-    pub system_code: String,
-    #[serde(rename = "schemaVersion")]
-    pub schema_version: String,
-    #[serde(rename = "value")]
-    pub value: String,
-}
-
-#[derive(Debug, Serialize)]
-pub struct Encryption {
-    #[serde(rename = "encryptedSymmetricKey")]
-    pub encrypted_symmetric_key: String,
-    #[serde(rename = "initializationVector")]
-    pub initialization_vector: String,
 }
 
 #[derive(Debug, Deserialize)]

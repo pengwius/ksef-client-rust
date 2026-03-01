@@ -17,15 +17,19 @@ You must prepare an XML document with the context identifier, identification met
 | `subject_type` | `SubjectIdentifierType` | Entity identification method. Can be `SubjectIdentifierType::CertificateSubject` or `SubjectIdentifierType::CertificateFingerprint`. |
 
 ```rust
-use ksef_client::{KsefClient, ContextIdentifierType, SubjectIdentifierType};
+use ksef_client::{
+    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
+};
 
 // Initialize client
-let mut client = KsefClient::new();
+let context = ContextIdentifier {
+    id_type: ContextIdentifierType::Nip,
+    value: "1234567890".to_string(),
+};
+let mut client = KsefClient::new(Environment::Test, context);
 
 // Build request object
 let auth_request = client.get_auth_token_request(
-    "1234567890",                             // Context NIP
-    ContextIdentifierType::Nip,               // Context identifier type
     SubjectIdentifierType::CertificateSubject // Login with certificate
 ).await?;
 
@@ -161,7 +165,8 @@ Below is a complete code implementing the scenario:
 
 ```rust
 use ksef_client::{
-    ContextIdentifierType, KsefClient, SubjectIdentifierType, KsefToken
+    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
+    KsefToken,
 };
 use std::time::Duration;
 use std::thread;
@@ -170,8 +175,12 @@ use std::thread;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // === PART 1: XADES LOGIN ===
     println!("--- 1. XAdES Login ---");
-    let mut client = KsefClient::new(); // Default test environment
     let nip = "1234567890";
+    let context = ContextIdentifier {
+        id_type: ContextIdentifierType::Nip,
+        value: nip.to_string(),
+    };
+    let mut client = KsefClient::new(Environment::Test, context);
 
     // 1. Generate self-signed certificate (only for testing!)
     client.xades.gen_selfsign_cert(
@@ -179,11 +188,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     )?;
 
     // 2. Prepare auth request
-    let auth_request = client.get_auth_token_request(
-        nip,
-        ContextIdentifierType::Nip,
-        SubjectIdentifierType::CertificateSubject
-    ).await?;
+    let auth_request = client
+        .get_auth_token_request(SubjectIdentifierType::CertificateSubject)
+        .await?;
     let unsigned_xml = auth_request.to_xml();
 
     // 3. Sign request
@@ -218,7 +225,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- 3. KSeF Token Login (new session) ---");
     
     // Simulate new session - new client instance
-    let mut client2 = KsefClient::new();
+    let context2 = ContextIdentifier {
+        id_type: ContextIdentifierType::Nip,
+        value: nip.to_string(),
+    };
+    let mut client2 = KsefClient::new(Environment::Test, context2);
 
     // Reconstruct token object (normally from database)
     let ksef_token = KsefToken {

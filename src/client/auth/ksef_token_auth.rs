@@ -1,5 +1,5 @@
+use crate::ContextIdentifierType;
 use crate::client::KsefClient;
-use crate::client::auth::auth_token_request::ContextIdentifierType;
 use crate::client::auth::xades_auth::AuthTokens;
 use crate::client::error::KsefError;
 use crate::client::get_public_key_certificates::PublicKeyCertificateUsage;
@@ -83,8 +83,8 @@ pub async fn submit_ksef_token_auth_request(
     let pem = String::from_utf8(pem_bytes)
         .map_err(|e| KsefError::Unexpected(format!("UTF-8 error: {}", e)))?;
 
-    let encrypted_token = encrypt_token(&token, challenge.timestamp_ms, &pem)
-        .map_err(KsefError::OpenSslError)?;
+    let encrypted_token =
+        encrypt_token(&token, challenge.timestamp_ms, &pem).map_err(KsefError::OpenSslError)?;
 
     let context_type_str = match context_type {
         ContextIdentifierType::Nip => "Nip",

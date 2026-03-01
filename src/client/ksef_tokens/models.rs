@@ -1,3 +1,4 @@
+use crate::client::models::ContextIdentifier;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
@@ -35,22 +36,6 @@ pub enum IdentifierType {
     Nip,
     Pesel,
     Fingerprint,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ContextIdentifier {
-    #[serde(rename = "type")]
-    pub id_type: ContextIdentifierType,
-    pub value: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub enum ContextIdentifierType {
-    Nip,
-    InternalId,
-    NipVatUe,
-    PeppolId,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
