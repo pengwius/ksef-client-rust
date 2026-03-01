@@ -26,9 +26,3 @@ Detailed documentation can be found in the `docs/` directory.
 *   [Sending an Invoice in an Interactive Session](docs/online_session.en.md)
 *   [Sending an Invoice in a Batch Session](docs/batch_session.en.md)
 *   [Fetching Invoices](docs/fetching_invoices.en.md)
-
-## Contact
-If you have any questions, suggestions, or need assistance, please contact me:
-- Telegram: [@pengwius](https://t.me/pengwius) (preferred)
-- Matrix: [@pengwius:matrix.org](https://matrix.to/#/@pengwius:matrix.org) (preferred)
-- Email: [pengwius@proton.me](mailto:pengwius@proton.me) (not preferred due to potential delays in response)

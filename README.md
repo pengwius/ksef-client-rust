@@ -26,9 +26,3 @@ Szczegółowa dokumentacja znajduje się w katalogu `docs/`.
 *   [Wysyłanie Faktury w Sesji Interaktywnej](docs/online_session.md)
 *   [Wysyłanie Faktury w Sesji Wsadowej](docs/batch_session.md)
 *   [Pobieranie Faktur](docs/fetching_invoices.md)
-
-## Kontakt
-Jeśli masz pytania, sugestie lub potrzebujesz pomocy, skontaktuj się ze mną:
-- Telegram: [@pengwius](https://t.me/pengwius) (preferowane)
-- Matrix: [@pengwius:matrix.org](https://matrix.to/#/@pengwius:matrix.org) (preferowane)
-- Email: [pengwius@proton.me](mailto:pengwius@proton.me) (niepreferowane ze względu na potencjalne opóźnienia w odpowiedzi)
