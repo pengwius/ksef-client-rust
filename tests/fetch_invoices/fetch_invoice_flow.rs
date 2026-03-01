@@ -1,7 +1,7 @@
 use crate::common;
 use ksef_client::{
-    DateRange, DateType, FetchInvoiceMetadataRequest, IncrementalFetchState, InvoicePayload,
-    QueryCriteria, SubjectType, fetch_invoices_incrementally,
+    DateRangeBuilder, DateType, FetchInvoiceMetadataRequestBuilder, IncrementalFetchState,
+    InvoicePayload, QueryCriteriaBuilder, SubjectType,
 };
 use std::io::Read;
 
@@ -56,30 +56,25 @@ async fn test_fetch_invoice_flow() {
     let from_date = start_of_day.to_rfc3339();
     let to_date = (now + chrono::Duration::hours(1)).to_rfc3339();
 
-    let query_req = FetchInvoiceMetadataRequest {
-        query: QueryCriteria {
-            subject_type: SubjectType::Subject1,
-            date_range: DateRange {
-                date_type: DateType::Invoicing,
-                from: from_date,
-                to: Some(to_date),
-                restrict_to_permanent_storage_hwm_date: None,
-            },
-            ksef_number: None,
-            invoice_number: None,
-            amount: None,
-            seller_nip: None,
-            buyer_identifier: None,
-            currency_codes: None,
-            invoicing_mode: None,
-            is_self_invoicing: None,
-            form_type: None,
-            invoice_types: None,
-            has_attachment: None,
-        },
-        page_offset: Some(0),
-        page_size: Some(100),
-    };
+    let date_range = DateRangeBuilder::new()
+        .date_type(DateType::Invoicing)
+        .from(from_date.clone())
+        .to(to_date.clone())
+        .build()
+        .expect("Failed to build date_range");
+
+    let query = QueryCriteriaBuilder::new()
+        .subject_type(SubjectType::Subject1)
+        .date_range(date_range)
+        .build()
+        .expect("Failed to build query");
+
+    let query_req = FetchInvoiceMetadataRequestBuilder::new()
+        .query(query)
+        .page_offset(0)
+        .page_size(100)
+        .build()
+        .expect("Failed to build FetchInvoiceMetadataRequest");
 
     let metadata_resp = client.fetch_invoice_metadata(query_req.clone()).await;
 
@@ -171,15 +166,10 @@ async fn test_fetch_invoice_flow() {
     let default_start = chrono::Utc::now() - chrono::Duration::days(1);
     let window_end = Some(chrono::Utc::now() + chrono::Duration::days(1));
 
-    let fetched_invoices = fetch_invoices_incrementally(
-        &client,
-        &mut state,
-        subject_types,
-        window_end,
-        default_start,
-    )
-    .await
-    .expect("Failed to fetch invoices incrementally");
+    let fetched_invoices = client
+        .export_invoices_incrementally(&mut state, subject_types, window_end, default_start)
+        .await
+        .expect("Failed to fetch invoices incrementally");
 
     println!("Incrementally fetched {} invoices", fetched_invoices.len());
 

@@ -10,6 +10,52 @@ pub struct FetchInvoiceMetadataRequest {
     pub page_size: Option<i32>,
 }
 
+impl FetchInvoiceMetadataRequest {
+    pub fn builder() -> FetchInvoiceMetadataRequestBuilder {
+        FetchInvoiceMetadataRequestBuilder::new()
+    }
+}
+
+pub struct FetchInvoiceMetadataRequestBuilder {
+    query: Option<QueryCriteria>,
+    page_offset: Option<i32>,
+    page_size: Option<i32>,
+}
+
+impl FetchInvoiceMetadataRequestBuilder {
+    pub fn new() -> Self {
+        Self {
+            query: None,
+            page_offset: None,
+            page_size: None,
+        }
+    }
+
+    pub fn query(mut self, query: QueryCriteria) -> Self {
+        self.query = Some(query);
+        self
+    }
+
+    pub fn page_offset(mut self, offset: i32) -> Self {
+        self.page_offset = Some(offset);
+        self
+    }
+
+    pub fn page_size(mut self, size: i32) -> Self {
+        self.page_size = Some(size);
+        self
+    }
+
+    pub fn build(self) -> Result<FetchInvoiceMetadataRequest, &'static str> {
+        let query = self.query.ok_or("query is required")?;
+        Ok(FetchInvoiceMetadataRequest {
+            query,
+            page_offset: self.page_offset,
+            page_size: self.page_size,
+        })
+    }
+}
+
 #[derive(Debug, Serialize, Clone)]
 pub struct QueryCriteria {
     #[serde(rename = "subjectType")]
@@ -40,6 +86,129 @@ pub struct QueryCriteria {
     pub has_attachment: Option<bool>,
 }
 
+#[derive(Debug, Clone)]
+pub struct QueryCriteriaBuilder {
+    subject_type: Option<SubjectType>,
+    date_range: Option<DateRange>,
+    ksef_number: Option<String>,
+    invoice_number: Option<String>,
+    amount: Option<AmountFilter>,
+    seller_nip: Option<String>,
+    buyer_identifier: Option<BuyerIdentifier>,
+    currency_codes: Option<Vec<String>>,
+    invoicing_mode: Option<InvoicingMode>,
+    is_self_invoicing: Option<bool>,
+    form_type: Option<FormType>,
+    invoice_types: Option<Vec<InvoiceType>>,
+    has_attachment: Option<bool>,
+}
+
+impl QueryCriteriaBuilder {
+    pub fn new() -> Self {
+        Self {
+            subject_type: None,
+            date_range: None,
+            ksef_number: None,
+            invoice_number: None,
+            amount: None,
+            seller_nip: None,
+            buyer_identifier: None,
+            currency_codes: None,
+            invoicing_mode: None,
+            is_self_invoicing: None,
+            form_type: None,
+            invoice_types: None,
+            has_attachment: None,
+        }
+    }
+
+    pub fn subject_type(mut self, subject: SubjectType) -> Self {
+        self.subject_type = Some(subject);
+        self
+    }
+
+    pub fn date_range(mut self, range: DateRange) -> Self {
+        self.date_range = Some(range);
+        self
+    }
+
+    pub fn ksef_number(mut self, v: impl Into<String>) -> Self {
+        self.ksef_number = Some(v.into());
+        self
+    }
+
+    pub fn invoice_number(mut self, v: impl Into<String>) -> Self {
+        self.invoice_number = Some(v.into());
+        self
+    }
+
+    pub fn amount(mut self, a: AmountFilter) -> Self {
+        self.amount = Some(a);
+        self
+    }
+
+    pub fn seller_nip(mut self, v: impl Into<String>) -> Self {
+        self.seller_nip = Some(v.into());
+        self
+    }
+
+    pub fn buyer_identifier(mut self, identifier: BuyerIdentifier) -> Self {
+        self.buyer_identifier = Some(identifier);
+        self
+    }
+
+    pub fn currency_codes(mut self, codes: Vec<String>) -> Self {
+        self.currency_codes = Some(codes);
+        self
+    }
+
+    pub fn invoicing_mode(mut self, mode: InvoicingMode) -> Self {
+        self.invoicing_mode = Some(mode);
+        self
+    }
+
+    pub fn is_self_invoicing(mut self, flag: bool) -> Self {
+        self.is_self_invoicing = Some(flag);
+        self
+    }
+
+    pub fn form_type(mut self, ft: FormType) -> Self {
+        self.form_type = Some(ft);
+        self
+    }
+
+    pub fn invoice_types(mut self, types: Vec<InvoiceType>) -> Self {
+        self.invoice_types = Some(types);
+        self
+    }
+
+    pub fn has_attachment(mut self, flag: bool) -> Self {
+        self.has_attachment = Some(flag);
+        self
+    }
+
+    pub fn build(self) -> Result<QueryCriteria, &'static str> {
+        let subject_type = self.subject_type.ok_or("subject_type is required")?;
+        let date_range = self.date_range.ok_or("date_range is required")?;
+
+        Ok(QueryCriteria {
+            subject_type,
+            date_range,
+            ksef_number: self.ksef_number,
+            invoice_number: self.invoice_number,
+            amount: self.amount,
+            seller_nip: self.seller_nip,
+            buyer_identifier: self.buyer_identifier,
+            currency_codes: self.currency_codes,
+            invoicing_mode: self.invoicing_mode,
+            is_self_invoicing: self.is_self_invoicing,
+            form_type: self.form_type,
+            invoice_types: self.invoice_types,
+            has_attachment: self.has_attachment,
+        })
+    }
+}
+
 #[derive(Debug, Serialize, Clone)]
 pub enum SubjectType {
     #[serde(rename = "Subject1")]
@@ -65,6 +234,56 @@ pub struct DateRange {
         skip_serializing_if = "Option::is_none"
     )]
     pub restrict_to_permanent_storage_hwm_date: Option<bool>,
+}
+
+#[derive(Debug, Clone)]
+pub struct DateRangeBuilder {
+    date_type: Option<DateType>,
+    from: Option<String>,
+    to: Option<String>,
+    restrict_to_permanent_storage_hwm_date: Option<bool>,
+}
+
+impl DateRangeBuilder {
+    pub fn new() -> Self {
+        Self {
+            date_type: None,
+            from: None,
+            to: None,
+            restrict_to_permanent_storage_hwm_date: None,
+        }
+    }
+
+    pub fn date_type(mut self, dt: DateType) -> Self {
+        self.date_type = Some(dt);
+        self
+    }
+
+    pub fn from(mut self, v: impl Into<String>) -> Self {
+        self.from = Some(v.into());
+        self
+    }
+
+    pub fn to(mut self, v: impl Into<String>) -> Self {
+        self.to = Some(v.into());
+        self
+    }
+
+    pub fn restrict_to_permanent_storage_hwm_date(mut self, flag: bool) -> Self {
+        self.restrict_to_permanent_storage_hwm_date = Some(flag);
+        self
+    }
+
+    pub fn build(self) -> Result<DateRange, &'static str> {
+        let date_type = self.date_type.ok_or("date_type is required")?;
+        let from = self.from.ok_or("from is required")?;
+        Ok(DateRange {
+            date_type,
+            from,
+            to: self.to,
+            restrict_to_permanent_storage_hwm_date: self.restrict_to_permanent_storage_hwm_date,
+        })
+    }
 }
 
 #[derive(Debug, Serialize, Clone)]

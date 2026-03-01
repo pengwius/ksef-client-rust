@@ -1,4 +1,4 @@
-[Polska wersja](batch_session.md) / [English version](batch_session.en.md)
+Polska wersja / [English version](batch_session.en.md)
 
 __[Oficjalna Dokumentacja](https://github.com/CIRFMF/ksef-docs/blob/main/sesja-wsadowa.md)__
 

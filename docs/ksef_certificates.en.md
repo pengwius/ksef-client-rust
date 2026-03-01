@@ -1,4 +1,4 @@
-[Polish version](ksef_certificates.md) / English version
+[Polska wersja](ksef_certificates.md) / English version
 
 # KSeF Certificates
 

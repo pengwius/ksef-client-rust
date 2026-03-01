@@ -2,7 +2,7 @@ use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::fetching_invoices::export_invoices::{ExportResult, InvoicePackageMetadata};
 use crate::client::fetching_invoices::fetch_invoice_metadata::{
-    DateRange, DateType, InvoiceMetadata, QueryCriteria, SubjectType,
+    DateRangeBuilder, DateType, InvoiceMetadata, QueryCriteriaBuilder, SubjectType,
 };
 use chrono::{DateTime, Utc};
 use std::collections::{HashMap, HashSet};
@@ -86,26 +86,26 @@ pub async fn fetch_invoices_incrementally(
             }
         }
 
-        let query = QueryCriteria {
-            subject_type: subject_type.clone(),
-            date_range: DateRange {
-                date_type: DateType::PermanentStorage,
-                from: start_date.to_rfc3339(),
-                to: window_end.map(|d| d.to_rfc3339()),
-                restrict_to_permanent_storage_hwm_date: Some(true),
-            },
-            ksef_number: None,
-            invoice_number: None,
-            amount: None,
-            seller_nip: None,
-            buyer_identifier: None,
-            currency_codes: None,
-            invoicing_mode: None,
-            is_self_invoicing: None,
-            form_type: None,
-            invoice_types: None,
-            has_attachment: None,
-        };
+        let mut dr_builder = DateRangeBuilder::new()
+            .date_type(DateType::PermanentStorage)
+            .from(start_date.to_rfc3339())
+            .restrict_to_permanent_storage_hwm_date(true);
+
+        if let Some(end_dt) = window_end.as_ref() {
+            dr_builder = dr_builder.to(end_dt.to_rfc3339());
+        }
+
+        let date_range = dr_builder.build().map_err(|e| {
+            KsefError::ApplicationError(0, format!("Failed to build DateRange: {}", e))
+        })?;
+
+        let query = QueryCriteriaBuilder::new()
+            .subject_type(subject_type.clone())
+            .date_range(date_range)
+            .build()
+            .map_err(|e| {
+                KsefError::ApplicationError(0, format!("Failed to build QueryCriteria: {}", e))
+            })?;
 
         let export_result = client.export_invoices(query).await?;
 

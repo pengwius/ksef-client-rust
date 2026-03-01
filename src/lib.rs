@@ -115,11 +115,10 @@ pub use client::fetching_invoices::export_invoices::{
 pub use client::fetching_invoices::fetch_invoice::FetchInvoiceResponse;
 pub use client::fetching_invoices::fetch_invoice_metadata::{
     AmountFilter, AmountType, AuthorizedSubjectMetadata, BuyerIdentifier, BuyerIdentifierMetadata,
-    BuyerIdentifierType, BuyerMetadata, DateRange, DateType, FetchInvoiceMetadataRequest,
-    FetchInvoiceMetadataResponse, FormType, InvoiceFormCode, InvoiceMetadata, InvoiceType,
-    InvoicingMode, QueryCriteria, SellerMetadata, SubjectType, ThirdSubjectIdentifier,
+    BuyerIdentifierType, BuyerMetadata, DateRange, DateRangeBuilder, DateType,
+    FetchInvoiceMetadataRequest, FetchInvoiceMetadataRequestBuilder, FetchInvoiceMetadataResponse,
+    FormType, InvoiceFormCode, InvoiceMetadata, InvoiceType, InvoicingMode, QueryCriteria,
+    QueryCriteriaBuilder, SellerMetadata, SubjectType, ThirdSubjectIdentifier,
     ThirdSubjectMetadata,
 };
-pub use client::fetching_invoices::incremental_fetch::{
-    FetchedInvoice, IncrementalFetchState, fetch_invoices_incrementally,
-};
+pub use client::fetching_invoices::incremental_fetch::{FetchedInvoice, IncrementalFetchState};
