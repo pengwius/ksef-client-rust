@@ -526,4 +526,22 @@ impl KsefClient {
             path.trim_start_matches('/')
         )
     }
+
+    pub async fn get_personal_permissions(
+        &self,
+        page_offset: Option<i32>,
+        page_size: Option<i32>,
+        request_body: Option<permissions::get_personal_permissions::GetPersonalPermissionsRequest>,
+    ) -> Result<
+        permissions::get_personal_permissions::GetPersonalPermissionsResponse,
+        KsefError,
+    > {
+        permissions::get_personal_permissions::get_personal_permissions(
+            self,
+            page_offset,
+            page_size,
+            request_body,
+        )
+        .await
+    }
 }
