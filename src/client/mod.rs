@@ -544,4 +544,22 @@ impl KsefClient {
         )
         .await
     }
+
+    pub async fn get_persons_permissions(
+        &self,
+        page_offset: Option<i32>,
+        page_size: Option<i32>,
+        request_body: Option<permissions::get_persons_permissions::PersonsPermissionsRequest>,
+    ) -> Result<
+        permissions::get_persons_permissions::GetPersonsPermissionsResponse,
+        KsefError,
+    > {
+        permissions::get_persons_permissions::get_persons_permissions(
+            self,
+            page_offset,
+            page_size,
+            request_body,
+        )
+        .await
+    }
 }

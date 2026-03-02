@@ -96,6 +96,49 @@ pub struct IndirectSubjectIdentifier {
     pub value: String,
 }
 
+impl IndirectSubjectIdentifier {
+    pub fn builder() -> IndirectSubjectIdentifierBuilder {
+        IndirectSubjectIdentifierBuilder::new()
+    }
+}
+
+pub struct IndirectSubjectIdentifierBuilder {
+    identifier_type: Option<IndirectSubjectIdentifierType>,
+    value: Option<String>,
+}
+
+impl IndirectSubjectIdentifierBuilder {
+    pub fn new() -> Self {
+        Self {
+            identifier_type: None,
+            value: None,
+        }
+    }
+
+    pub fn with_type(mut self, t: IndirectSubjectIdentifierType) -> Self {
+        self.identifier_type = Some(t);
+        self
+    }
+
+    pub fn with_value(mut self, v: impl Into<String>) -> Self {
+        self.value = Some(v.into());
+        self
+    }
+
+    pub fn build(self) -> Result<IndirectSubjectIdentifier, String> {
+        Ok(IndirectSubjectIdentifier {
+            identifier_type: self.identifier_type.ok_or("identifier_type is required")?,
+            value: self.value.ok_or("value is required")?,
+        })
+    }
+}
+
+impl Default for IndirectSubjectIdentifierBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum IndirectSubjectIdentifierType {
     Nip,
@@ -137,6 +180,67 @@ pub struct IndirectSubjectDetails {
     pub person_by_fp_no_id: Option<IndirectPersonByFpNoId>,
 }
 
+impl IndirectSubjectDetails {
+    pub fn builder() -> IndirectSubjectDetailsBuilder {
+        IndirectSubjectDetailsBuilder::new()
+    }
+}
+
+pub struct IndirectSubjectDetailsBuilder {
+    subject_details_type: Option<IndirectSubjectDetailsType>,
+    person_by_id: Option<IndirectPersonById>,
+    person_by_fp_with_id: Option<IndirectPersonByFpWithId>,
+    person_by_fp_no_id: Option<IndirectPersonByFpNoId>,
+}
+
+impl IndirectSubjectDetailsBuilder {
+    pub fn new() -> Self {
+        Self {
+            subject_details_type: None,
+            person_by_id: None,
+            person_by_fp_with_id: None,
+            person_by_fp_no_id: None,
+        }
+    }
+
+    pub fn with_subject_details_type(mut self, t: IndirectSubjectDetailsType) -> Self {
+        self.subject_details_type = Some(t);
+        self
+    }
+
+    pub fn with_person_by_id(mut self, p: IndirectPersonById) -> Self {
+        self.person_by_id = Some(p);
+        self
+    }
+
+    pub fn with_person_by_fp_with_id(mut self, p: IndirectPersonByFpWithId) -> Self {
+        self.person_by_fp_with_id = Some(p);
+        self
+    }
+
+    pub fn with_person_by_fp_no_id(mut self, p: IndirectPersonByFpNoId) -> Self {
+        self.person_by_fp_no_id = Some(p);
+        self
+    }
+
+    pub fn build(self) -> Result<IndirectSubjectDetails, String> {
+        Ok(IndirectSubjectDetails {
+            subject_details_type: self
+                .subject_details_type
+                .ok_or("subject_details_type is required")?,
+            person_by_id: self.person_by_id,
+            person_by_fp_with_id: self.person_by_fp_with_id,
+            person_by_fp_no_id: self.person_by_fp_no_id,
+        })
+    }
+}
+
+impl Default for IndirectSubjectDetailsBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum IndirectSubjectDetailsType {
     PersonByIdentifier,
@@ -149,6 +253,49 @@ pub enum IndirectSubjectDetailsType {
 pub struct IndirectPersonById {
     pub first_name: String,
     pub last_name: String,
+}
+
+impl IndirectPersonById {
+    pub fn builder() -> IndirectPersonByIdBuilder {
+        IndirectPersonByIdBuilder::new()
+    }
+}
+
+pub struct IndirectPersonByIdBuilder {
+    first_name: Option<String>,
+    last_name: Option<String>,
+}
+
+impl IndirectPersonByIdBuilder {
+    pub fn new() -> Self {
+        Self {
+            first_name: None,
+            last_name: None,
+        }
+    }
+
+    pub fn with_first_name(mut self, v: impl Into<String>) -> Self {
+        self.first_name = Some(v.into());
+        self
+    }
+
+    pub fn with_last_name(mut self, v: impl Into<String>) -> Self {
+        self.last_name = Some(v.into());
+        self
+    }
+
+    pub fn build(self) -> Result<IndirectPersonById, String> {
+        Ok(IndirectPersonById {
+            first_name: self.first_name.ok_or("first_name is required")?,
+            last_name: self.last_name.ok_or("last_name is required")?,
+        })
+    }
+}
+
+impl Default for IndirectPersonByIdBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -85,6 +85,14 @@ pub use client::permissions::grant_person_permissions::{
     SubjectDetailsType, SubjectIdentifier, SubjectIdentifierType as GrantSubjectIdentifierType,
 };
 
+pub use client::permissions::get_personal_permissions::{
+    GetPersonalPermissionsRequest, GetPersonalPermissionsResponse, PersonalPermission,
+};
+
+pub use client::permissions::get_persons_permissions::{
+    GetPersonsPermissionsResponse, Identifier, PersonPermission, PersonsPermissionsRequest,
+};
+
 pub use client::sessions::{AuthenticationMethod, QuerySessionsResponse, Session, SessionStatus};
 
 pub use client::online_session::encryption::EncryptionData;

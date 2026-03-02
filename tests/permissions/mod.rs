@@ -7,3 +7,4 @@ pub mod grant_person_permissions;
 pub mod grant_subunit_permissions;
 pub mod revoke_common_permission;
 pub mod get_personal_permissions;
+pub mod get_persons_permissions;

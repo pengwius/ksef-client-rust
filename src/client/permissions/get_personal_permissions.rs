@@ -137,7 +137,7 @@ pub async fn get_personal_permissions(
     if let Some(body) = request_body {
         req = req.json(&body);
     } else {
-        req = req.json(&Value::Null);
+        req = req.json(&Value::Object(serde_json::Map::new()));
     }
 
     let resp = req.send().await.map_err(KsefError::RequestError)?;
@@ -147,6 +147,7 @@ pub async fn get_personal_permissions(
         return Err(KsefError::ApiError(status.as_u16(), body));
     }
 
-    let parsed: GetPersonalPermissionsResponse = resp.json().await.map_err(KsefError::RequestError)?;
+    let parsed: GetPersonalPermissionsResponse =
+        resp.json().await.map_err(KsefError::RequestError)?;
     Ok(parsed)
 }
