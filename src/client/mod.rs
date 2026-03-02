@@ -322,6 +322,20 @@ impl KsefClient {
         ).await
     }
 
+    pub async fn revoke_common_permission(
+        &self,
+        permission_id: &str,
+    ) -> Result<
+        crate::client::permissions::revoke_common_permission::RevokeCommonPermissionResponse,
+        KsefError,
+    > {
+        permissions::revoke_common_permission::revoke_common_permission(self, permission_id).await
+    }
+
+    pub async fn get_common_permissions(&self) -> Result<serde_json::Value, KsefError> {
+        permissions::revoke_common_permission::get_common_permissions(self).await
+    }
+
     pub async fn get_certificates_limits(&self) -> Result<CertificateLimits, KsefError> {
         ksef_certificates::get_certificates_limits::get_certificates_limits(self).await
     }
