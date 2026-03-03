@@ -22,8 +22,8 @@ async fn test_grant_subunit_permissions() {
     let client: ksef_client::KsefClient = common::authorize_client().await;
     let target_nip: String = common::generate_random_nip().await;
 
-    let parent_nip = "1234567890";
-    let internal_id_prefix = format!("{}-0000", parent_nip);
+    let parent_nip = client.context.value.clone();
+    let internal_id_prefix = format!("{}0000", parent_nip);
     let checksum = calculate_checksum(&internal_id_prefix).await;
     let internal_id = format!("{}{}", internal_id_prefix, checksum);
 
@@ -52,14 +52,7 @@ async fn test_grant_subunit_permissions() {
 
     match client.grant_subunit_permissions(request).await {
         Ok(resp) => {
-            println!(
-                "Granted subunit permissions successfully. Reference number: {}",
-                resp.reference_number
-            );
-            assert!(
-                !resp.reference_number.is_empty(),
-                "Reference number should not be empty"
-            );
+            println!("resp: {:#?}", resp);
         }
         Err(e) => {
             println!(

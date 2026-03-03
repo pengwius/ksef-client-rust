@@ -41,6 +41,7 @@ use crate::client::online_session::open_online_session::{
     OpenOnlineSessionRequest, OpenOnlineSessionResponse,
 };
 use crate::client::online_session::send_invoice::SendInvoiceResponse;
+use crate::client::permissions::get_operation_status::OperationStatusResponse;
 use crate::client::permissions::grant_authorization_permissions::{
     GrantAuthorizationPermissionsRequest, GrantAuthorizationPermissionsResponse,
 };
@@ -56,12 +57,8 @@ use crate::client::permissions::grant_eu_entity_representative_permissions::{
 use crate::client::permissions::grant_indirect_entity_permissions::{
     GrantIndirectEntityPermissionsRequest, GrantIndirectEntityPermissionsResponse,
 };
-use crate::client::permissions::grant_person_permissions::{
-    GrantPersonPermissionsRequest, GrantPersonPermissionsResponse,
-};
-use crate::client::permissions::grant_subunit_permissions::{
-    GrantSubunitPermissionsRequest, GrantSubunitPermissionsResponse,
-};
+use crate::client::permissions::grant_person_permissions::GrantPersonPermissionsRequest;
+use crate::client::permissions::grant_subunit_permissions::GrantSubunitPermissionsRequest;
 use crate::{GetCertificateMetadataListRequest, GetCertificateMetadataListResponse};
 
 pub mod error;
@@ -270,7 +267,7 @@ impl KsefClient {
     pub async fn grant_person_permissions(
         &self,
         request: GrantPersonPermissionsRequest,
-    ) -> Result<GrantPersonPermissionsResponse, KsefError> {
+    ) -> Result<OperationStatusResponse, KsefError> {
         permissions::grant_person_permissions::grant_person_permissions(self, request).await
     }
 
@@ -302,7 +299,8 @@ impl KsefClient {
     pub async fn grant_subunit_permissions(
         &self,
         request: GrantSubunitPermissionsRequest,
-    ) -> Result<GrantSubunitPermissionsResponse, KsefError> {
+    ) -> Result<crate::client::permissions::get_operation_status::OperationStatusResponse, KsefError>
+    {
         permissions::grant_subunit_permissions::grant_subunit_permissions(self, request).await
     }
 
@@ -325,10 +323,7 @@ impl KsefClient {
     pub async fn revoke_common_permission(
         &self,
         permission_id: &str,
-    ) -> Result<
-        crate::client::permissions::revoke_common_permission::RevokeCommonPermissionResponse,
-        KsefError,
-    > {
+    ) -> Result<OperationStatusResponse, KsefError> {
         permissions::revoke_common_permission::revoke_common_permission(self, permission_id).await
     }
 
@@ -532,10 +527,8 @@ impl KsefClient {
         page_offset: Option<i32>,
         page_size: Option<i32>,
         request_body: Option<permissions::get_personal_permissions::GetPersonalPermissionsRequest>,
-    ) -> Result<
-        permissions::get_personal_permissions::GetPersonalPermissionsResponse,
-        KsefError,
-    > {
+    ) -> Result<permissions::get_personal_permissions::GetPersonalPermissionsResponse, KsefError>
+    {
         permissions::get_personal_permissions::get_personal_permissions(
             self,
             page_offset,
@@ -550,11 +543,25 @@ impl KsefClient {
         page_offset: Option<i32>,
         page_size: Option<i32>,
         request_body: Option<permissions::get_persons_permissions::PersonsPermissionsRequest>,
-    ) -> Result<
-        permissions::get_persons_permissions::GetPersonsPermissionsResponse,
-        KsefError,
-    > {
+    ) -> Result<permissions::get_persons_permissions::GetPersonsPermissionsResponse, KsefError>
+    {
         permissions::get_persons_permissions::get_persons_permissions(
+            self,
+            page_offset,
+            page_size,
+            request_body,
+        )
+        .await
+    }
+
+    pub async fn get_subunits_permissions(
+        &self,
+        page_offset: Option<i32>,
+        page_size: Option<i32>,
+        request_body: Option<permissions::get_subunits_permissions::GetSubunitsPermissionsRequest>,
+    ) -> Result<permissions::get_subunits_permissions::GetSubunitsPermissionsResponse, KsefError>
+    {
+        permissions::get_subunits_permissions::get_subunits_permissions(
             self,
             page_offset,
             page_size,

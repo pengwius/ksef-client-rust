@@ -1,5 +1,8 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
+use crate::client::permissions::get_operation_status::{
+    OperationStatusResponse, get_operation_status,
+};
 use crate::client::routes;
 use serde::{Deserialize, Serialize};
 
@@ -317,11 +320,8 @@ pub struct IdDocument {
     pub country: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct GrantPersonPermissionsResponse {
-    pub reference_number: String,
-}
+pub type GrantPersonPermissionsResponse =
+    crate::client::permissions::get_operation_status::OperationStatusResponse;
 
 pub async fn grant_person_permissions(
     client: &KsefClient,
@@ -346,7 +346,86 @@ pub async fn grant_person_permissions(
         return Err(KsefError::ApiError(status.as_u16(), body));
     }
 
-    let parsed: GrantPersonPermissionsResponse =
-        resp.json().await.map_err(KsefError::RequestError)?;
-    Ok(parsed)
+    let parsed_value: serde_json::Value = resp.json().await.map_err(KsefError::RequestError)?;
+
+    let handle_immediate_op =
+        |op_raw: serde_json::Value| -> Result<OperationStatusResponse, KsefError> {
+            let op = OperationStatusResponse::from_value(op_raw);
+            if let Some(code) = op.status_code() {
+                if code == 200 {
+                    return Ok(op);
+                } else {
+                    let message = op.status_message().unwrap_or_else(|| op.raw.to_string());
+                    return Err(KsefError::ApplicationError(code as i32, message));
+                }
+            }
+            Err(KsefError::InvalidResponse(format!(
+                "Unexpected operation status payload: {}",
+                op.raw
+            )))
+        };
+
+    let reference_number_opt = parsed_value
+        .get("referenceNumber")
+        .and_then(|v| v.as_str().map(|s| s.to_string()))
+        .or_else(|| {
+            parsed_value
+                .get("reference_number")
+                .and_then(|v| v.as_str().map(|s| s.to_string()))
+        });
+
+    if let Some(reference_number) = reference_number_opt {
+        let max_attempts: usize = 10;
+        let mut attempt: usize = 0;
+        loop {
+            match get_operation_status(client, &reference_number).await {
+                Ok(op_status) => {
+                    if let Some(code) = op_status.status_code() {
+                        if code != 100 {
+                            if code == 200 {
+                                return Ok(op_status);
+                            } else {
+                                let message = op_status
+                                    .status_message()
+                                    .unwrap_or_else(|| op_status.raw.to_string());
+                                return Err(KsefError::ApplicationError(code as i32, message));
+                            }
+                        }
+                    } else {
+                        return Err(KsefError::InvalidResponse(format!(
+                            "Unexpected operation status payload: {}",
+                            op_status.raw
+                        )));
+                    }
+                }
+                Err(err) => {
+                    return Err(err);
+                }
+            }
+
+            attempt += 1;
+            if attempt >= max_attempts {
+                let final_status = get_operation_status(client, &reference_number).await?;
+                if let Some(code) = final_status.status_code() {
+                    if code == 200 {
+                        return Ok(final_status);
+                    } else {
+                        let message = final_status
+                            .status_message()
+                            .unwrap_or_else(|| final_status.raw.to_string());
+                        return Err(KsefError::ApplicationError(code as i32, message));
+                    }
+                } else {
+                    return Err(KsefError::InvalidResponse(format!(
+                        "Unexpected operation status payload on final attempt: {}",
+                        final_status.raw
+                    )));
+                }
+            }
+
+            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+        }
+    } else {
+        return handle_immediate_op(parsed_value);
+    }
 }

@@ -53,10 +53,10 @@ pub use client::permissions::grant_indirect_entity_permissions::{
 
 pub use client::permissions::grant_subunit_permissions::{
     GrantSubunitPermissionsRequest, GrantSubunitPermissionsRequestBuilder,
-    GrantSubunitPermissionsResponse, SubunitContextIdentifier, SubunitContextIdentifierType,
-    SubunitIdDocument, SubunitPersonByFpNoId, SubunitPersonByFpWithId, SubunitPersonById,
-    SubunitPersonIdentifier, SubunitPersonIdentifierType, SubunitSubjectDetails,
-    SubunitSubjectDetailsType, SubunitSubjectIdentifier, SubunitSubjectIdentifierType,
+    SubunitContextIdentifier, SubunitContextIdentifierType, SubunitIdDocument,
+    SubunitPersonByFpNoId, SubunitPersonByFpWithId, SubunitPersonById, SubunitPersonIdentifier,
+    SubunitPersonIdentifierType, SubunitSubjectDetails, SubunitSubjectDetailsType,
+    SubunitSubjectIdentifier, SubunitSubjectIdentifierType,
 };
 
 pub use client::permissions::grant_eu_entity_permissions::{
@@ -92,6 +92,13 @@ pub use client::permissions::get_personal_permissions::{
 pub use client::permissions::get_persons_permissions::{
     GetPersonsPermissionsResponse, Identifier, PersonPermission, PersonsPermissionsRequest,
 };
+
+pub use client::permissions::get_subunits_permissions::{
+    AuthorizedIdentifier, GetSubunitsPermissionsRequest, GetSubunitsPermissionsResponse,
+    SubjectPersonDetails, SubunitIdentifier, SubunitPermission,
+};
+
+pub use client::permissions::get_operation_status::OperationStatusResponse;
 
 pub use client::sessions::{AuthenticationMethod, QuerySessionsResponse, Session, SessionStatus};
 
