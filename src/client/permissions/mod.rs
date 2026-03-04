@@ -1,3 +1,4 @@
+pub mod get_authorizations_permissions;
 pub mod get_operation_status;
 pub mod get_personal_permissions;
 pub mod get_persons_permissions;
@@ -9,4 +10,5 @@ pub mod grant_eu_entity_representative_permissions;
 pub mod grant_indirect_entity_permissions;
 pub mod grant_person_permissions;
 pub mod grant_subunit_permissions;
+pub mod revoke_authorizations_permission;
 pub mod revoke_common_permission;

@@ -6,13 +6,15 @@ use crate::client::permissions::get_operation_status::{
 use crate::client::routes;
 use serde_json::Value;
 
-pub async fn revoke_common_permission(
+
+
+pub async fn revoke_authorizations_permission(
     client: &KsefClient,
     permission_id: &str,
 ) -> Result<OperationStatusResponse, KsefError> {
     let url = client.url_for(&format!(
         "{}/{}",
-        routes::PERMISSIONS_COMMON_GRANTS_PATH,
+        routes::PERMISSIONS_AUTHORIZATIONS_GRANTS_PATH,
         permission_id
     ));
 
@@ -33,7 +35,7 @@ pub async fn revoke_common_permission(
         return Err(KsefError::ApiError(status.as_u16(), body));
     }
 
-    let parsed_value: serde_json::Value = resp.json().await.map_err(KsefError::RequestError)?;
+    let parsed_value: Value = resp.json().await.map_err(KsefError::RequestError)?;
 
     let reference_opt = parsed_value
         .get("referenceNumber")
@@ -44,23 +46,22 @@ pub async fn revoke_common_permission(
                 .and_then(|v| v.as_str().map(|s| s.to_string()))
         });
 
-    let handle_immediate_op =
-        |op_raw: serde_json::Value| -> Result<OperationStatusResponse, KsefError> {
-            let op = OperationStatusResponse::from_value(op_raw);
-            if let Some(code) = op.status_code() {
-                if code == 200 {
-                    Ok(op)
-                } else {
-                    let message = op.status_message().unwrap_or_else(|| op.raw.to_string());
-                    Err(KsefError::ApplicationError(code as i32, message))
-                }
+    let handle_immediate_op = |op_raw: Value| -> Result<OperationStatusResponse, KsefError> {
+        let op = OperationStatusResponse::from_value(op_raw);
+        if let Some(code) = op.status_code() {
+            if code == 200 {
+                Ok(op)
             } else {
-                Err(KsefError::InvalidResponse(format!(
-                    "Unexpected operation status payload: {}",
-                    op.raw
-                )))
+                let message = op.status_message().unwrap_or_else(|| op.raw.to_string());
+                Err(KsefError::ApplicationError(code as i32, message))
             }
-        };
+        } else {
+            Err(KsefError::InvalidResponse(format!(
+                "Unexpected operation status payload: {}",
+                op.raw
+            )))
+        }
+    };
 
     if let Some(reference_number) = reference_opt {
         let max_attempts: usize = 10;
@@ -116,28 +117,4 @@ pub async fn revoke_common_permission(
     } else {
         handle_immediate_op(parsed_value)
     }
-}
-
-pub async fn get_common_permissions(client: &KsefClient) -> Result<Value, KsefError> {
-    let url = client.url_for(routes::PERMISSIONS_COMMON_GRANTS_PATH);
-
-    let access_token = &client.access_token.access_token;
-
-    let resp = client
-        .client
-        .get(&url)
-        .header("Accept", "application/json")
-        .bearer_auth(access_token)
-        .send()
-        .await
-        .map_err(KsefError::RequestError)?;
-
-    let status = resp.status();
-    if !status.is_success() {
-        let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(status.as_u16(), body));
-    }
-
-    let parsed: Value = resp.json().await.map_err(KsefError::RequestError)?;
-    Ok(parsed)
 }

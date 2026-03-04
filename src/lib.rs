@@ -98,6 +98,13 @@ pub use client::permissions::get_subunits_permissions::{
     SubjectPersonDetails, SubunitIdentifier, SubunitPermission,
 };
 
+pub use client::permissions::get_authorizations_permissions::{
+    AuthorizationGrant, AuthorizedEntityIdentifier,
+    AuthorizedIdentifier as AuthorizationAuthorizedIdentifier, AuthorIdentifier,
+    AuthorizingEntityIdentifier, AuthorizingIdentifier, GetAuthorizationsPermissionsRequest,
+    GetAuthorizationsPermissionsResponse, QueryType, SubjectEntityDetails,
+};
+
 pub use client::permissions::get_operation_status::OperationStatusResponse;
 
 pub use client::sessions::{AuthenticationMethod, QuerySessionsResponse, Session, SessionStatus};

@@ -1,8 +1,6 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
-use crate::client::permissions::get_operation_status::{
-    OperationStatusResponse, get_operation_status,
-};
+use crate::client::permissions::get_operation_status::get_operation_status;
 use crate::client::routes;
 use serde::{Deserialize, Serialize};
 

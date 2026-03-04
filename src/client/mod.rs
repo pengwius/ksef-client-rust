@@ -42,9 +42,7 @@ use crate::client::online_session::open_online_session::{
 };
 use crate::client::online_session::send_invoice::SendInvoiceResponse;
 use crate::client::permissions::get_operation_status::OperationStatusResponse;
-use crate::client::permissions::grant_authorization_permissions::{
-    GrantAuthorizationPermissionsRequest, GrantAuthorizationPermissionsResponse,
-};
+use crate::client::permissions::grant_authorization_permissions::GrantAuthorizationPermissionsRequest;
 use crate::client::permissions::grant_entity_permissions::{
     GrantEntityPermissionsRequest, GrantEntityPermissionsResponse,
 };
@@ -281,9 +279,28 @@ impl KsefClient {
     pub async fn grant_authorization_permissions(
         &self,
         request: GrantAuthorizationPermissionsRequest,
-    ) -> Result<GrantAuthorizationPermissionsResponse, KsefError> {
+    ) -> Result<crate::client::permissions::get_operation_status::OperationStatusResponse, KsefError>
+    {
         permissions::grant_authorization_permissions::grant_authorization_permissions(self, request)
             .await
+    }
+
+    pub async fn get_authorizations_permissions(
+        &self,
+        page_offset: Option<i32>,
+        page_size: Option<i32>,
+        request: crate::client::permissions::get_authorizations_permissions::GetAuthorizationsPermissionsRequest,
+    ) -> Result<
+        crate::client::permissions::get_authorizations_permissions::GetAuthorizationsPermissionsResponse,
+        KsefError,
+    > {
+        permissions::get_authorizations_permissions::get_authorizations_permissions(
+            self,
+            page_offset,
+            page_size,
+            request,
+        )
+        .await
     }
 
     pub async fn grant_indirect_entity_permissions(
@@ -320,10 +337,23 @@ impl KsefClient {
         ).await
     }
 
+    pub async fn revoke_authorizations_permission(
+        &self,
+        permission_id: &str,
+    ) -> Result<crate::client::permissions::get_operation_status::OperationStatusResponse, KsefError>
+    {
+        permissions::revoke_authorizations_permission::revoke_authorizations_permission(
+            self,
+            permission_id,
+        )
+        .await
+    }
+
     pub async fn revoke_common_permission(
         &self,
         permission_id: &str,
-    ) -> Result<OperationStatusResponse, KsefError> {
+    ) -> Result<crate::client::permissions::get_operation_status::OperationStatusResponse, KsefError>
+    {
         permissions::revoke_common_permission::revoke_common_permission(self, permission_id).await
     }
 
