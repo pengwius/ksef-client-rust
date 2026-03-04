@@ -2,6 +2,7 @@ use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use crate::client::routes;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -111,7 +112,7 @@ pub async fn get_personal_permissions(
     page_size: Option<i32>,
     request_body: Option<GetPersonalPermissionsRequest>,
 ) -> Result<GetPersonalPermissionsResponse, KsefError> {
-    let url = client.url_for("/v2/permissions/query/personal/grants");
+    let url = client.url_for(routes::PERMISSIONS_QUERY_PERSONAL_GRANTS_PATH);
 
     let token = &client.access_token.access_token;
     if token.is_empty() {
