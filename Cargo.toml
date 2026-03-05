@@ -9,7 +9,7 @@ license = "MIT"
 categories = ["api-bindings","web-programming::http-client"]
 repository = "https://github.com/pengwius/ksef-client-rust"
 
-keywords = ["ksef", "faktury", "e-invoices", "poland", "api", "sdk", "client"]
+keywords = ["ksef", "faktury", "e-invoices", "poland", "client"]
 
 [dependencies]
 thiserror = "2.0"
@@ -23,7 +23,7 @@ reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs"] }
 regex = "1.10"
 base64 = "0.22"
-zip = "2.1"
+zip = "8.1"
 
 [[bin]]
 name = "certgen"
