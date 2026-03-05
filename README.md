@@ -6,6 +6,10 @@ SDK do integracji z Krajowym Systemem e-Faktur (KSeF).
 
 [![Crates.io](https://img.shields.io/crates/v/ksef-client.svg)](https://crates.io/crates/ksef-client)
 
+Biblioteka jest w fazie eksperymentalnej. Nie wszystkie funkcje muszą działać poprawnie.
+
+---
+
 # Instalacja
 Dodaj do swojego `Cargo.toml`:
 

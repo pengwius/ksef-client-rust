@@ -6,6 +6,10 @@ SDK for integrating with the Polish National e-Invoice System (KSeF).
 
 [![Crates.io](https://img.shields.io/crates/v/ksef-client.svg)](https://crates.io/crates/ksef-client)
 
+This library is experimental. Not all features may work correctly.
+
+---
+
 ## Installation
 Add the following to your `Cargo.toml`:
 
