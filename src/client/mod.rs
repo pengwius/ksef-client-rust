@@ -342,6 +342,15 @@ impl KsefClient {
         .await
     }
 
+    pub async fn get_entity_roles(
+        &self,
+        page_offset: Option<i32>,
+        page_size: Option<i32>,
+    ) -> Result<crate::client::permissions::get_entity_roles::GetEntityRolesResponse, KsefError>
+    {
+        permissions::get_entity_roles::get_entity_roles(self, page_offset, page_size).await
+    }
+
     pub async fn get_subordinate_entities_roles(
         &self,
         page_offset: Option<i32>,
