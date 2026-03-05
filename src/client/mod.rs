@@ -272,7 +272,8 @@ impl KsefClient {
     pub async fn grant_entity_permissions(
         &self,
         request: GrantEntityPermissionsRequest,
-    ) -> Result<GrantEntityPermissionsResponse, KsefError> {
+    ) -> Result<crate::client::permissions::get_operation_status::OperationStatusResponse, KsefError>
+    {
         permissions::grant_entity_permissions::grant_entity_permissions(self, request).await
     }
 
@@ -293,8 +294,28 @@ impl KsefClient {
     ) -> Result<
         crate::client::permissions::get_authorizations_permissions::GetAuthorizationsPermissionsResponse,
         KsefError,
-    > {
+    >{
         permissions::get_authorizations_permissions::get_authorizations_permissions(
+            self,
+            page_offset,
+            page_size,
+            request,
+        )
+        .await
+    }
+
+    pub async fn get_entities_permissions(
+        &self,
+        page_offset: Option<i32>,
+        page_size: Option<i32>,
+        request: Option<
+            crate::client::permissions::get_entities_permissions::GetEntitiesPermissionsRequest,
+        >,
+    ) -> Result<
+        crate::client::permissions::get_entities_permissions::GetEntitiesPermissionsResponse,
+        KsefError,
+    > {
+        permissions::get_entities_permissions::get_entities_permissions(
             self,
             page_offset,
             page_size,

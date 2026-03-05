@@ -1,3 +1,4 @@
+pub mod get_entities_permissions;
 pub mod get_personal_permissions;
 pub mod get_persons_permissions;
 pub mod get_subunits_permissions;

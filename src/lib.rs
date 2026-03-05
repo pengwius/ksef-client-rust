@@ -99,10 +99,15 @@ pub use client::permissions::get_subunits_permissions::{
 };
 
 pub use client::permissions::get_authorizations_permissions::{
-    AuthorizationGrant, AuthorizedEntityIdentifier,
-    AuthorizedIdentifier as AuthorizationAuthorizedIdentifier, AuthorIdentifier,
-    AuthorizingEntityIdentifier, AuthorizingIdentifier, GetAuthorizationsPermissionsRequest,
+    AuthorIdentifier, AuthorizationGrant, AuthorizedEntityIdentifier,
+    AuthorizedIdentifier as AuthorizationAuthorizedIdentifier, AuthorizingEntityIdentifier,
+    AuthorizingIdentifier, GetAuthorizationsPermissionsRequest,
     GetAuthorizationsPermissionsResponse, QueryType, SubjectEntityDetails,
+};
+
+pub use client::permissions::get_entities_permissions::{
+    EntitiesContextIdentifier, EntityPermissionItem, GetEntitiesPermissionsRequest,
+    GetEntitiesPermissionsResponse,
 };
 
 pub use client::permissions::get_operation_status::OperationStatusResponse;

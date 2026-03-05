@@ -17,6 +17,7 @@ pub const PERMISSIONS_ENTITIES_GRANTS_PATH: &str = "/v2/permissions/entities/gra
 pub const PERMISSIONS_AUTHORIZATIONS_GRANTS_PATH: &str = "/v2/permissions/authorizations/grants";
 pub const PERMISSIONS_QUERY_AUTHORIZATIONS_GRANTS_PATH: &str =
     "/v2/permissions/query/authorizations/grants";
+pub const PERMISSIONS_QUERY_ENTITIES_GRANTS_PATH: &str = "/v2/permissions/query/entities/grants";
 pub const PERMISSIONS_INDIRECT_GRANTS_PATH: &str = "/v2/permissions/indirect/grants";
 pub const PERMISSIONS_SUBUNITS_GRANTS_PATH: &str = "/v2/permissions/subunits/grants";
 pub const PERMISSIONS_QUERY_SUBUNITS_GRANTS_PATH: &str = "/v2/permissions/query/subunits/grants";
