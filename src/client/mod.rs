@@ -43,9 +43,7 @@ use crate::client::online_session::open_online_session::{
 use crate::client::online_session::send_invoice::SendInvoiceResponse;
 use crate::client::permissions::get_operation_status::OperationStatusResponse;
 use crate::client::permissions::grant_authorization_permissions::GrantAuthorizationPermissionsRequest;
-use crate::client::permissions::grant_entity_permissions::{
-    GrantEntityPermissionsRequest, GrantEntityPermissionsResponse,
-};
+use crate::client::permissions::grant_entity_permissions::GrantEntityPermissionsRequest;
 use crate::client::permissions::grant_eu_entity_permissions::{
     GrantEuEntityPermissionsRequest, GrantEuEntityPermissionsResponse,
 };
@@ -316,6 +314,24 @@ impl KsefClient {
         KsefError,
     > {
         permissions::get_entities_permissions::get_entities_permissions(
+            self,
+            page_offset,
+            page_size,
+            request,
+        )
+        .await
+    }
+
+    pub async fn get_subordinate_entities_roles(
+        &self,
+        page_offset: Option<i32>,
+        page_size: Option<i32>,
+        request: Option<crate::client::permissions::get_subordinate_entities_roles::GetSubordinateEntitiesRolesRequest>,
+    ) -> Result<
+        crate::client::permissions::get_subordinate_entities_roles::GetSubordinateEntitiesRolesResponse,
+        KsefError,
+    >{
+        permissions::get_subordinate_entities_roles::get_subordinate_entities_roles(
             self,
             page_offset,
             page_size,
