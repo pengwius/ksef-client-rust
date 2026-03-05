@@ -322,6 +322,26 @@ impl KsefClient {
         .await
     }
 
+    pub async fn get_eu_entities_permissions(
+        &self,
+        page_offset: Option<i32>,
+        page_size: Option<i32>,
+        request: Option<
+            crate::client::permissions::get_eu_entities_permissions::GetEuEntitiesPermissionsRequest,
+        >,
+    ) -> Result<
+        crate::client::permissions::get_eu_entities_permissions::GetEuEntitiesPermissionsResponse,
+        KsefError,
+    > {
+        permissions::get_eu_entities_permissions::get_eu_entities_permissions(
+            self,
+            page_offset,
+            page_size,
+            request,
+        )
+        .await
+    }
+
     pub async fn get_subordinate_entities_roles(
         &self,
         page_offset: Option<i32>,

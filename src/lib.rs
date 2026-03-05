@@ -115,6 +115,10 @@ pub use client::permissions::get_subordinate_entities_roles::{
     SubordinateEntityIdentifier, SubordinateEntityRole,
 };
 
+pub use client::permissions::get_eu_entities_permissions::{
+    EuEntityPermission, GetEuEntitiesPermissionsRequest, GetEuEntitiesPermissionsResponse,
+};
+
 pub use client::permissions::get_operation_status::OperationStatusResponse;
 
 pub use client::sessions::{AuthenticationMethod, QuerySessionsResponse, Session, SessionStatus};
