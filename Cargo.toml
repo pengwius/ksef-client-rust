@@ -1,17 +1,15 @@
 [package]
 name = "ksef-client"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 
 authors = ["pengwius <pengwius@protonmail.ch>"]
-
 description = "SDK for integrating with the Polish National e-Invoice System (KSeF)."
-
 license = "MIT"
-
+categories = ["api-bindings","web-programming::http-client"]
 repository = "https://github.com/pengwius/ksef-client-rust"
 
-keywords = ["ksef", "faktury"]
+keywords = ["ksef", "faktury", "e-invoices", "poland", "api", "sdk", "client"]
 
 [dependencies]
 thiserror = "2.0"

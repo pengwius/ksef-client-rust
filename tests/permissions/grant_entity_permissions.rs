@@ -33,15 +33,19 @@ async fn test_grant_entity_permissions() {
         .expect("Failed to build request");
 
     match client.grant_entity_permissions(request).await {
-        Ok(resp) => {
-            println!(
-                "Granted entity permissions successfully. Reference number: {}",
-                resp.reference_number
-            );
-            assert!(
-                !resp.reference_number.is_empty(),
-                "Reference number should not be empty"
-            );
+        Ok(op_status) => {
+            println!("Grant operation status: {:#?}", op_status);
+            match op_status.status_code() {
+                Some(code) => {
+                    assert_eq!(code, 200, "Expected final operation code 200, got {}", code);
+                }
+                None => {
+                    panic!(
+                        "Operation status did not contain a numeric code. Raw payload: {:?}",
+                        op_status.raw
+                    );
+                }
+            }
         }
         Err(e) => {
             panic!("Failed to grant entity permissions: {:?}", e);

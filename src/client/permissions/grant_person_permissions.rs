@@ -1,5 +1,8 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
+use crate::client::permissions::get_operation_status::{
+    OperationStatusResponse, get_operation_status,
+};
 use crate::client::routes;
 use serde::{Deserialize, Serialize};
 
@@ -86,6 +89,49 @@ pub struct SubjectIdentifier {
     pub value: String,
 }
 
+impl SubjectIdentifier {
+    pub fn builder() -> SubjectIdentifierBuilder {
+        SubjectIdentifierBuilder::new()
+    }
+}
+
+pub struct SubjectIdentifierBuilder {
+    identifier_type: Option<SubjectIdentifierType>,
+    value: Option<String>,
+}
+
+impl SubjectIdentifierBuilder {
+    pub fn new() -> Self {
+        Self {
+            identifier_type: None,
+            value: None,
+        }
+    }
+
+    pub fn with_type(mut self, t: SubjectIdentifierType) -> Self {
+        self.identifier_type = Some(t);
+        self
+    }
+
+    pub fn with_value(mut self, v: impl Into<String>) -> Self {
+        self.value = Some(v.into());
+        self
+    }
+
+    pub fn build(self) -> Result<SubjectIdentifier, String> {
+        Ok(SubjectIdentifier {
+            identifier_type: self.identifier_type.ok_or("identifier_type is required")?,
+            value: self.value.ok_or("value is required")?,
+        })
+    }
+}
+
+impl Default for SubjectIdentifierBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum SubjectIdentifierType {
     Nip,
@@ -116,6 +162,67 @@ pub struct SubjectDetails {
     pub person_by_fp_no_id: Option<PersonByFpNoId>,
 }
 
+impl SubjectDetails {
+    pub fn builder() -> SubjectDetailsBuilder {
+        SubjectDetailsBuilder::new()
+    }
+}
+
+pub struct SubjectDetailsBuilder {
+    subject_details_type: Option<SubjectDetailsType>,
+    person_by_id: Option<PersonById>,
+    person_by_fp_with_id: Option<PersonByFpWithId>,
+    person_by_fp_no_id: Option<PersonByFpNoId>,
+}
+
+impl SubjectDetailsBuilder {
+    pub fn new() -> Self {
+        Self {
+            subject_details_type: None,
+            person_by_id: None,
+            person_by_fp_with_id: None,
+            person_by_fp_no_id: None,
+        }
+    }
+
+    pub fn with_subject_details_type(mut self, t: SubjectDetailsType) -> Self {
+        self.subject_details_type = Some(t);
+        self
+    }
+
+    pub fn with_person_by_id(mut self, p: PersonById) -> Self {
+        self.person_by_id = Some(p);
+        self
+    }
+
+    pub fn with_person_by_fp_with_id(mut self, p: PersonByFpWithId) -> Self {
+        self.person_by_fp_with_id = Some(p);
+        self
+    }
+
+    pub fn with_person_by_fp_no_id(mut self, p: PersonByFpNoId) -> Self {
+        self.person_by_fp_no_id = Some(p);
+        self
+    }
+
+    pub fn build(self) -> Result<SubjectDetails, String> {
+        Ok(SubjectDetails {
+            subject_details_type: self
+                .subject_details_type
+                .ok_or("subject_details_type is required")?,
+            person_by_id: self.person_by_id,
+            person_by_fp_with_id: self.person_by_fp_with_id,
+            person_by_fp_no_id: self.person_by_fp_no_id,
+        })
+    }
+}
+
+impl Default for SubjectDetailsBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum SubjectDetailsType {
     PersonByIdentifier,
@@ -128,6 +235,49 @@ pub enum SubjectDetailsType {
 pub struct PersonById {
     pub first_name: String,
     pub last_name: String,
+}
+
+impl PersonById {
+    pub fn builder() -> PersonByIdBuilder {
+        PersonByIdBuilder::new()
+    }
+}
+
+pub struct PersonByIdBuilder {
+    first_name: Option<String>,
+    last_name: Option<String>,
+}
+
+impl PersonByIdBuilder {
+    pub fn new() -> Self {
+        Self {
+            first_name: None,
+            last_name: None,
+        }
+    }
+
+    pub fn with_first_name(mut self, v: impl Into<String>) -> Self {
+        self.first_name = Some(v.into());
+        self
+    }
+
+    pub fn with_last_name(mut self, v: impl Into<String>) -> Self {
+        self.last_name = Some(v.into());
+        self
+    }
+
+    pub fn build(self) -> Result<PersonById, String> {
+        Ok(PersonById {
+            first_name: self.first_name.ok_or("first_name is required")?,
+            last_name: self.last_name.ok_or("last_name is required")?,
+        })
+    }
+}
+
+impl Default for PersonByIdBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -170,11 +320,8 @@ pub struct IdDocument {
     pub country: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct GrantPersonPermissionsResponse {
-    pub reference_number: String,
-}
+pub type GrantPersonPermissionsResponse =
+    crate::client::permissions::get_operation_status::OperationStatusResponse;
 
 pub async fn grant_person_permissions(
     client: &KsefClient,
@@ -199,7 +346,86 @@ pub async fn grant_person_permissions(
         return Err(KsefError::ApiError(status.as_u16(), body));
     }
 
-    let parsed: GrantPersonPermissionsResponse =
-        resp.json().await.map_err(KsefError::RequestError)?;
-    Ok(parsed)
+    let parsed_value: serde_json::Value = resp.json().await.map_err(KsefError::RequestError)?;
+
+    let handle_immediate_op =
+        |op_raw: serde_json::Value| -> Result<OperationStatusResponse, KsefError> {
+            let op = OperationStatusResponse::from_value(op_raw);
+            if let Some(code) = op.status_code() {
+                if code == 200 {
+                    return Ok(op);
+                } else {
+                    let message = op.status_message().unwrap_or_else(|| op.raw.to_string());
+                    return Err(KsefError::ApplicationError(code as i32, message));
+                }
+            }
+            Err(KsefError::InvalidResponse(format!(
+                "Unexpected operation status payload: {}",
+                op.raw
+            )))
+        };
+
+    let reference_number_opt = parsed_value
+        .get("referenceNumber")
+        .and_then(|v| v.as_str().map(|s| s.to_string()))
+        .or_else(|| {
+            parsed_value
+                .get("reference_number")
+                .and_then(|v| v.as_str().map(|s| s.to_string()))
+        });
+
+    if let Some(reference_number) = reference_number_opt {
+        let max_attempts: usize = 10;
+        let mut attempt: usize = 0;
+        loop {
+            match get_operation_status(client, &reference_number).await {
+                Ok(op_status) => {
+                    if let Some(code) = op_status.status_code() {
+                        if code != 100 {
+                            if code == 200 {
+                                return Ok(op_status);
+                            } else {
+                                let message = op_status
+                                    .status_message()
+                                    .unwrap_or_else(|| op_status.raw.to_string());
+                                return Err(KsefError::ApplicationError(code as i32, message));
+                            }
+                        }
+                    } else {
+                        return Err(KsefError::InvalidResponse(format!(
+                            "Unexpected operation status payload: {}",
+                            op_status.raw
+                        )));
+                    }
+                }
+                Err(err) => {
+                    return Err(err);
+                }
+            }
+
+            attempt += 1;
+            if attempt >= max_attempts {
+                let final_status = get_operation_status(client, &reference_number).await?;
+                if let Some(code) = final_status.status_code() {
+                    if code == 200 {
+                        return Ok(final_status);
+                    } else {
+                        let message = final_status
+                            .status_message()
+                            .unwrap_or_else(|| final_status.raw.to_string());
+                        return Err(KsefError::ApplicationError(code as i32, message));
+                    }
+                } else {
+                    return Err(KsefError::InvalidResponse(format!(
+                        "Unexpected operation status payload on final attempt: {}",
+                        final_status.raw
+                    )));
+                }
+            }
+
+            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+        }
+    } else {
+        return handle_immediate_op(parsed_value);
+    }
 }

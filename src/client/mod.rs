@@ -41,12 +41,9 @@ use crate::client::online_session::open_online_session::{
     OpenOnlineSessionRequest, OpenOnlineSessionResponse,
 };
 use crate::client::online_session::send_invoice::SendInvoiceResponse;
-use crate::client::permissions::grant_authorization_permissions::{
-    GrantAuthorizationPermissionsRequest, GrantAuthorizationPermissionsResponse,
-};
-use crate::client::permissions::grant_entity_permissions::{
-    GrantEntityPermissionsRequest, GrantEntityPermissionsResponse,
-};
+use crate::client::permissions::get_operation_status::OperationStatusResponse;
+use crate::client::permissions::grant_authorization_permissions::GrantAuthorizationPermissionsRequest;
+use crate::client::permissions::grant_entity_permissions::GrantEntityPermissionsRequest;
 use crate::client::permissions::grant_eu_entity_permissions::{
     GrantEuEntityPermissionsRequest, GrantEuEntityPermissionsResponse,
 };
@@ -56,12 +53,8 @@ use crate::client::permissions::grant_eu_entity_representative_permissions::{
 use crate::client::permissions::grant_indirect_entity_permissions::{
     GrantIndirectEntityPermissionsRequest, GrantIndirectEntityPermissionsResponse,
 };
-use crate::client::permissions::grant_person_permissions::{
-    GrantPersonPermissionsRequest, GrantPersonPermissionsResponse,
-};
-use crate::client::permissions::grant_subunit_permissions::{
-    GrantSubunitPermissionsRequest, GrantSubunitPermissionsResponse,
-};
+use crate::client::permissions::grant_person_permissions::GrantPersonPermissionsRequest;
+use crate::client::permissions::grant_subunit_permissions::GrantSubunitPermissionsRequest;
 use crate::{GetCertificateMetadataListRequest, GetCertificateMetadataListResponse};
 
 pub mod error;
@@ -270,23 +263,110 @@ impl KsefClient {
     pub async fn grant_person_permissions(
         &self,
         request: GrantPersonPermissionsRequest,
-    ) -> Result<GrantPersonPermissionsResponse, KsefError> {
+    ) -> Result<OperationStatusResponse, KsefError> {
         permissions::grant_person_permissions::grant_person_permissions(self, request).await
     }
 
     pub async fn grant_entity_permissions(
         &self,
         request: GrantEntityPermissionsRequest,
-    ) -> Result<GrantEntityPermissionsResponse, KsefError> {
+    ) -> Result<crate::client::permissions::get_operation_status::OperationStatusResponse, KsefError>
+    {
         permissions::grant_entity_permissions::grant_entity_permissions(self, request).await
     }
 
     pub async fn grant_authorization_permissions(
         &self,
         request: GrantAuthorizationPermissionsRequest,
-    ) -> Result<GrantAuthorizationPermissionsResponse, KsefError> {
+    ) -> Result<crate::client::permissions::get_operation_status::OperationStatusResponse, KsefError>
+    {
         permissions::grant_authorization_permissions::grant_authorization_permissions(self, request)
             .await
+    }
+
+    pub async fn get_authorizations_permissions(
+        &self,
+        page_offset: Option<i32>,
+        page_size: Option<i32>,
+        request: crate::client::permissions::get_authorizations_permissions::GetAuthorizationsPermissionsRequest,
+    ) -> Result<
+        crate::client::permissions::get_authorizations_permissions::GetAuthorizationsPermissionsResponse,
+        KsefError,
+    >{
+        permissions::get_authorizations_permissions::get_authorizations_permissions(
+            self,
+            page_offset,
+            page_size,
+            request,
+        )
+        .await
+    }
+
+    pub async fn get_entities_permissions(
+        &self,
+        page_offset: Option<i32>,
+        page_size: Option<i32>,
+        request: Option<
+            crate::client::permissions::get_entities_permissions::GetEntitiesPermissionsRequest,
+        >,
+    ) -> Result<
+        crate::client::permissions::get_entities_permissions::GetEntitiesPermissionsResponse,
+        KsefError,
+    > {
+        permissions::get_entities_permissions::get_entities_permissions(
+            self,
+            page_offset,
+            page_size,
+            request,
+        )
+        .await
+    }
+
+    pub async fn get_eu_entities_permissions(
+        &self,
+        page_offset: Option<i32>,
+        page_size: Option<i32>,
+        request: Option<
+            crate::client::permissions::get_eu_entities_permissions::GetEuEntitiesPermissionsRequest,
+        >,
+    ) -> Result<
+        crate::client::permissions::get_eu_entities_permissions::GetEuEntitiesPermissionsResponse,
+        KsefError,
+    > {
+        permissions::get_eu_entities_permissions::get_eu_entities_permissions(
+            self,
+            page_offset,
+            page_size,
+            request,
+        )
+        .await
+    }
+
+    pub async fn get_entity_roles(
+        &self,
+        page_offset: Option<i32>,
+        page_size: Option<i32>,
+    ) -> Result<crate::client::permissions::get_entity_roles::GetEntityRolesResponse, KsefError>
+    {
+        permissions::get_entity_roles::get_entity_roles(self, page_offset, page_size).await
+    }
+
+    pub async fn get_subordinate_entities_roles(
+        &self,
+        page_offset: Option<i32>,
+        page_size: Option<i32>,
+        request: Option<crate::client::permissions::get_subordinate_entities_roles::GetSubordinateEntitiesRolesRequest>,
+    ) -> Result<
+        crate::client::permissions::get_subordinate_entities_roles::GetSubordinateEntitiesRolesResponse,
+        KsefError,
+    >{
+        permissions::get_subordinate_entities_roles::get_subordinate_entities_roles(
+            self,
+            page_offset,
+            page_size,
+            request,
+        )
+        .await
     }
 
     pub async fn grant_indirect_entity_permissions(
@@ -302,7 +382,8 @@ impl KsefClient {
     pub async fn grant_subunit_permissions(
         &self,
         request: GrantSubunitPermissionsRequest,
-    ) -> Result<GrantSubunitPermissionsResponse, KsefError> {
+    ) -> Result<crate::client::permissions::get_operation_status::OperationStatusResponse, KsefError>
+    {
         permissions::grant_subunit_permissions::grant_subunit_permissions(self, request).await
     }
 
@@ -320,6 +401,30 @@ impl KsefClient {
         permissions::grant_eu_entity_representative_permissions::grant_eu_entity_representative_permissions(
             self, request,
         ).await
+    }
+
+    pub async fn revoke_authorizations_permission(
+        &self,
+        permission_id: &str,
+    ) -> Result<crate::client::permissions::get_operation_status::OperationStatusResponse, KsefError>
+    {
+        permissions::revoke_authorizations_permission::revoke_authorizations_permission(
+            self,
+            permission_id,
+        )
+        .await
+    }
+
+    pub async fn revoke_common_permission(
+        &self,
+        permission_id: &str,
+    ) -> Result<crate::client::permissions::get_operation_status::OperationStatusResponse, KsefError>
+    {
+        permissions::revoke_common_permission::revoke_common_permission(self, permission_id).await
+    }
+
+    pub async fn get_common_permissions(&self) -> Result<serde_json::Value, KsefError> {
+        permissions::revoke_common_permission::get_common_permissions(self).await
     }
 
     pub async fn get_certificates_limits(&self) -> Result<CertificateLimits, KsefError> {
@@ -511,5 +616,53 @@ impl KsefClient {
             self.base_url.trim_end_matches('/'),
             path.trim_start_matches('/')
         )
+    }
+
+    pub async fn get_personal_permissions(
+        &self,
+        page_offset: Option<i32>,
+        page_size: Option<i32>,
+        request_body: Option<permissions::get_personal_permissions::GetPersonalPermissionsRequest>,
+    ) -> Result<permissions::get_personal_permissions::GetPersonalPermissionsResponse, KsefError>
+    {
+        permissions::get_personal_permissions::get_personal_permissions(
+            self,
+            page_offset,
+            page_size,
+            request_body,
+        )
+        .await
+    }
+
+    pub async fn get_persons_permissions(
+        &self,
+        page_offset: Option<i32>,
+        page_size: Option<i32>,
+        request_body: Option<permissions::get_persons_permissions::PersonsPermissionsRequest>,
+    ) -> Result<permissions::get_persons_permissions::GetPersonsPermissionsResponse, KsefError>
+    {
+        permissions::get_persons_permissions::get_persons_permissions(
+            self,
+            page_offset,
+            page_size,
+            request_body,
+        )
+        .await
+    }
+
+    pub async fn get_subunits_permissions(
+        &self,
+        page_offset: Option<i32>,
+        page_size: Option<i32>,
+        request_body: Option<permissions::get_subunits_permissions::GetSubunitsPermissionsRequest>,
+    ) -> Result<permissions::get_subunits_permissions::GetSubunitsPermissionsResponse, KsefError>
+    {
+        permissions::get_subunits_permissions::get_subunits_permissions(
+            self,
+            page_offset,
+            page_size,
+            request_body,
+        )
+        .await
     }
 }

@@ -53,10 +53,10 @@ pub use client::permissions::grant_indirect_entity_permissions::{
 
 pub use client::permissions::grant_subunit_permissions::{
     GrantSubunitPermissionsRequest, GrantSubunitPermissionsRequestBuilder,
-    GrantSubunitPermissionsResponse, SubunitContextIdentifier, SubunitContextIdentifierType,
-    SubunitIdDocument, SubunitPersonByFpNoId, SubunitPersonByFpWithId, SubunitPersonById,
-    SubunitPersonIdentifier, SubunitPersonIdentifierType, SubunitSubjectDetails,
-    SubunitSubjectDetailsType, SubunitSubjectIdentifier, SubunitSubjectIdentifierType,
+    SubunitContextIdentifier, SubunitContextIdentifierType, SubunitIdDocument,
+    SubunitPersonByFpNoId, SubunitPersonByFpWithId, SubunitPersonById, SubunitPersonIdentifier,
+    SubunitPersonIdentifierType, SubunitSubjectDetails, SubunitSubjectDetailsType,
+    SubunitSubjectIdentifier, SubunitSubjectIdentifierType,
 };
 
 pub use client::permissions::grant_eu_entity_permissions::{
@@ -84,6 +84,42 @@ pub use client::permissions::grant_person_permissions::{
     PersonIdentifier, PersonIdentifierType, PersonPermissionType, SubjectDetails,
     SubjectDetailsType, SubjectIdentifier, SubjectIdentifierType as GrantSubjectIdentifierType,
 };
+
+pub use client::permissions::get_personal_permissions::{
+    GetPersonalPermissionsRequest, GetPersonalPermissionsResponse, PersonalPermission,
+};
+
+pub use client::permissions::get_persons_permissions::{
+    GetPersonsPermissionsResponse, Identifier, PersonPermission, PersonsPermissionsRequest,
+};
+
+pub use client::permissions::get_subunits_permissions::{
+    AuthorizedIdentifier, GetSubunitsPermissionsRequest, GetSubunitsPermissionsResponse,
+    SubjectPersonDetails, SubunitIdentifier, SubunitPermission,
+};
+
+pub use client::permissions::get_authorizations_permissions::{
+    AuthorIdentifier, AuthorizationGrant, AuthorizedEntityIdentifier,
+    AuthorizedIdentifier as AuthorizationAuthorizedIdentifier, AuthorizingEntityIdentifier,
+    AuthorizingIdentifier, GetAuthorizationsPermissionsRequest,
+    GetAuthorizationsPermissionsResponse, QueryType, SubjectEntityDetails,
+};
+
+pub use client::permissions::get_entities_permissions::{
+    EntitiesContextIdentifier, EntityPermissionItem, GetEntitiesPermissionsRequest,
+    GetEntitiesPermissionsResponse,
+};
+
+pub use client::permissions::get_subordinate_entities_roles::{
+    GetSubordinateEntitiesRolesRequest, GetSubordinateEntitiesRolesResponse,
+    SubordinateEntityIdentifier, SubordinateEntityRole,
+};
+
+pub use client::permissions::get_eu_entities_permissions::{
+    EuEntityPermission, GetEuEntitiesPermissionsRequest, GetEuEntitiesPermissionsResponse,
+};
+
+pub use client::permissions::get_operation_status::OperationStatusResponse;
 
 pub use client::sessions::{AuthenticationMethod, QuerySessionsResponse, Session, SessionStatus};
 

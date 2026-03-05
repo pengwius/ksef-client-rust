@@ -18,7 +18,7 @@ async fn calculate_checksum(input: &str) -> u32 {
 }
 
 #[tokio::test]
-async fn test_grant_subunit_permissions() {
+async fn test_get_subordinate_entities_roles() {
     let client: ksef_client::KsefClient = common::authorize_client().await;
     let target_nip: String = common::generate_random_nip().await;
 
@@ -27,16 +27,16 @@ async fn test_grant_subunit_permissions() {
     let checksum = calculate_checksum(&internal_id_prefix).await;
     let internal_id = format!("{}{}", internal_id_prefix, checksum);
 
-    let request = GrantSubunitPermissionsRequest::builder()
+    let grant_request = GrantSubunitPermissionsRequest::builder()
         .with_subject_identifier(SubunitSubjectIdentifier {
             identifier_type: SubunitSubjectIdentifierType::Nip,
-            value: target_nip,
+            value: target_nip.clone(),
         })
         .with_context_identifier(SubunitContextIdentifier {
             identifier_type: SubunitContextIdentifierType::InternalId,
-            value: internal_id,
+            value: internal_id.clone(),
         })
-        .with_description("Test subunit permission grant")
+        .with_description("Integration test: grant subunit permission for subordinate roles")
         .with_subunit_name("Test Subunit")
         .with_subject_details(SubunitSubjectDetails {
             subject_details_type: SubunitSubjectDetailsType::PersonByIdentifier,
@@ -48,17 +48,34 @@ async fn test_grant_subunit_permissions() {
             person_by_fp_no_id: None,
         })
         .build()
-        .expect("Failed to build request");
+        .expect("Failed to build GrantSubunitPermissionsRequest");
 
-    match client.grant_subunit_permissions(request).await {
-        Ok(resp) => {
-            println!("resp: {:#?}", resp);
-        }
-        Err(e) => {
-            println!(
-                "Failed to grant subunit permissions (expected if NIP context mismatch): {:?}",
-                e
+    let op_status = match client.grant_subunit_permissions(grant_request).await {
+        Ok(op) => op,
+        Err(e) => panic!("Failed to grant subunit permissions: {:?}", e),
+    };
+
+    match op_status.status_code() {
+        Some(code) => assert_eq!(code, 200, "Expected grant final code 200, got {}", code),
+        None => {
+            panic!(
+                "Grant operation did not return numeric status: {:?}",
+                op_status.raw
             );
         }
     }
+
+    let resp = match client
+        .get_subordinate_entities_roles(Some(0), Some(100), None)
+        .await
+    {
+        Ok(r) => r,
+        Err(ksef_client::KsefError::ApiError(code, _)) if code == 500 => {
+            eprintln!("get_subordinate_entities_roles returned 500; skipping test");
+            return;
+        }
+        Err(e) => panic!("Failed to fetch subordinate entities roles: {:?}", e),
+    };
+
+    println!("resp: {:#?}", resp);
 }
