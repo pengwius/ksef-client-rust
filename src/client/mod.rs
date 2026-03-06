@@ -57,10 +57,9 @@ use crate::client::permissions::grant_person_permissions::GrantPersonPermissions
 use crate::client::permissions::grant_subunit_permissions::GrantSubunitPermissionsRequest;
 use crate::{GetCertificateMetadataListRequest, GetCertificateMetadataListResponse};
 
-pub mod error;
-
 pub mod auth;
 pub mod batch_session;
+pub mod error;
 pub mod fetching_invoices;
 pub mod get_public_key_certificates;
 pub mod ksef_certificates;
@@ -68,6 +67,7 @@ pub mod ksef_tokens;
 pub mod models;
 pub mod online_session;
 pub mod permissions;
+pub mod qr;
 mod routes;
 pub mod sessions;
 pub mod xades;
@@ -615,6 +615,42 @@ impl KsefClient {
             "{}/{}",
             self.base_url.trim_end_matches('/'),
             path.trim_start_matches('/')
+        )
+    }
+
+    pub fn build_invoice_verification_url(
+        &self,
+        seller_nip: &str,
+        issue_date_ddmmrrrr: &str,
+        invoice_hash_base64url: &str,
+    ) -> String {
+        qr::invoice::build_invoice_verification_url(
+            self,
+            seller_nip,
+            issue_date_ddmmrrrr,
+            invoice_hash_base64url,
+        )
+    }
+
+    pub fn build_certificate_verification_url(
+        &self,
+        context_id_type: &str,
+        context_id_value: &str,
+        seller_nip: &str,
+        cert_serial: &str,
+        invoice_hash_base64url: &str,
+        private_key_pem_opt: Option<&str>,
+        prefer_p1363: bool,
+    ) -> Result<String, KsefError> {
+        qr::certificate::build_certificate_verification_url(
+            self,
+            context_id_type,
+            context_id_value,
+            seller_nip,
+            cert_serial,
+            invoice_hash_base64url,
+            private_key_pem_opt,
+            prefer_p1363,
         )
     }
 

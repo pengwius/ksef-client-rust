@@ -1,6 +1,6 @@
 use crate::common;
 use ksef_client::error::KsefError;
-use ksef_client::{CertificateType, EnrollCertificateRequest};
+use ksef_client::{CertificateType, EnrollCertificateRequest, RevocationReason};
 
 #[tokio::test]
 async fn test_retrieve_certificates() {
@@ -67,7 +67,7 @@ async fn test_retrieve_certificates() {
 
     let serials_to_retrieve = vec![serial_number.clone()];
 
-    match client.retrieve_certificates(serials_to_retrieve).await {
+    let certs = match client.retrieve_certificates(serials_to_retrieve).await {
         Ok(retrieved_list) => {
             println!("Retrieved {} certificates.", retrieved_list.len());
 
@@ -90,7 +90,28 @@ async fn test_retrieve_certificates() {
                 !retrieved.certificate.is_empty(),
                 "Certificate content should not be empty"
             );
+
+            retrieved_list
         }
         Err(e) => panic!("Failed to retrieve certificates: {:?}", e),
+    };
+
+    for cert in certs.iter() {
+        match client
+            .revoke_certificate(
+                &cert.certificate_serial_number,
+                RevocationReason::Unspecified,
+            )
+            .await
+        {
+            Ok(()) => println!(
+                "Certificate {} revoked successfully.",
+                cert.certificate_serial_number
+            ),
+            Err(e) => panic!(
+                "Failed to revoke certificate {}: {:?}",
+                cert.certificate_serial_number, e
+            ),
+        }
     }
 }

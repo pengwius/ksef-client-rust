@@ -68,7 +68,7 @@ let session_reference_number = match client.open_online_session(request).await {
 #### 2.2. Sending an invoice
 
 ```rust
-let issuer_nip = "5264567890"; // Invoice issuer identifier
+let issuer_nip = "5261234567"; // Invoice issuer identifier
 let invoice_xml = /* FA(2) or FA(3) XML invoice */;
 
 let invoice_reference_number = match client.send_invoice(

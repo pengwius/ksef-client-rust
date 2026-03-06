@@ -30,7 +30,7 @@ pub async fn generate_random_nip() -> String {
 
 #[allow(dead_code)]
 pub async fn authorize_client() -> KsefClient {
-    let nip = "5264567890";
+    let nip = "5261234567";
     let context = ContextIdentifier {
         id_type: ContextIdentifierType::Nip,
         value: nip.to_string(),
@@ -295,4 +295,29 @@ pub async fn generate_fa2_invoice(issuer_nip: &str) -> String {
     .replace("#DataZaplaty#", &date_plus_1); // DataZaplaty
 
     xml.trim().to_string()
+}
+
+#[allow(dead_code)]
+pub fn generate_ec_private_key_pem() -> (String, openssl::pkey::PKey<openssl::pkey::Private>) {
+    use openssl::ec::EcKey;
+    use openssl::nid::Nid;
+    use openssl::pkey::PKey;
+
+    let ec_key =
+        EcKey::generate(&openssl::ec::EcGroup::from_curve_name(Nid::X9_62_PRIME256V1).unwrap())
+            .expect("ec gen");
+    let pkey = PKey::from_ec_key(ec_key).expect("pkey ec");
+    let pem = String::from_utf8(pkey.private_key_to_pem_pkcs8().unwrap()).unwrap();
+    (pem, pkey)
+}
+
+#[allow(dead_code)]
+pub fn generate_rsa_private_key_pem() -> (String, openssl::pkey::PKey<openssl::pkey::Private>) {
+    use openssl::pkey::PKey;
+    use openssl::rsa::Rsa;
+
+    let rsa = Rsa::generate(2048).expect("rsa gen");
+    let pkey = PKey::from_rsa(rsa).expect("pkey rsa");
+    let pem = String::from_utf8(pkey.private_key_to_pem_pkcs8().unwrap()).unwrap();
+    (pem, pkey)
 }

@@ -68,7 +68,7 @@ let session_reference_number = match client.open_online_session(request).await {
 #### 2.2. Wysyłanie faktury
 
 ```rust
-let issuer_nip = "5264567890"; // Identyfikator wystawcy faktury
+let issuer_nip = "5261234567"; // Identyfikator wystawcy faktury
 let invoice_xml = /* faktura XML FA(2) lub FA(3) */;
 
 let invoice_reference_number = match client.send_invoice(

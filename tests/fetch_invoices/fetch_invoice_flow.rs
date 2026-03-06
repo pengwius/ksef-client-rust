@@ -8,7 +8,7 @@ use std::io::Read;
 #[tokio::test]
 async fn test_fetch_invoice_flow() {
     let client = common::authorize_client().await;
-    let nip = "5264567890";
+    let nip = "5261234567";
 
     let online_session_invoice_xml: String = common::generate_fa2_invoice(nip).await;
 
