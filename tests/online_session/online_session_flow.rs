@@ -31,7 +31,7 @@ async fn test_online_session_flow() {
         "Session reference number should not be empty"
     );
 
-    let issuer_nip = "5264567890";
+    let issuer_nip = "5261234567";
     let invoice_xml: String = common::generate_fa2_invoice(issuer_nip).await;
 
     let send_result = client
@@ -73,7 +73,7 @@ async fn test_online_session_flow() {
 async fn test_submit_online_automated() {
     let client: ksef_client::KsefClient = common::authorize_client().await;
 
-    let issuer_nip = "5264567890";
+    let issuer_nip = "5261234567";
     let invoice_xml: String = common::generate_fa2_invoice(issuer_nip).await;
 
     let result = client

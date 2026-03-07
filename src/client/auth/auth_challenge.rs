@@ -70,7 +70,7 @@ mod tests {
 
     #[tokio::test]
     async fn get_auth_challenge_test() {
-        let nip = "5264567890";
+        let nip = "5261234567";
         let context = ContextIdentifier {
             id_type: ContextIdentifierType::Nip,
             value: nip.to_string(),
