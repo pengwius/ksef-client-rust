@@ -640,7 +640,6 @@ impl KsefClient {
         cert_serial: &str,
         invoice_hash_base64url: &str,
         private_key_pem_opt: Option<&str>,
-        prefer_p1363: bool,
     ) -> Result<String, KsefError> {
         qr::certificate::build_certificate_verification_url(
             self,
@@ -650,7 +649,6 @@ impl KsefClient {
             cert_serial,
             invoice_hash_base64url,
             private_key_pem_opt,
-            prefer_p1363,
         )
     }
 

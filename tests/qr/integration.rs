@@ -2,6 +2,74 @@ use crate::common;
 use chrono::Utc;
 use ksef_client::{CertificateType, EnrollCertificateRequest, KsefClient, RevocationReason};
 
+async fn submit_invoice_and_get_hash(
+    client: &KsefClient,
+    seller_nip: &str,
+) -> Result<(String, String), String> {
+    let invoice_xml: String = common::generate_fa2_invoice(seller_nip).await;
+
+    let issue_date = invoice_xml
+        .split("<P_6>")
+        .nth(1)
+        .and_then(|s| s.split("</P_6>").next())
+        .and_then(|iso| {
+            chrono::NaiveDate::parse_from_str(iso.trim(), "%Y-%m-%d")
+                .ok()
+                .map(|d| d.format("%d-%m-%Y").to_string())
+        })
+        .unwrap_or_else(|| Utc::now().format("%d-%m-%Y").to_string());
+
+    let submit_result = client
+        .submit_online(invoice_xml.as_bytes())
+        .await
+        .map_err(|e| format!("Failed to submit invoice: {:?}", e))?;
+
+    let status = client
+        .get_invoice_status(
+            &submit_result.session_reference_number,
+            &submit_result.invoice_reference_number,
+        )
+        .await
+        .map_err(|e| format!("Failed to get invoice status: {:?}", e))?;
+
+    if status.invoice_status.code != 200 {
+        return Err(format!(
+            "Invoice not accepted: {} ({})",
+            status.invoice_status.code, status.invoice_status.description
+        ));
+    }
+
+    let buyer_nip = invoice_xml
+        .split("<Podmiot2>")
+        .nth(1)
+        .and_then(|s| s.split("</Podmiot2>").next())
+        .and_then(|sec| sec.split("<NIP>").nth(1))
+        .and_then(|s| s.split("</NIP>").next())
+        .map(|s| s.trim().to_string())
+        .unwrap_or_else(|| "UNKNOWN_BUYER_NIP".to_string());
+
+    let invoice_number = invoice_xml
+        .split("<P_2>")
+        .nth(1)
+        .and_then(|s| s.split("</P_2>").next())
+        .map(|s| s.trim().to_string())
+        .unwrap_or_else(|| "UNKNOWN_INVOICE_NUMBER".to_string());
+
+    let total_amount = invoice_xml
+        .split("<P_15>")
+        .nth(1)
+        .and_then(|s| s.split("</P_15>").next())
+        .map(|s| s.trim().to_string())
+        .unwrap_or_else(|| "UNKNOWN_AMOUNT".to_string());
+
+    println!(
+        "Submitted invoice with number: {}, \nbuyer NIP: {}, \ntotal amount: {}",
+        invoice_number, buyer_nip, total_amount
+    );
+
+    Ok((issue_date, status.invoice_hash))
+}
+
 async fn enroll_and_build_cert_qr(
     client: &KsefClient,
     seller_nip: &str,
@@ -18,7 +86,7 @@ async fn enroll_and_build_cert_qr(
 
     let request = EnrollCertificateRequest {
         certificate_name: "Test Integration Certificate".to_string(),
-        certificate_type: CertificateType::Authentication,
+        certificate_type: CertificateType::Offline,
         csr: csr_result.csr_base64.clone(),
         valid_from: None,
     };
@@ -33,111 +101,65 @@ async fn enroll_and_build_cert_qr(
         .await
         .map_err(|e| format!("Failed to poll enrollment status: {:?}", e))?;
 
-    if let Some(serial) = status_resp.certificate_serial_number {
-        let private_pem = csr_result.private_key_pem;
-        let url = client
-            .build_certificate_verification_url(
-                "Nip",
-                seller_nip,
-                seller_nip,
-                &serial,
-                invoice_hash,
-                Some(private_pem.as_str()),
-                true,
-            )
-            .map_err(|e| format!("Failed to build KOD II URL from enrolled cert: {:?}", e))?;
+    let serial = status_resp
+        .certificate_serial_number
+        .ok_or_else(|| "Enrollment finished but no certificate serial returned".to_string())?;
 
-        Ok((url, serial))
-    } else {
-        Err("Enrollment finished but no certificate serial returned".to_string())
-    }
+    let url = client
+        .build_certificate_verification_url(
+            "Nip",
+            seller_nip,
+            seller_nip,
+            &serial,
+            invoice_hash,
+            Some(csr_result.private_key_pem.as_str()),
+        )
+        .map_err(|e| format!("Failed to build qr url from enrolled cert: {:?}", e))?;
+
+    Ok((url, serial))
 }
 
 #[tokio::test]
-async fn test_send_invoice_and_build_qr() {
+async fn test_generate_invoice_qr_code() {
     let client: KsefClient = common::authorize_client().await;
-
     let seller_nip = client.context.value.clone();
 
-    let invoice_xml: String = common::generate_fa2_invoice(&seller_nip).await;
-
-    let issue_date_ddmmrrrr = invoice_xml
-        .split("<P_6>")
-        .nth(1)
-        .and_then(|s| s.split("</P_6>").next())
-        .and_then(|iso| {
-            chrono::NaiveDate::parse_from_str(iso.trim(), "%Y-%m-%d")
-                .ok()
-                .map(|d| d.format("%d-%m-%Y").to_string())
-        })
-        .unwrap_or_else(|| Utc::now().format("%d-%m-%Y").to_string());
-
-    println!(
-        "Submitting invoice for seller NIP: {}, issue date: {}",
-        seller_nip, issue_date_ddmmrrrr
-    );
-
-    let submit_result = client
-        .submit_online(invoice_xml.as_bytes())
+    let (issue_date, invoice_hash) = submit_invoice_and_get_hash(&client, &seller_nip)
         .await
-        .expect("Failed to submit online invoice");
+        .expect("Invoice submission failed or was rejected");
 
-    println!(
-        "Submitted invoice: session_reference={}, invoice_reference={}",
-        submit_result.session_reference_number, submit_result.invoice_reference_number
-    );
-
-    let status = client
-        .get_invoice_status(
-            &submit_result.session_reference_number,
-            &submit_result.invoice_reference_number,
-        )
-        .await
-        .expect("Failed to get invoice status");
-
-    println!(
-        "Invoice status: code={}, description={}",
-        status.invoice_status.code, status.invoice_status.description
-    );
+    let url = client.build_invoice_verification_url(&seller_nip, &issue_date, &invoice_hash);
+    println!("Invoice verification URL: {}", url);
 
     assert!(
-        status.invoice_status.code == 200,
-        "Expected invoice to be accepted (200), got {} ({})",
-        status.invoice_status.code,
-        status.invoice_status.description
+        url.contains(&format!("/invoice/{}/{}/", seller_nip, issue_date)),
+        "Invoice URL missing expected segments"
     );
+}
 
-    let invoice_hash = status.invoice_hash;
-    let invoice_url =
-        client.build_invoice_verification_url(&seller_nip, &issue_date_ddmmrrrr, &invoice_hash);
-    println!("Invoice verification URL: {}", invoice_url);
+#[tokio::test]
+async fn test_generate_certificate_qr_code() {
+    let client: KsefClient = common::authorize_client().await;
+    let seller_nip = client.context.value.clone();
+
+    let (_issue_date, invoice_hash) = submit_invoice_and_get_hash(&client, &seller_nip)
+        .await
+        .expect("Invoice submission failed or was rejected");
+
+    let (url, serial) = match enroll_and_build_cert_qr(&client, &seller_nip, &invoice_hash).await {
+        Ok((url, serial)) => (url, serial),
+        Err(e) => panic!("Failed to enroll and build certificate QR: {}", e),
+    };
+
+    println!("Certificate QR URL: {}", url);
 
     assert!(
-        invoice_url.contains(&format!("/invoice/{}/{}/", seller_nip, issue_date_ddmmrrrr)),
-        "Invoice URL does not contain expected segments: {}",
-        invoice_url
+        url.contains("/certificate/"),
+        "Certificate QR URL should contain /certificate/"
     );
 
-    let cert_qr_result = enroll_and_build_cert_qr(&client, &seller_nip, &invoice_hash).await;
-
-    match cert_qr_result {
-        Ok((cert_qr, serial)) => {
-            println!("Certificate verification URL: {}", cert_qr);
-            assert!(
-                cert_qr.contains("/certificate/"),
-                "Cert QR URL should contain /certificate/"
-            );
-
-            match client
-                .revoke_certificate(&serial, RevocationReason::Unspecified)
-                .await
-            {
-                Ok(()) => println!("Certificate {} revoked successfully.", serial),
-                Err(e) => panic!("Failed to revoke certificate {}: {:?}", serial, e),
-            }
-        }
-        Err(e) => {
-            panic!("Could not produce cert QR: {}", e);
-        }
-    }
+    client
+        .revoke_certificate(&serial, RevocationReason::Unspecified)
+        .await
+        .expect("Failed to revoke certificate used in test");
 }

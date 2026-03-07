@@ -38,7 +38,6 @@ async fn test_build_certificate_verification_url_unsigned_and_signed_ec() {
             "01F20A5D352AE590",
             "UtQp9Gpc51y-u3xApZjIjgkpZ01js-J8KflSPW8WzIE",
             None,
-            true,
         )
         .expect("unsigned url");
 
@@ -62,7 +61,6 @@ async fn test_build_certificate_verification_url_unsigned_and_signed_ec() {
             "01F20A5D352AE590",
             "UtQp9Gpc51y-u3xApZjIjgkpZ01js-J8KflSPW8WzIE",
             Some(&pem_ec),
-            true,
         )
         .expect("signed url ec");
 
@@ -96,7 +94,6 @@ async fn test_build_certificate_verification_url_signed_rsa() {
             "SERIAL456",
             "abc123-_",
             Some(&pem_rsa),
-            false,
         )
         .expect("signed url rsa");
 

@@ -1,10 +1,14 @@
-use crate::Environment;
-use crate::client::KsefClient;
 use crate::client::error::KsefError;
-use base64::{Engine as _, engine::general_purpose};
+use crate::client::KsefClient;
+use crate::Environment;
+use base64::{engine::general_purpose, Engine as _};
 use openssl::ecdsa::EcdsaSig;
-use openssl::hash::MessageDigest;
+use openssl::hash::{hash, MessageDigest};
+use openssl::md::MdRef;
 use openssl::pkey::PKey;
+use openssl::pkey_ctx::PkeyCtx;
+use openssl::rsa::Padding;
+use openssl::sign::RsaPssSaltlen;
 use openssl::sign::Signer;
 
 fn pad_be(mut v: Vec<u8>, width: usize) -> Vec<u8> {
@@ -18,6 +22,16 @@ fn pad_be(mut v: Vec<u8>, width: usize) -> Vec<u8> {
     }
 }
 
+// Helper: convert MessageDigest -> &MdRef.
+// The openssl 0.10 API expects `&MdRef` but we create a `MessageDigest`.
+// To avoid scattering `unsafe` blocks, centralize the conversion here
+fn md_ref_from_message_digest(md: MessageDigest) -> &'static MdRef {
+    unsafe {
+        let ptr = md.as_ptr();
+        &*(ptr as *const MdRef)
+    }
+}
+
 pub fn build_certificate_verification_url(
     client: &KsefClient,
     context_id_type: &str,
@@ -26,7 +40,6 @@ pub fn build_certificate_verification_url(
     cert_serial: &str,
     invoice_hash_b64url: &str,
     private_key_pem_opt: Option<&str>,
-    prefer_p1363: bool,
 ) -> Result<String, KsefError> {
     let host = client
         .environment
@@ -75,24 +88,31 @@ pub fn build_certificate_verification_url(
 
     let sig_bytes = match pkey.id() {
         openssl::pkey::Id::RSA => {
-            let mut signer = Signer::new(MessageDigest::sha256(), &pkey)?;
-            signer.update(data)?;
-            signer.sign_to_vec()?
+            let mut ctx = PkeyCtx::new(&pkey)?;
+            ctx.sign_init()?;
+            ctx.set_rsa_padding(Padding::PKCS1_PSS)?;
+            let md = MessageDigest::sha256();
+            let md_ref = md_ref_from_message_digest(md);
+            ctx.set_signature_md(md_ref)?;
+            ctx.set_rsa_mgf1_md(md_ref)?;
+            let digest = hash(MessageDigest::sha256(), data)?;
+            ctx.set_rsa_pss_saltlen(RsaPssSaltlen::custom(32))?;
+            let required = ctx.sign(&digest, None)?;
+            let mut buf = vec![0u8; required as usize];
+            let sig_len = ctx.sign(&digest, Some(&mut buf[..]))?;
+            buf.truncate(sig_len);
+            buf
         }
         openssl::pkey::Id::EC => {
             let mut signer = Signer::new(MessageDigest::sha256(), &pkey)?;
             signer.update(data)?;
             let der = signer.sign_to_vec()?;
-            if prefer_p1363 {
-                let ecsig = EcdsaSig::from_der(&der)?;
-                let r = ecsig.r().to_vec();
-                let s = ecsig.s().to_vec();
-                let r_p = pad_be(r, 32);
-                let s_p = pad_be(s, 32);
-                [r_p, s_p].concat()
-            } else {
-                der
-            }
+            let ecsig = EcdsaSig::from_der(&der)?;
+            let r = ecsig.r().to_vec();
+            let s = ecsig.s().to_vec();
+            let r_p = pad_be(r, 32);
+            let s_p = pad_be(s, 32);
+            [r_p, s_p].concat()
         }
         other => {
             return Err(KsefError::ApplicationError(
@@ -132,7 +152,6 @@ mod tests {
             "01F20A5D352AE590",
             hash,
             None,
-            true,
         )
         .expect("should produce unsigned url");
         assert!(url.starts_with("https://qr-test.ksef.mf.gov.pl/certificate/"));
@@ -161,7 +180,6 @@ mod tests {
             "SERIAL123",
             "abc123-_",
             Some(&pem_ec),
-            true,
         )
         .expect("ec signed url");
         assert!(url_ec.contains("/SERIAL123/"));
@@ -179,7 +197,6 @@ mod tests {
             "SERIAL456",
             "abc123-_",
             Some(&pem_rsa),
-            false,
         )
         .expect("rsa signed url");
         assert!(url_rsa.contains("/SERIAL456/"));
