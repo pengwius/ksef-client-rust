@@ -30,3 +30,4 @@ Detailed documentation can be found in the `docs/` directory.
 *   [Sending an Invoice in an Interactive Session](docs/online_session.en.md)
 *   [Sending an Invoice in a Batch Session](docs/batch_session.en.md)
 *   [Fetching Invoices](docs/fetching_invoices.en.md)
+*   [QR Codes](docs/qr.en.md)

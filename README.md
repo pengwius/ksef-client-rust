@@ -30,3 +30,4 @@ Szczegółowa dokumentacja znajduje się w katalogu `docs/`.
 *   [Wysyłanie Faktury w Sesji Interaktywnej](docs/online_session.md)
 *   [Wysyłanie Faktury w Sesji Wsadowej](docs/batch_session.md)
 *   [Pobieranie Faktur](docs/fetching_invoices.md)
+*   [Kody QR](docs/qr.md)
