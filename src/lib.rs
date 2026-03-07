@@ -29,6 +29,9 @@ pub use client::ksef_certificates::retrieve_certificates::RetrieveCertificatesLi
 pub use client::ksef_certificates::revoke_certificate::RevocationReason;
 pub use client::ksef_tokens::models::{DetailedKsefToken, TokenStatus};
 pub use client::ksef_tokens::new_ksef_token::{KsefToken, KsefTokenPermissions};
+pub use client::peppol::get_peppol_providers::{
+    GetPeppolProvidersResponse, PeppolProvider, get_peppol_providers,
+};
 
 pub use client::permissions::grant_authorization_permissions::{
     AuthorizationPermissionType, AuthorizationSubjectDetails, AuthorizationSubjectIdentifier,

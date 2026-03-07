@@ -66,6 +66,7 @@ pub mod ksef_certificates;
 pub mod ksef_tokens;
 pub mod models;
 pub mod online_session;
+pub mod peppol;
 pub mod permissions;
 pub mod qr;
 mod routes;
@@ -470,6 +471,20 @@ impl KsefClient {
         ksef_certificates::get_certificate_metadata_list::get_certificate_metadata_list(
             self,
             query,
+            page_size,
+            page_offset,
+        )
+        .await
+    }
+
+    pub async fn get_peppol_providers(
+        &self,
+        page_size: Option<i32>,
+        page_offset: Option<i32>,
+    ) -> Result<crate::client::peppol::get_peppol_providers::GetPeppolProvidersResponse, KsefError>
+    {
+        crate::client::peppol::get_peppol_providers::get_peppol_providers(
+            self,
             page_size,
             page_offset,
         )
