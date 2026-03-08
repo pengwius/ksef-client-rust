@@ -32,3 +32,4 @@ Szczegółowa dokumentacja znajduje się w katalogu `docs/`.
 *   [Pobieranie Faktur](docs/fetching_invoices.md)
 *   [Kody QR](docs/qr.md)
 *   [Pobieranie Dostawców Usług Peppol](docs/peppol.md)
+*   [Urzędowe Poświadczenie Odbioru (UPO) Faktur](docs/upo.md)
