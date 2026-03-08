@@ -71,6 +71,7 @@ pub mod permissions;
 pub mod qr;
 mod routes;
 pub mod sessions;
+pub mod upo;
 pub mod xades;
 
 pub struct KsefClient {
@@ -487,6 +488,19 @@ impl KsefClient {
             self,
             page_size,
             page_offset,
+        )
+        .await
+    }
+
+    pub async fn get_invoice_upo_by_ksef_number(
+        &self,
+        reference_number: &str,
+        ksef_number: &str,
+    ) -> Result<crate::GetInvoiceUpoByKsefNumberResponse, KsefError> {
+        crate::client::upo::get_invoice_upo_by_ksef_number::get_invoice_upo_by_ksef_number(
+            self,
+            reference_number,
+            ksef_number,
         )
         .await
     }
