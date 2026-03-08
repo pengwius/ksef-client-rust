@@ -1,12 +1,11 @@
 use crate::common;
 
 use base64::{Engine as _, engine::general_purpose};
-use ksef_client::GetInvoiceUpoByKsefNumberResponse;
-use ksef_client::KsefClient;
+use ksef_client::{GetInvoiceUpoResponse, InvoiceIdentifier, KsefClient};
 use openssl::sha::sha256;
 
 #[tokio::test]
-async fn integration_upo_full_flow() {
+async fn integration_upo_by_invoice_reference() {
     let client: KsefClient = common::authorize_client().await;
     let seller_nip = client.context.value.clone();
 
@@ -31,16 +30,15 @@ async fn integration_upo_full_flow() {
         );
     }
 
-    let ksef_number = status
-        .ksef_number
-        .as_ref()
-        .expect("ksef_number missing in invoice status")
-        .to_string();
+    let invoice_ref = submit_result.invoice_reference_number.clone();
 
-    let upo_resp: GetInvoiceUpoByKsefNumberResponse = client
-        .get_invoice_upo_by_ksef_number(&submit_result.session_reference_number, &ksef_number)
+    let upo_resp: GetInvoiceUpoResponse = client
+        .get_invoice_upo(
+            &submit_result.session_reference_number,
+            InvoiceIdentifier::InvoiceReference(invoice_ref.clone()),
+        )
         .await
-        .expect("Failed to fetch session invoice UPO");
+        .expect("Failed to fetch invoice UPO by invoice reference (get_invoice_upo)");
 
     assert!(
         !upo_resp.content.is_empty(),
@@ -59,9 +57,9 @@ async fn integration_upo_full_flow() {
     );
 
     println!(
-        "Fetched UPO for KSeF invoice {} (session {}) — hash OK",
-        ksef_number, submit_result.session_reference_number
+        "Fetched UPO for invoice ref {} (session {}) — hash OK",
+        invoice_ref, submit_result.session_reference_number
     );
 
-    println!("UPO: {}", upo_resp.content);
+    println!("UPO content: {:#?}", upo_resp.content);
 }

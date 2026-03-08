@@ -492,15 +492,15 @@ impl KsefClient {
         .await
     }
 
-    pub async fn get_invoice_upo_by_ksef_number(
+    pub async fn get_invoice_upo(
         &self,
         reference_number: &str,
-        ksef_number: &str,
-    ) -> Result<crate::GetInvoiceUpoByKsefNumberResponse, KsefError> {
-        crate::client::upo::get_invoice_upo_by_ksef_number::get_invoice_upo_by_ksef_number(
+        identifier: crate::client::upo::get_invoice_upo_by_ksef_number::InvoiceIdentifier,
+    ) -> Result<crate::GetInvoiceUpoResponse, KsefError> {
+        crate::client::upo::get_invoice_upo_by_ksef_number::get_invoice_upo(
             self,
             reference_number,
-            ksef_number,
+            identifier,
         )
         .await
     }

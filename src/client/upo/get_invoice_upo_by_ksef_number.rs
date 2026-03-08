@@ -4,24 +4,48 @@ use crate::client::routes;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct GetInvoiceUpoByKsefNumberResponse {
+pub struct GetInvoiceUpoResponse {
     pub content: String,
 
     pub hash: String,
 }
 
-pub async fn get_invoice_upo_by_ksef_number(
+#[derive(Debug, Clone)]
+pub enum InvoiceIdentifier {
+    KsefNumber(String),
+    InvoiceReference(String),
+}
+
+impl From<&str> for InvoiceIdentifier {
+    fn from(s: &str) -> Self {
+        InvoiceIdentifier::InvoiceReference(s.to_string())
+    }
+}
+
+pub async fn get_invoice_upo(
     client: &KsefClient,
     reference_number: &str,
-    ksef_number: &str,
-) -> Result<GetInvoiceUpoByKsefNumberResponse, KsefError> {
+    identifier: InvoiceIdentifier,
+) -> Result<GetInvoiceUpoResponse, KsefError> {
     let sessions_segment = routes::SESSIONS_PATH
         .trim_start_matches('/')
         .trim_end_matches('/');
-    let path = format!(
-        "{}/{}/invoices/ksef/{}/upo",
-        sessions_segment, reference_number, ksef_number
-    );
+
+    let path = match identifier {
+        InvoiceIdentifier::KsefNumber(k) => {
+            format!(
+                "{}/{}/invoices/ksef/{}/upo",
+                sessions_segment, reference_number, k
+            )
+        }
+        InvoiceIdentifier::InvoiceReference(r) => {
+            format!(
+                "{}/{}/invoices/{}/upo",
+                sessions_segment, reference_number, r
+            )
+        }
+    };
+
     let url = client.url_for(&path);
 
     let access_token = &client.access_token.access_token;
@@ -56,5 +80,5 @@ pub async fn get_invoice_upo_by_ksef_number(
 
     let content = resp.text().await.map_err(KsefError::RequestError)?;
 
-    Ok(GetInvoiceUpoByKsefNumberResponse { content, hash })
+    Ok(GetInvoiceUpoResponse { content, hash })
 }
