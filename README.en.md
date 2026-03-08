@@ -32,3 +32,4 @@ Detailed documentation can be found in the `docs/` directory.
 *   [Fetching Invoices](docs/fetching_invoices.en.md)
 *   [QR Codes](docs/qr.en.md)
 *   [Fetching Peppol Service Providers](docs/peppol.en.md)
+*   [Official Receipt Acknowledgment (UPO) for Invoices](docs/upo.en.md)

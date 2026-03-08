@@ -32,6 +32,7 @@ pub use client::ksef_tokens::new_ksef_token::{KsefToken, KsefTokenPermissions};
 pub use client::peppol::get_peppol_providers::{
     GetPeppolProvidersResponse, PeppolProvider, get_peppol_providers,
 };
+pub use client::upo::get_invoice_upo_by_ksef_number::{GetInvoiceUpoResponse, InvoiceIdentifier};
 
 pub use client::permissions::grant_authorization_permissions::{
     AuthorizationPermissionType, AuthorizationSubjectDetails, AuthorizationSubjectIdentifier,
