@@ -2,6 +2,7 @@ use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::fetching_invoices::fetch_invoice_metadata::{InvoiceMetadata, QueryCriteria};
 use crate::client::routes;
+use crate::client::traits::*;
 use openssl::symm::{Cipher, decrypt};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;

@@ -1,3 +1,4 @@
+use ksef_client::*;
 use crate::common;
 use ksef_client::{
     DateRangeBuilder, DateType, FetchInvoiceMetadataRequestBuilder, IncrementalFetchState,

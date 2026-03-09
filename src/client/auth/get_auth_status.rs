@@ -1,3 +1,4 @@
+use crate::client::traits::*;
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;

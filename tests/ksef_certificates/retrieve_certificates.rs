@@ -1,3 +1,4 @@
+use ksef_client::*;
 use crate::common;
 use ksef_client::error::KsefError;
 use ksef_client::{CertificateType, EnrollCertificateRequest, RevocationReason};

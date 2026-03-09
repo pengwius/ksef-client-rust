@@ -1,7 +1,8 @@
 use chrono::Utc;
 use clap::Parser;
 use ksef_client::{
-    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
+    ContextIdentifier, ContextIdentifierType, Environment, KsefAuth, KsefClient,
+    SubjectIdentifierType,
 };
 use std::fs;
 use std::path::PathBuf;

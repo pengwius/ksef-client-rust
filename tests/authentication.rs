@@ -1,3 +1,4 @@
+use ksef_client::*;
 mod common;
 
 use ksef_client::{

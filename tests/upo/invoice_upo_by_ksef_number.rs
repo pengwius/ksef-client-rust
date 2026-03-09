@@ -1,3 +1,4 @@
+use ksef_client::*;
 use crate::common;
 
 use base64::{Engine as _, engine::general_purpose};

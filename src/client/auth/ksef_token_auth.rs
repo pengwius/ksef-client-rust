@@ -1,3 +1,4 @@
+use crate::client::traits::*;
 use crate::ContextIdentifierType;
 use crate::client::KsefClient;
 use crate::client::auth::xades_auth::AuthTokens;

@@ -1,3 +1,4 @@
+use ksef_client::*;
 use crate::common;
 use chrono::Utc;
 use ksef_client::{CertificateType, EnrollCertificateRequest, KsefClient, RevocationReason};

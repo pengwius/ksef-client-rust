@@ -1,6 +1,15 @@
 mod client;
 
 pub use client::KsefClient;
+pub use client::traits::auth::KsefAuth;
+pub use client::traits::certificates::KsefCertificates;
+pub use client::traits::invoices::KsefInvoices;
+pub use client::traits::peppol::KsefPeppol;
+pub use client::traits::permissions::KsefPermissions;
+pub use client::traits::sessions::KsefSessions;
+pub use client::traits::tokens::KsefTokens;
+pub use client::traits::utils::KsefUtils;
+
 pub use client::auth::auth_challenge::AuthChallenge;
 pub use client::auth::auth_token_request::{
     AuthTokenRequest, AuthTokenRequestBuilder, AuthenticationTokenAllowedIps,
@@ -29,9 +38,7 @@ pub use client::ksef_certificates::retrieve_certificates::RetrieveCertificatesLi
 pub use client::ksef_certificates::revoke_certificate::RevocationReason;
 pub use client::ksef_tokens::models::{DetailedKsefToken, TokenStatus};
 pub use client::ksef_tokens::new_ksef_token::{KsefToken, KsefTokenPermissions};
-pub use client::peppol::get_peppol_providers::{
-    GetPeppolProvidersResponse, PeppolProvider,
-};
+pub use client::peppol::get_peppol_providers::{GetPeppolProvidersResponse, PeppolProvider};
 pub use client::upo::get_invoice_upo_by_ksef_number::{GetInvoiceUpoResponse, InvoiceIdentifier};
 
 pub use client::permissions::grant_authorization_permissions::{

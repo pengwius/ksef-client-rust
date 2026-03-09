@@ -1,3 +1,4 @@
+use crate::client::traits::*;
 use crate::AuthTokenRequest;
 use crate::AuthTokenRequestBuilder;
 use crate::SubjectIdentifierType;

@@ -1,3 +1,4 @@
+use ksef_client::*;
 use std::time::Duration;
 
 use crate::common;
