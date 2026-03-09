@@ -36,7 +36,7 @@ pub async fn fetch_invoice(
     if !status.is_success() {
         let code = status.as_u16();
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(code, body));
+        return Err(KsefError::from_api_response(code, body));
     }
 
     let hash = resp

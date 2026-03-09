@@ -1,6 +1,8 @@
 use crate::client::auth::get_access_token::AccessTokens;
 use crate::client::auth::xades_auth::AuthTokens;
-use crate::client::error::KsefError;
+
+pub use crate::client::error::KsefError;
+
 use crate::client::ksef_tokens::new_ksef_token::KsefToken;
 use crate::client::models::ContextIdentifier;
 use crate::client::models::Environment;

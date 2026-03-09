@@ -75,7 +75,7 @@ pub async fn get_entity_roles(
             page_size,
             resp_body
         );
-        return Err(KsefError::ApiError(status.as_u16(), resp_body));
+        return Err(KsefError::from_api_response(status.as_u16(), resp_body));
     }
 
     let parsed: GetEntityRolesResponse = resp.json().await.map_err(KsefError::RequestError)?;

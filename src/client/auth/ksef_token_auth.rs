@@ -115,7 +115,7 @@ pub async fn submit_ksef_token_auth_request(
     let status = resp.status();
     if !status.is_success() {
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(status.as_u16(), body));
+        return Err(KsefError::from_api_response(status.as_u16(), body));
     }
 
     let parsed: AuthResponse = resp.json().await.map_err(KsefError::RequestError)?;

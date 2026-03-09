@@ -37,13 +37,13 @@ pub async fn get_public_key_certificates(
         let body = resp.text().await.unwrap_or_default();
 
         if status.as_u16() == 429 {
-            return Err(KsefError::ApiError(
+            return Err(KsefError::ApiErrorRaw(
                 429,
                 format!("Too Many Requests: {}", body),
             ));
         }
 
-        return Err(KsefError::ApiError(status.as_u16(), body));
+        return Err(KsefError::from_api_response(status.as_u16(), body));
     }
 
     let parsed: Vec<PublicKeyCertificate> = resp.json().await.map_err(KsefError::RequestError)?;

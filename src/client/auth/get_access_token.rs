@@ -48,7 +48,7 @@ pub async fn get_access_token(client: &KsefClient) -> Result<AccessTokens, KsefE
     let status = resp.status();
     if !status.is_success() {
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(status.as_u16(), body));
+        return Err(KsefError::from_api_response(status.as_u16(), body));
     }
 
     let parsed: TokenResponse = resp.json().await.map_err(KsefError::RequestError)?;
@@ -75,7 +75,7 @@ pub async fn refresh_access_token(client: &KsefClient) -> Result<AccessTokens, K
     let status = resp.status();
     if !status.is_success() {
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(status.as_u16(), body));
+        return Err(KsefError::from_api_response(status.as_u16(), body));
     }
 
     let parsed: RefreshTokenResponse = resp.json().await.map_err(KsefError::RequestError)?;

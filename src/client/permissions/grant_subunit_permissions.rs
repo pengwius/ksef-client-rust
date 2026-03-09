@@ -229,7 +229,7 @@ pub async fn grant_subunit_permissions(
     let status = resp.status();
     if !status.is_success() {
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(status.as_u16(), body));
+        return Err(KsefError::from_api_response(status.as_u16(), body));
     }
 
     let mut parsed: GrantSubunitPermissionsResponse =
@@ -267,7 +267,7 @@ pub async fn grant_subunit_permissions(
                                         let retry_status = retry_resp.status();
                                         if !retry_status.is_success() {
                                             let body = retry_resp.text().await.unwrap_or_default();
-                                            return Err(KsefError::ApiError(retry_status.as_u16(), body));
+                                            return Err(KsefError::from_api_response(retry_status.as_u16(), body));
                                         }
                                         let new_parsed: GrantSubunitPermissionsResponse = retry_resp.json().await.map_err(KsefError::RequestError)?;
                                         parsed = new_parsed;

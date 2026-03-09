@@ -164,7 +164,7 @@ pub async fn get_eu_entities_permissions(
             attempted_body,
             resp_body
         );
-        return Err(KsefError::ApiError(status.as_u16(), resp_body));
+        return Err(KsefError::from_api_response(status.as_u16(), resp_body));
     }
 
     let parsed: GetEuEntitiesPermissionsResponse =

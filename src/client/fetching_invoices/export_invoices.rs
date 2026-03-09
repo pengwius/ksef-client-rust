@@ -140,7 +140,7 @@ pub async fn start_export_invoices(
     if !status.is_success() {
         let code = status.as_u16();
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(code, body));
+        return Err(KsefError::from_api_response(code, body));
     }
 
     let parsed: ExportInvoicesResponse = resp.json().await?;
@@ -179,7 +179,7 @@ pub async fn get_export_status(
     if !status.is_success() {
         let code = status.as_u16();
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(code, body));
+        return Err(KsefError::from_api_response(code, body));
     }
 
     let parsed: ExportInvoicesStatusResponse = resp.json().await?;
@@ -268,7 +268,7 @@ pub async fn export_invoices(
                 continue;
             }
             code => {
-                return Err(KsefError::ApiError(
+                return Err(KsefError::ApiErrorRaw(
                     code as u16,
                     format!(
                         "Export failed with status {}: {}",
