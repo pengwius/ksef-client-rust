@@ -76,3 +76,16 @@ pub async fn new_ksef_token(
     let parsed: KsefToken = resp.json().await?;
     Ok(parsed)
 }
+
+pub async fn new_ksef_token_and_load(
+    client: &mut KsefClient,
+    load: bool,
+    permissions: KsefTokenPermissions,
+    description: &str,
+) -> Result<KsefToken, KsefError> {
+    let token = new_ksef_token(&*client, permissions, description).await?;
+    if load {
+        client.ksef_token = token.clone();
+    }
+    Ok(token)
+}

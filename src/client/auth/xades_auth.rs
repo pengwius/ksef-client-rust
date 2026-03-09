@@ -53,3 +53,12 @@ pub async fn submit_xades_auth_request(
         reference_number: auth_tokens.reference_number,
     })
 }
+
+pub async fn submit_xades_auth_request_and_load(
+    client: &mut KsefClient,
+    signed_xml: String,
+) -> Result<(), KsefError> {
+    let tokens = submit_xades_auth_request(client, signed_xml).await?;
+    client.auth_token = tokens;
+    Ok(())
+}

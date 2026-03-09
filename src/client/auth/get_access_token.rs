@@ -87,3 +87,15 @@ pub async fn refresh_access_token(client: &KsefClient) -> Result<AccessTokens, K
         refresh_token_valid_until: client.access_token.refresh_token_valid_until,
     })
 }
+
+pub async fn get_access_token_and_load(client: &mut KsefClient) -> Result<(), KsefError> {
+    let tokens = get_access_token(&*client).await?;
+    client.access_token = tokens;
+    Ok(())
+}
+
+pub async fn refresh_access_token_and_load(client: &mut KsefClient) -> Result<(), KsefError> {
+    let tokens = refresh_access_token(&*client).await?;
+    client.access_token = tokens;
+    Ok(())
+}

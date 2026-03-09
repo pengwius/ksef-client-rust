@@ -1,7 +1,6 @@
 use crate::AccessTokens;
 use crate::AuthChallenge;
 use crate::AuthTokenRequest;
-use crate::AuthTokenRequestBuilder;
 use crate::AuthTokens;
 use crate::CertificateLimits;
 use crate::ContextIdentifier;
@@ -10,6 +9,7 @@ use crate::DetailedKsefToken;
 use crate::EnrollmentData;
 use crate::EnrollmentStatusResponse;
 use crate::Environment;
+use crate::GetInvoiceUpoResponse;
 use crate::InvoicePayload;
 use crate::KsefToken;
 use crate::KsefTokenPermissions;
@@ -17,6 +17,8 @@ use crate::QuerySessionsResponse;
 use crate::RetrieveCertificatesListItem;
 use crate::RevocationReason;
 use crate::SubjectIdentifierType;
+use crate::{GetCertificateMetadataListRequest, GetCertificateMetadataListResponse};
+
 use crate::client::batch_session::full_flow::BatchSubmissionResult;
 use crate::client::batch_session::open_batch_session::{
     OpenBatchSessionRequest, OpenBatchSessionResponse,
@@ -24,12 +26,13 @@ use crate::client::batch_session::open_batch_session::{
 use crate::client::batch_session::zip::EncryptedBatchPart;
 use crate::client::error::KsefError;
 use crate::client::fetching_invoices::export_invoices::{
-    ExportInvoicesRequest, ExportInvoicesResponse, ExportInvoicesStatusResponse,
+    ExportInvoicesRequest, ExportInvoicesResponse, ExportInvoicesStatusResponse, ExportResult,
 };
 use crate::client::fetching_invoices::fetch_invoice::FetchInvoiceResponse;
 use crate::client::fetching_invoices::fetch_invoice_metadata::{
-    FetchInvoiceMetadataRequest, FetchInvoiceMetadataResponse, QueryCriteria,
+    FetchInvoiceMetadataRequest, FetchInvoiceMetadataResponse, QueryCriteria, SubjectType,
 };
+use crate::client::fetching_invoices::incremental_fetch::{FetchedInvoice, IncrementalFetchState};
 use crate::client::get_public_key_certificates::PublicKeyCertificate;
 use crate::client::ksef_certificates::enroll_certificate::{
     EnrollCertificateRequest, EnrollCertificateResponse,
@@ -41,6 +44,7 @@ use crate::client::online_session::open_online_session::{
     OpenOnlineSessionRequest, OpenOnlineSessionResponse,
 };
 use crate::client::online_session::send_invoice::SendInvoiceResponse;
+
 use crate::client::permissions::get_operation_status::OperationStatusResponse;
 use crate::client::permissions::grant_authorization_permissions::GrantAuthorizationPermissionsRequest;
 use crate::client::permissions::grant_entity_permissions::GrantEntityPermissionsRequest;
@@ -55,7 +59,32 @@ use crate::client::permissions::grant_indirect_entity_permissions::{
 };
 use crate::client::permissions::grant_person_permissions::GrantPersonPermissionsRequest;
 use crate::client::permissions::grant_subunit_permissions::GrantSubunitPermissionsRequest;
-use crate::{GetCertificateMetadataListRequest, GetCertificateMetadataListResponse};
+
+use crate::client::permissions::get_authorizations_permissions::{
+    GetAuthorizationsPermissionsRequest, GetAuthorizationsPermissionsResponse,
+};
+use crate::client::permissions::get_entities_permissions::{
+    GetEntitiesPermissionsRequest, GetEntitiesPermissionsResponse,
+};
+use crate::client::permissions::get_entity_roles::GetEntityRolesResponse;
+use crate::client::permissions::get_eu_entities_permissions::{
+    GetEuEntitiesPermissionsRequest, GetEuEntitiesPermissionsResponse,
+};
+use crate::client::permissions::get_personal_permissions::{
+    GetPersonalPermissionsRequest, GetPersonalPermissionsResponse,
+};
+use crate::client::permissions::get_persons_permissions::{
+    GetPersonsPermissionsResponse, PersonsPermissionsRequest,
+};
+use crate::client::permissions::get_subordinate_entities_roles::{
+    GetSubordinateEntitiesRolesRequest, GetSubordinateEntitiesRolesResponse,
+};
+use crate::client::permissions::get_subunits_permissions::{
+    GetSubunitsPermissionsRequest, GetSubunitsPermissionsResponse,
+};
+
+use crate::client::peppol::get_peppol_providers::GetPeppolProvidersResponse;
+use crate::client::upo::get_invoice_upo_by_ksef_number::InvoiceIdentifier;
 
 pub mod auth;
 pub mod batch_session;
@@ -116,56 +145,20 @@ impl KsefClient {
         &self,
         subject_type: SubjectIdentifierType,
     ) -> Result<AuthTokenRequest, KsefError> {
-        let challenge = match self.get_auth_challenge().await {
-            Ok(ch) => ch.challenge,
-            Err(e) => {
-                return Err(KsefError::ApplicationError(
-                    0,
-                    format!("Unable to get AuthChallenge: {}", e),
-                ));
-            }
-        };
-
-        let built = AuthTokenRequestBuilder::new()
-            .with_challenge(&challenge)
-            .with_context(self.context.id_type.clone(), &self.context.value)
-            .with_subject_type(subject_type)
-            .build();
-
-        let auth_token_request = match built {
-            Ok(req) => req,
-            Err(e) => {
-                return Err(KsefError::ApplicationError(
-                    0,
-                    format!("Unable to build AuthTokenRequest: {}", e),
-                ));
-            }
-        };
-
-        Ok(auth_token_request)
+        auth::get_auth_token_request::get_auth_token_request(self, subject_type).await
     }
 
     pub async fn authenticate_by_xades_signature(
         &mut self,
         signed_xml: String,
     ) -> Result<(), KsefError> {
-        match auth::xades_auth::submit_xades_auth_request(self, signed_xml).await {
-            Ok(tokens) => {
-                self.auth_token = tokens;
-                Ok(())
-            }
-            Err(e) => Err(e),
-        }
+        auth::xades_auth::submit_xades_auth_request_and_load(self, signed_xml).await
     }
 
     pub async fn authenticate_by_ksef_token(&mut self) -> Result<(), KsefError> {
-        match auth::ksef_token_auth::submit_ksef_token_auth_request(self).await {
-            Ok(tokens) => {
-                self.auth_token = tokens;
-                Ok(())
-            }
-            Err(e) => Err(e),
-        }
+        auth::ksef_token_auth::submit_ksef_token_auth_request(self)
+            .await
+            .map(|_| ())
     }
 
     pub async fn get_auth_status(&mut self) -> Result<bool, KsefError> {
@@ -173,23 +166,11 @@ impl KsefClient {
     }
 
     pub async fn get_access_token(&mut self) -> Result<(), KsefError> {
-        match auth::get_access_token::get_access_token(self).await {
-            Ok(tokens) => {
-                self.access_token = tokens;
-                Ok(())
-            }
-            Err(e) => Err(e),
-        }
+        auth::get_access_token::get_access_token_and_load(self).await
     }
 
     pub async fn refresh_access_token(&mut self) -> Result<(), KsefError> {
-        match auth::get_access_token::refresh_access_token(self).await {
-            Ok(token) => {
-                self.access_token = token;
-                Ok(())
-            }
-            Err(e) => Err(e),
-        }
+        auth::get_access_token::refresh_access_token_and_load(self).await
     }
 
     pub async fn get_public_key_certificates(
@@ -204,15 +185,8 @@ impl KsefClient {
         permissions: KsefTokenPermissions,
         description: &str,
     ) -> Result<KsefToken, KsefError> {
-        match ksef_tokens::new_ksef_token::new_ksef_token(self, permissions, description).await {
-            Ok(token) => {
-                if load {
-                    self.ksef_token = token.clone();
-                }
-                Ok(token)
-            }
-            Err(e) => Err(e),
-        }
+        ksef_tokens::new_ksef_token::new_ksef_token_and_load(self, load, permissions, description)
+            .await
     }
 
     pub fn load_ksef_token(&mut self, token: KsefToken) {
@@ -272,16 +246,14 @@ impl KsefClient {
     pub async fn grant_entity_permissions(
         &self,
         request: GrantEntityPermissionsRequest,
-    ) -> Result<crate::client::permissions::get_operation_status::OperationStatusResponse, KsefError>
-    {
+    ) -> Result<OperationStatusResponse, KsefError> {
         permissions::grant_entity_permissions::grant_entity_permissions(self, request).await
     }
 
     pub async fn grant_authorization_permissions(
         &self,
         request: GrantAuthorizationPermissionsRequest,
-    ) -> Result<crate::client::permissions::get_operation_status::OperationStatusResponse, KsefError>
-    {
+    ) -> Result<OperationStatusResponse, KsefError> {
         permissions::grant_authorization_permissions::grant_authorization_permissions(self, request)
             .await
     }
@@ -290,11 +262,8 @@ impl KsefClient {
         &self,
         page_offset: Option<i32>,
         page_size: Option<i32>,
-        request: crate::client::permissions::get_authorizations_permissions::GetAuthorizationsPermissionsRequest,
-    ) -> Result<
-        crate::client::permissions::get_authorizations_permissions::GetAuthorizationsPermissionsResponse,
-        KsefError,
-    >{
+        request: GetAuthorizationsPermissionsRequest,
+    ) -> Result<GetAuthorizationsPermissionsResponse, KsefError> {
         permissions::get_authorizations_permissions::get_authorizations_permissions(
             self,
             page_offset,
@@ -308,13 +277,8 @@ impl KsefClient {
         &self,
         page_offset: Option<i32>,
         page_size: Option<i32>,
-        request: Option<
-            crate::client::permissions::get_entities_permissions::GetEntitiesPermissionsRequest,
-        >,
-    ) -> Result<
-        crate::client::permissions::get_entities_permissions::GetEntitiesPermissionsResponse,
-        KsefError,
-    > {
+        request: Option<GetEntitiesPermissionsRequest>,
+    ) -> Result<GetEntitiesPermissionsResponse, KsefError> {
         permissions::get_entities_permissions::get_entities_permissions(
             self,
             page_offset,
@@ -328,13 +292,8 @@ impl KsefClient {
         &self,
         page_offset: Option<i32>,
         page_size: Option<i32>,
-        request: Option<
-            crate::client::permissions::get_eu_entities_permissions::GetEuEntitiesPermissionsRequest,
-        >,
-    ) -> Result<
-        crate::client::permissions::get_eu_entities_permissions::GetEuEntitiesPermissionsResponse,
-        KsefError,
-    > {
+        request: Option<GetEuEntitiesPermissionsRequest>,
+    ) -> Result<GetEuEntitiesPermissionsResponse, KsefError> {
         permissions::get_eu_entities_permissions::get_eu_entities_permissions(
             self,
             page_offset,
@@ -348,8 +307,7 @@ impl KsefClient {
         &self,
         page_offset: Option<i32>,
         page_size: Option<i32>,
-    ) -> Result<crate::client::permissions::get_entity_roles::GetEntityRolesResponse, KsefError>
-    {
+    ) -> Result<GetEntityRolesResponse, KsefError> {
         permissions::get_entity_roles::get_entity_roles(self, page_offset, page_size).await
     }
 
@@ -357,11 +315,8 @@ impl KsefClient {
         &self,
         page_offset: Option<i32>,
         page_size: Option<i32>,
-        request: Option<crate::client::permissions::get_subordinate_entities_roles::GetSubordinateEntitiesRolesRequest>,
-    ) -> Result<
-        crate::client::permissions::get_subordinate_entities_roles::GetSubordinateEntitiesRolesResponse,
-        KsefError,
-    >{
+        request: Option<GetSubordinateEntitiesRolesRequest>,
+    ) -> Result<GetSubordinateEntitiesRolesResponse, KsefError> {
         permissions::get_subordinate_entities_roles::get_subordinate_entities_roles(
             self,
             page_offset,
@@ -384,8 +339,7 @@ impl KsefClient {
     pub async fn grant_subunit_permissions(
         &self,
         request: GrantSubunitPermissionsRequest,
-    ) -> Result<crate::client::permissions::get_operation_status::OperationStatusResponse, KsefError>
-    {
+    ) -> Result<OperationStatusResponse, KsefError> {
         permissions::grant_subunit_permissions::grant_subunit_permissions(self, request).await
     }
 
@@ -408,8 +362,7 @@ impl KsefClient {
     pub async fn revoke_authorizations_permission(
         &self,
         permission_id: &str,
-    ) -> Result<crate::client::permissions::get_operation_status::OperationStatusResponse, KsefError>
-    {
+    ) -> Result<OperationStatusResponse, KsefError> {
         permissions::revoke_authorizations_permission::revoke_authorizations_permission(
             self,
             permission_id,
@@ -420,8 +373,7 @@ impl KsefClient {
     pub async fn revoke_common_permission(
         &self,
         permission_id: &str,
-    ) -> Result<crate::client::permissions::get_operation_status::OperationStatusResponse, KsefError>
-    {
+    ) -> Result<OperationStatusResponse, KsefError> {
         permissions::revoke_common_permission::revoke_common_permission(self, permission_id).await
     }
 
@@ -482,27 +434,17 @@ impl KsefClient {
         &self,
         page_size: Option<i32>,
         page_offset: Option<i32>,
-    ) -> Result<crate::client::peppol::get_peppol_providers::GetPeppolProvidersResponse, KsefError>
-    {
-        crate::client::peppol::get_peppol_providers::get_peppol_providers(
-            self,
-            page_size,
-            page_offset,
-        )
-        .await
+    ) -> Result<GetPeppolProvidersResponse, KsefError> {
+        peppol::get_peppol_providers::get_peppol_providers(self, page_size, page_offset).await
     }
 
     pub async fn get_invoice_upo(
         &self,
         reference_number: &str,
-        identifier: crate::client::upo::get_invoice_upo_by_ksef_number::InvoiceIdentifier,
-    ) -> Result<crate::GetInvoiceUpoResponse, KsefError> {
-        crate::client::upo::get_invoice_upo_by_ksef_number::get_invoice_upo(
-            self,
-            reference_number,
-            identifier,
-        )
-        .await
+        identifier: InvoiceIdentifier,
+    ) -> Result<GetInvoiceUpoResponse, KsefError> {
+        upo::get_invoice_upo_by_ksef_number::get_invoice_upo(self, reference_number, identifier)
+            .await
     }
 
     pub async fn revoke_certificate(
@@ -615,20 +557,17 @@ impl KsefClient {
         fetching_invoices::export_invoices::get_export_status(self, reference_number).await
     }
 
-    pub async fn export_invoices(
-        &self,
-        query: QueryCriteria,
-    ) -> Result<fetching_invoices::export_invoices::ExportResult, KsefError> {
+    pub async fn export_invoices(&self, query: QueryCriteria) -> Result<ExportResult, KsefError> {
         fetching_invoices::export_invoices::export_invoices(self, query).await
     }
 
     pub async fn export_invoices_incrementally(
         &self,
-        state: &mut fetching_invoices::incremental_fetch::IncrementalFetchState,
-        subject_types: Vec<fetching_invoices::fetch_invoice_metadata::SubjectType>,
+        state: &mut IncrementalFetchState,
+        subject_types: Vec<SubjectType>,
         window_end: Option<chrono::DateTime<chrono::Utc>>,
         default_start: chrono::DateTime<chrono::Utc>,
-    ) -> Result<Vec<fetching_invoices::incremental_fetch::FetchedInvoice>, KsefError> {
+    ) -> Result<Vec<FetchedInvoice>, KsefError> {
         fetching_invoices::incremental_fetch::fetch_invoices_incrementally(
             self,
             state,
@@ -685,9 +624,8 @@ impl KsefClient {
         &self,
         page_offset: Option<i32>,
         page_size: Option<i32>,
-        request_body: Option<permissions::get_personal_permissions::GetPersonalPermissionsRequest>,
-    ) -> Result<permissions::get_personal_permissions::GetPersonalPermissionsResponse, KsefError>
-    {
+        request_body: Option<GetPersonalPermissionsRequest>,
+    ) -> Result<GetPersonalPermissionsResponse, KsefError> {
         permissions::get_personal_permissions::get_personal_permissions(
             self,
             page_offset,
@@ -701,9 +639,8 @@ impl KsefClient {
         &self,
         page_offset: Option<i32>,
         page_size: Option<i32>,
-        request_body: Option<permissions::get_persons_permissions::PersonsPermissionsRequest>,
-    ) -> Result<permissions::get_persons_permissions::GetPersonsPermissionsResponse, KsefError>
-    {
+        request_body: Option<PersonsPermissionsRequest>,
+    ) -> Result<GetPersonsPermissionsResponse, KsefError> {
         permissions::get_persons_permissions::get_persons_permissions(
             self,
             page_offset,
@@ -717,9 +654,8 @@ impl KsefClient {
         &self,
         page_offset: Option<i32>,
         page_size: Option<i32>,
-        request_body: Option<permissions::get_subunits_permissions::GetSubunitsPermissionsRequest>,
-    ) -> Result<permissions::get_subunits_permissions::GetSubunitsPermissionsResponse, KsefError>
-    {
+        request_body: Option<GetSubunitsPermissionsRequest>,
+    ) -> Result<GetSubunitsPermissionsResponse, KsefError> {
         permissions::get_subunits_permissions::get_subunits_permissions(
             self,
             page_offset,
