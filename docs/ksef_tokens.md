@@ -14,7 +14,7 @@ Wszystkie poniższe operacje (generowanie, pobieranie listy, unieważnianie) wym
 ### 1. Generowanie Tokena KSeF
 
 ```rust
-use ksef_client::KsefTokenPermissions;
+use ksef_client::tokens::KsefTokenPermissions;
 
 let permissions = KsefTokenPermissions {
     invoice_read: true,
@@ -123,7 +123,8 @@ match client.revoke_ksef_token(ksef_token_reference_number.as_str()).await {
 Poniższy kod zakłada, że klient (`client`) jest już zalogowany (np. certyfikatem XAdES) i posiada uprawnienia do zarządzania poświadczeniami (`CredentialsManage`).
 
 ```rust
-use ksef_client::{KsefClient, KsefTokenPermissions};
+use ksef_client::prelude::KsefClient;
+use ksef_client::tokens::KsefTokenPermissions;
 
 async fn token_lifecycle_example(client: &mut KsefClient) -> Result<(), Box<dyn std::error::Error>> {
     println!("--- Rozpoczęcie cyklu życia tokena ---");

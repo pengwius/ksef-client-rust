@@ -17,9 +17,8 @@ Należy przygotować dokument XML z identyfikatorem kontekstu, sposobem identyfi
 | `subject_type` | `SubjectIdentifierType` | Sposób identyfikacji podmiotu. Może przyjąć `SubjectIdentifierType::CertificateSubject` lub `SubjectIdentifierType::CertificateFingerprint`. |
 
 ```rust
-use ksef_client::{
-    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
-};
+use ksef_client::prelude::{ContextIdentifier, ContextIdentifierType, Environment, KsefClient};
+use ksef_client::auth::SubjectIdentifierType;
 
 // Inicjalizacja klienta
 let context = ContextIdentifier {
@@ -166,10 +165,9 @@ Poniżej znajduje się kompletny kod realizujący scenariusz:
 4. Logowanie za pomocą wygenerowanego tokena KSeF.
 
 ```rust
-use ksef_client::{
-    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
-    KsefToken,
-};
+use ksef_client::prelude::{ContextIdentifier, ContextIdentifierType, Environment, KsefClient};
+use ksef_client::auth::SubjectIdentifierType;
+use ksef_client::tokens::KsefToken;
 use std::time::Duration;
 use std::thread;
 

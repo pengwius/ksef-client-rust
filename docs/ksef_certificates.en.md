@@ -36,7 +36,7 @@ let csr_result = match client.generate_csr(&enrollment_data) {
 ### 4. Sending the request
 
 ```rust
-use ksef_client::{EnrollCertificateRequest, CertificateType};
+use ksef_client::certificates::{EnrollCertificateRequest, CertificateType};
 
 let request = EnrollCertificateRequest {
     certificate_name: "Certificate Name".to_string(),
@@ -105,7 +105,7 @@ Arguments of the `get_certificate_metadata_list` method:
 - `page_offset` - result page number (optional)
 
 ```rust
-use ksef_client::GetCertificateMetadataListRequest;
+use ksef_client::certificates::GetCertificateMetadataListRequest;
 
 let query = GetCertificateMetadataListRequest {
     certificate_serial_number: Some("serial_number".to_string()),
@@ -137,7 +137,7 @@ Possible revocation reasons (`RevocationReason`):
 - `Superseded` - superseded by another certificate
 
 ```rust
-use ksef_client::RevocationReason;
+use ksef_client::certificates::RevocationReason;
 
 match client.revoke_certificate(&serial, RevocationReason::Unspecified).await {
     Ok(()) => {

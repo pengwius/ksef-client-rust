@@ -14,8 +14,7 @@ Potrzebujesz:
 - invoice hash — skrót faktury (Base64). Ten hash otrzymujesz z odpowiedzi KSeF po poprawnym przesłaniu faktury lub pobierając fakturę
 
 ```rust
-use ksef_client::KsefClient;
-use ksef_client::{ContextIdentifier, ContextIdentifierType, Environment};
+use ksef_client::prelude::{KsefClient, ContextIdentifier, ContextIdentifierType, Environment};
 
 let context = ContextIdentifier {
     id_type: ContextIdentifierType::Nip,

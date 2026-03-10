@@ -27,9 +27,9 @@ The `grant_person_permissions` method is used to grant permissions to specific n
         *   `PersonByFingerprintWithoutIdentifier`: For persons without NIP/PESEL (e.g., foreigners). Requires `person_by_fp_no_id` field (identity document data).
 
 ```rust
-use ksef_client::{
+use ksef_client::permissions::{
     GrantPersonPermissionsRequest, GrantSubjectIdentifierType, PersonById, PersonPermissionType,
-    SubjectDetails, SubjectDetailsType, SubjectIdentifier
+    SubjectDetails, SubjectDetailsType, SubjectIdentifier,
 };
 
 let request = GrantPersonPermissionsRequest::builder()
@@ -76,9 +76,9 @@ The `grant_entity_permissions` method allows authorizing another business entity
     *   Requires `full_name` field (full name of the entity).
 
 ```rust
-use ksef_client::{
+use ksef_client::permissions::{
     GrantEntityPermissionsRequest, EntityIdentifier, EntityIdentifierType,
-    EntityPermission, EntityPermissionType, EntitySubjectDetails
+    EntityPermission, EntityPermissionType, EntitySubjectDetails,
 };
 
 let request = GrantEntityPermissionsRequest::builder()
@@ -125,9 +125,9 @@ The `grant_authorization_permissions` method is used to grant specific permissio
     *   Requires `full_name` field.
 
 ```rust
-use ksef_client::{
+use ksef_client::permissions::{
     GrantAuthorizationPermissionsRequest, AuthorizationSubjectIdentifier,
-    AuthorizationSubjectIdentifierType, AuthorizationPermissionType, AuthorizationSubjectDetails
+    AuthorizationSubjectIdentifierType, AuthorizationPermissionType, AuthorizationSubjectDetails,
 };
 
 let request = GrantAuthorizationPermissionsRequest::builder()
@@ -166,10 +166,10 @@ The `grant_indirect_entity_permissions` method allows granting permissions to ha
 *   `with_subject_details(IndirectSubjectDetails)` - **Required**. Analogous to point 1 (person data).
 
 ```rust
-use ksef_client::{
+use ksef_client::permissions::{
     GrantIndirectEntityPermissionsRequest, IndirectSubjectIdentifier, IndirectSubjectIdentifierType,
     IndirectTargetIdentifier, IndirectTargetIdentifierType, IndirectPermissionType,
-    IndirectSubjectDetails, IndirectSubjectDetailsType, IndirectPersonById
+    IndirectSubjectDetails, IndirectSubjectDetailsType, IndirectPersonById,
 };
 
 let request = GrantIndirectEntityPermissionsRequest::builder()
@@ -219,10 +219,10 @@ The `grant_subunit_permissions` method is used to manage permissions in the cont
 *   `with_subject_details(SubunitSubjectDetails)` - **Required**. Person/entity data.
 
 ```rust
-use ksef_client::{
+use ksef_client::permissions::{
     GrantSubunitPermissionsRequest, SubunitSubjectIdentifier, SubunitSubjectIdentifierType,
     SubunitContextIdentifier, SubunitContextIdentifierType, SubunitSubjectDetails,
-    SubunitSubjectDetailsType, SubunitPersonById
+    SubunitSubjectDetailsType, SubunitPersonById,
 };
 
 let parent_nip = "1234567890";
@@ -276,10 +276,10 @@ The `grant_eu_entity_permissions` method allows granting administrative permissi
 *   `with_eu_entity_details(EuEntityDetails)` - **Required**. EU entity details (name, address).
 
 ```rust
-use ksef_client::{
+use ksef_client::permissions::{
     GrantEuEntityPermissionsRequest, EuEntitySubjectIdentifier, EuEntitySubjectIdentifierType,
     EuEntityContextIdentifier, EuEntityContextIdentifierType, EuEntitySubjectDetails,
-    EuEntitySubjectDetailsType, EuEntityByFp, EuEntityDetails
+    EuEntitySubjectDetailsType, EuEntityByFp, EuEntityDetails,
 };
 
 let fingerprint = "0000000000000000000000000000000000000000000000000000000000000000";
@@ -333,11 +333,11 @@ The `grant_eu_entity_representative_permissions` method is used to grant permiss
     *   Types: `PersonByFingerprintWithIdentifier`, `PersonByFingerprintWithoutIdentifier`, `EntityByFingerprint`.
 
 ```rust
-use ksef_client::{
+use ksef_client::permissions::{
     GrantEuEntityRepresentativePermissionsRequest, EuEntityRepresentativeSubjectIdentifier,
     EuEntityRepresentativeSubjectIdentifierType, EuEntityRepresentativePermissionType,
     EuEntityRepresentativeSubjectDetails, EuEntityRepresentativeSubjectDetailsType,
-    EuEntityRepresentativeEntityByFp
+    EuEntityRepresentativeEntityByFp,
 };
 
 let fingerprint = "0000000000000000000000000000000000000000000000000000000000000000";

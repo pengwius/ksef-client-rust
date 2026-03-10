@@ -17,9 +17,8 @@ You must prepare an XML document with the context identifier, identification met
 | `subject_type` | `SubjectIdentifierType` | Entity identification method. Can be `SubjectIdentifierType::CertificateSubject` or `SubjectIdentifierType::CertificateFingerprint`. |
 
 ```rust
-use ksef_client::{
-    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
-};
+use ksef_client::prelude::{ContextIdentifier, ContextIdentifierType, Environment, KsefClient};
+use ksef_client::auth::SubjectIdentifierType;
 
 // Initialize client
 let context = ContextIdentifier {
@@ -164,10 +163,9 @@ Below is a complete code implementing the scenario:
 4. Login using the generated KSeF token.
 
 ```rust
-use ksef_client::{
-    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
-    KsefToken,
-};
+use ksef_client::prelude::{ContextIdentifier, ContextIdentifierType, Environment, KsefClient};
+use ksef_client::auth::SubjectIdentifierType;
+use ksef_client::tokens::KsefToken;
 use std::time::Duration;
 use std::thread;
 
