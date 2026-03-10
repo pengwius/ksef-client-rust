@@ -1,9 +1,9 @@
-use crate::client::error::KsefError;
 use crate::client::KsefClient;
-use crate::Environment;
-use base64::{engine::general_purpose, Engine as _};
+use crate::client::error::KsefError;
+use crate::prelude::Environment;
+use base64::{Engine as _, engine::general_purpose};
 use openssl::ecdsa::EcdsaSig;
-use openssl::hash::{hash, MessageDigest};
+use openssl::hash::{MessageDigest, hash};
 use openssl::md::MdRef;
 use openssl::pkey::PKey;
 use openssl::pkey_ctx::PkeyCtx;
@@ -129,7 +129,7 @@ pub fn build_certificate_verification_url(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{ContextIdentifier, ContextIdentifierType, Environment, KsefClient};
+    use crate::prelude::{ContextIdentifier, ContextIdentifierType, Environment, KsefClient};
     use openssl::ec::EcKey;
     use openssl::nid::Nid;
     use openssl::pkey::PKey;

@@ -1,8 +1,8 @@
-use ksef_client::*;
 use crate::common;
+use ksef_client::prelude::*;
 
 use base64::{Engine as _, engine::general_purpose};
-use ksef_client::{GetInvoiceUpoResponse, InvoiceIdentifier, KsefClient};
+use ksef_client::upo::{GetInvoiceUpoResponse, InvoiceIdentifier};
 use openssl::sha::sha256;
 
 #[tokio::test]

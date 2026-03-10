@@ -1,4 +1,4 @@
-use ksef_client::*;
+use ksef_client::prelude::*;
 use crate::common;
 
 use openssl::ec::EcKey;

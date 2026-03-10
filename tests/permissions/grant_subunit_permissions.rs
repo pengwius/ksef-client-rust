@@ -1,11 +1,10 @@
-use ksef_client::*;
 use crate::common;
-
-use ksef_client::{
+use ksef_client::permissions::{
     GrantSubunitPermissionsRequest, SubunitContextIdentifier, SubunitContextIdentifierType,
     SubunitPersonById, SubunitSubjectDetails, SubunitSubjectDetailsType, SubunitSubjectIdentifier,
     SubunitSubjectIdentifierType,
 };
+use ksef_client::prelude::*;
 
 async fn calculate_checksum(input: &str) -> u32 {
     let weights = [1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3];

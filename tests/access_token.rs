@@ -1,4 +1,4 @@
-use ksef_client::*;
+use ksef_client::prelude::*;
 mod common;
 
 #[tokio::test]

@@ -1,6 +1,6 @@
-use ksef_client::*;
 use crate::common;
-use ksef_client::{CertificateType, EnrollCertificateRequest, RevocationReason};
+use ksef_client::certificates::{CertificateType, EnrollCertificateRequest, RevocationReason};
+use ksef_client::prelude::*;
 
 #[tokio::test]
 async fn test_revoke_certificate() {
@@ -36,7 +36,7 @@ async fn test_revoke_certificate() {
         }
         Err(e) => {
             println!("Enrollment failed: {:?}", e);
-            if let ksef_client::error::KsefError::ApiError(code, _) = e {
+            if let KsefError::ApiError(code, _) = e {
                 if code >= 400 {
                     println!(
                         "Skipping revocation test due to enrollment failure (business error)."

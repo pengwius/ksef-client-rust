@@ -1,6 +1,6 @@
-use crate::ContextIdentifierType;
 use crate::client::routes;
 use crate::client::{KsefClient, KsefError};
+use crate::prelude::ContextIdentifierType;
 use serde::Deserialize;
 
 #[derive(Deserialize, Default, Debug, Clone)]

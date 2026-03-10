@@ -1,7 +1,7 @@
-use ksef_client::*;
 use chrono::{Duration, Utc};
-use ksef_client::{
-    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
+use ksef_client::auth::SubjectIdentifierType;
+use ksef_client::prelude::{
+    ContextIdentifier, ContextIdentifierType, Environment, KsefAuth, KsefClient,
 };
 use rand::random_range;
 

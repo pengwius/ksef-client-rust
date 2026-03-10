@@ -1,9 +1,10 @@
-use ksef_client::*;
 use crate::common;
+use ksef_client::prelude::*;
 
-use ksef_client::{
-    InvoicePayload, OpenBatchSessionRequestBuilder, calculate_invoice_hash, create_zip,
-    encrypt_zip_parts, split_zip,
+use ksef_client::invoices::InvoicePayload;
+use ksef_client::sessions::{
+    OpenBatchSessionRequestBuilder, calculate_invoice_hash, create_zip, encrypt_zip_parts,
+    split_zip,
 };
 use openssl::symm::{Cipher, decrypt};
 use std::io::Cursor;

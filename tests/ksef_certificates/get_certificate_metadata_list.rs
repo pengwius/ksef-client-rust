@@ -1,6 +1,8 @@
-use ksef_client::*;
 use crate::common;
-use ksef_client::{CertificateType, EnrollCertificateRequest, GetCertificateMetadataListRequest};
+use ksef_client::certificates::{
+    CertificateType, EnrollCertificateRequest, GetCertificateMetadataListRequest,
+};
+use ksef_client::prelude::*;
 
 #[tokio::test]
 async fn test_get_certificate_metadata_list() {
@@ -36,7 +38,7 @@ async fn test_get_certificate_metadata_list() {
         }
         Err(e) => {
             println!("Enrollment failed: {:?}", e);
-            if let ksef_client::error::KsefError::ApiError(code, _) = e {
+            if let KsefError::ApiError(code, _) = e {
                 if code >= 400 {
                     println!(
                         "Skipping metadata list test due to enrollment failure (business error)."

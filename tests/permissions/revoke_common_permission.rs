@@ -1,10 +1,10 @@
-use ksef_client::*;
 use crate::common;
-use ksef_client::{
+use ksef_client::permissions::{
     GrantPersonPermissionsRequest, GrantSubjectIdentifierType, Identifier, PersonById,
     PersonPermissionType, PersonsPermissionsRequest, SubjectDetails, SubjectDetailsType,
     SubjectIdentifier,
 };
+use ksef_client::prelude::*;
 
 #[tokio::test]
 async fn test_grant_and_revoke_common_permission_workflow() {

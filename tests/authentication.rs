@@ -1,9 +1,7 @@
-use ksef_client::*;
+use ksef_client::prelude::*;
 mod common;
 
-use ksef_client::{
-    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
-};
+use ksef_client::auth::SubjectIdentifierType;
 
 #[tokio::test]
 async fn test_auth_token_request_generation() {

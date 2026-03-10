@@ -1,9 +1,9 @@
-use ksef_client::*;
 use crate::common;
-use ksef_client::{
+use ksef_client::invoices::{
     DateRangeBuilder, DateType, FetchInvoiceMetadataRequestBuilder, IncrementalFetchState,
     InvoicePayload, QueryCriteriaBuilder, SubjectType,
 };
+use ksef_client::prelude::*;
 use std::io::Read;
 
 #[tokio::test]

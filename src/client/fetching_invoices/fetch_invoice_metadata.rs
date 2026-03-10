@@ -22,6 +22,12 @@ pub struct FetchInvoiceMetadataRequestBuilder {
     page_size: Option<i32>,
 }
 
+impl Default for FetchInvoiceMetadataRequestBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl FetchInvoiceMetadataRequestBuilder {
     pub fn new() -> Self {
         Self {
@@ -101,6 +107,12 @@ pub struct QueryCriteriaBuilder {
     form_type: Option<FormType>,
     invoice_types: Option<Vec<InvoiceType>>,
     has_attachment: Option<bool>,
+}
+
+impl Default for QueryCriteriaBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl QueryCriteriaBuilder {
@@ -242,6 +254,12 @@ pub struct DateRangeBuilder {
     from: Option<String>,
     to: Option<String>,
     restrict_to_permanent_storage_hwm_date: Option<bool>,
+}
+
+impl Default for DateRangeBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl DateRangeBuilder {

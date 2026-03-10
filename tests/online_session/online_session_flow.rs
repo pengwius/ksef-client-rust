@@ -1,7 +1,7 @@
-use ksef_client::*;
 use crate::common;
+use ksef_client::prelude::*;
 
-use ksef_client::OpenOnlineSessionRequestBuilder;
+use ksef_client::sessions::OpenOnlineSessionRequestBuilder;
 
 #[tokio::test]
 async fn test_online_session_flow() {

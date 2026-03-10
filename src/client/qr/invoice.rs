@@ -1,5 +1,5 @@
-use crate::Environment;
 use crate::client::KsefClient;
+use crate::prelude::Environment;
 
 pub fn build_invoice_verification_url(
     client: &KsefClient,
@@ -47,7 +47,7 @@ pub fn build_invoice_verification_url(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{ContextIdentifier, ContextIdentifierType};
+    use crate::prelude::{ContextIdentifier, ContextIdentifierType};
 
     #[test]
     fn test_normalize_hash_and_build_url_test_env() {

@@ -63,8 +63,7 @@ pub async fn get_auth_challenge(client: &KsefClient) -> Result<AuthChallenge, Ks
 
 #[cfg(test)]
 mod tests {
-    use crate::Environment;
-    use crate::{ContextIdentifier, ContextIdentifierType};
+    use crate::prelude::{ContextIdentifier, ContextIdentifierType, Environment};
 
     use super::*;
 

@@ -1,10 +1,8 @@
-use ksef_client::*;
+use ksef_client::prelude::*;
 mod common;
 
-use ksef_client::{
-    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, KsefTokenPermissions,
-    SubjectIdentifierType,
-};
+use ksef_client::auth::SubjectIdentifierType;
+use ksef_client::tokens::KsefTokenPermissions;
 
 #[tokio::test]
 async fn test_ksef_token_lifecycle() {

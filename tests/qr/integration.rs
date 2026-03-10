@@ -1,7 +1,8 @@
-use ksef_client::*;
 use crate::common;
 use chrono::Utc;
-use ksef_client::{CertificateType, EnrollCertificateRequest, KsefClient, RevocationReason};
+use ksef_client::KsefClient;
+use ksef_client::certificates::{CertificateType, EnrollCertificateRequest, RevocationReason};
+use ksef_client::prelude::*;
 
 async fn submit_invoice_and_get_hash(
     client: &KsefClient,

@@ -1,9 +1,9 @@
-use crate::client::traits::*;
-use crate::AuthTokenRequest;
-use crate::AuthTokenRequestBuilder;
-use crate::SubjectIdentifierType;
+use crate::auth::AuthTokenRequest;
+use crate::auth::AuthTokenRequestBuilder;
+use crate::auth::SubjectIdentifierType;
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
+use crate::client::traits::*;
 
 pub async fn get_auth_token_request(
     client: &KsefClient,

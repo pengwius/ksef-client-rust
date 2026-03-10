@@ -35,7 +35,7 @@ pub enum KsefError {
     RequestError(#[from] reqwest::Error),
 
     #[error("API error: HTTP {0} - {1:?}")]
-    ApiError(u16, KsefApiException),
+    ApiError(u16, Box<KsefApiException>),
 
     #[error("API error (raw): HTTP {0} - {1}")]
     ApiErrorRaw(u16, String),
@@ -68,8 +68,42 @@ pub enum KsefError {
 impl KsefError {
     pub fn from_api_response(code: u16, body: String) -> Self {
         match serde_json::from_str::<KsefApiException>(&body) {
-            Ok(api_exception) => KsefError::ApiError(code, api_exception),
+            Ok(api_exception) => KsefError::ApiError(code, Box::new(api_exception)),
             Err(_) => KsefError::ApiErrorRaw(code, body),
+        }
+    }
+
+    pub fn is_api_error(&self) -> bool {
+        matches!(
+            self,
+            KsefError::ApiError(_, _) | KsefError::ApiErrorRaw(_, _)
+        )
+    }
+
+    pub fn status_code(&self) -> Option<u16> {
+        match self {
+            KsefError::ApiError(code, _) => Some(*code),
+            KsefError::ApiErrorRaw(code, _) => Some(*code),
+            _ => None,
+        }
+    }
+
+    pub fn api_exception(&self) -> Option<&KsefApiException> {
+        match self {
+            KsefError::ApiError(_, ex) => Some(ex.as_ref()),
+            _ => None,
+        }
+    }
+
+    pub fn has_exception_code(&self, code: i32) -> bool {
+        if let KsefError::ApiError(_, api_ex) = self {
+            api_ex
+                .exception
+                .exception_detail_list
+                .iter()
+                .any(|detail| detail.exception_code == code)
+        } else {
+            false
         }
     }
 }

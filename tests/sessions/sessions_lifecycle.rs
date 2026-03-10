@@ -1,11 +1,10 @@
-use ksef_client::*;
+use ksef_client::prelude::*;
 use std::time::Duration;
 
 use crate::common;
 
-use ksef_client::{
-    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
-};
+use ksef_client::auth::SubjectIdentifierType;
+use ksef_client::prelude::{ContextIdentifier, ContextIdentifierType, Environment, KsefClient};
 
 async fn authorize_client_for_nip(nip: &str) -> KsefClient {
     let context = ContextIdentifier {

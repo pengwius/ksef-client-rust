@@ -1,7 +1,7 @@
-use ksef_client::*;
 use crate::common;
+use ksef_client::prelude::*;
 
-use ksef_client::{
+use ksef_client::permissions::{
     EuEntityByFp, EuEntityContextIdentifier, EuEntityContextIdentifierType, EuEntityDetails,
     EuEntityIdDocument, EuEntityPersonByFpNoId, EuEntityPersonByFpWithId, EuEntityPersonIdentifier,
     EuEntityPersonIdentifierType, EuEntitySubjectDetails, EuEntitySubjectDetailsType,
