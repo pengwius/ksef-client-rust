@@ -355,7 +355,7 @@ pub async fn grant_indirect_entity_permissions(
         .client
         .post(&url)
         .header("Accept", "application/json")
-        .bearer_auth(access_token)
+        .bearer_auth(KsefClient::secret_str(access_token))
         .json(&request)
         .send()
         .await

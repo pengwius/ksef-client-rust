@@ -19,7 +19,7 @@ pub struct EnrollmentData {
 pub async fn get_enrollment_data(client: &KsefClient) -> Result<EnrollmentData, KsefError> {
     let url = client.url_for(routes::CERTIFICATES_ENROLLMENT_DATA_PATH);
 
-    let access_token = &client.access_token.access_token;
+    let access_token = KsefClient::secret_str(&client.access_token.access_token);
 
     let resp = client
         .client

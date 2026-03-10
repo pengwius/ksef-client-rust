@@ -82,7 +82,7 @@ pub async fn get_certificate_metadata_list(
         query_params.push(("pageOffset", offset.to_string()));
     }
 
-    let access_token = &client.access_token.access_token;
+    let access_token = KsefClient::secret_str(&client.access_token.access_token);
 
     let resp = client
         .client

@@ -1,6 +1,7 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;
+use secrecy::ExposeSecret;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
@@ -95,7 +96,7 @@ pub async fn get_subunits_permissions(
 ) -> Result<GetSubunitsPermissionsResponse, KsefError> {
     let url = client.url_for(routes::PERMISSIONS_QUERY_SUBUNITS_GRANTS_PATH);
 
-    let token = &client.access_token.access_token;
+    let token = client.access_token.access_token.expose_secret();
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,

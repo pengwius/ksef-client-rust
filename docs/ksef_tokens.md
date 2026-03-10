@@ -31,7 +31,8 @@ let description = "Opis mojego tokena";
 // umożliwiając późniejsze logowanie się nim (w nowej sesji) lub wykonywanie operacji w jego kontekście.
 let ksef_token = match client.new_ksef_token(true, permissions, description).await {
     Ok(token) => {
-        println!("    KSeF Token: {}", token.token);
+        use secrecy::ExposeSecret;
+        println!("    KSeF Token: {}", token.token.expose_secret());
         token
     }
     Err(e) => {
@@ -125,6 +126,7 @@ Poniższy kod zakłada, że klient (`client`) jest już zalogowany (np. certyfik
 ```rust
 use ksef_client::prelude::KsefClient;
 use ksef_client::tokens::KsefTokenPermissions;
+use secrecy::ExposeSecret;
 
 async fn token_lifecycle_example(client: &mut KsefClient) -> Result<(), Box<dyn std::error::Error>> {
     println!("--- Rozpoczęcie cyklu życia tokena ---");
@@ -142,7 +144,7 @@ async fn token_lifecycle_example(client: &mut KsefClient) -> Result<(), Box<dyn 
     };
 
     let new_token = client.new_ksef_token(false, permissions, "Token testowy cyklu życia").await?; // false - nie ładujemy go jako aktywnego tokena autoryzacyjnego tej sesji
-    println!("   Wygenerowano token: {}", new_token.token);
+    println!("   Wygenerowano token: {}", new_token.token.expose_secret());
     println!("   Numer referencyjny: {}", new_token.reference_number);
 
     // 2. Sprawdzenie statusu nowo utworzonego tokena

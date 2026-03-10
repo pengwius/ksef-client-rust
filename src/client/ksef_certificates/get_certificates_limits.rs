@@ -21,7 +21,7 @@ pub struct LimitDetails {
 pub async fn get_certificates_limits(client: &KsefClient) -> Result<CertificateLimits, KsefError> {
     let url = client.url_for(routes::CERTIFICATES_LIMITS_PATH);
 
-    let access_token = &client.access_token.access_token;
+    let access_token = KsefClient::secret_str(&client.access_token.access_token);
 
     let resp = client
         .client

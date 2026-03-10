@@ -6,7 +6,7 @@ use crate::client::routes;
 pub async fn get_ksef_tokens(client: &KsefClient) -> Result<Vec<DetailedKsefToken>, KsefError> {
     let url = client.url_for(routes::TOKENS_PATH);
 
-    let access_token = &client.access_token.access_token;
+    let access_token = KsefClient::secret_str(&client.access_token.access_token);
 
     let resp = client
         .client

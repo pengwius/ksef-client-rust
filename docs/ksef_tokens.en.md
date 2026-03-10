@@ -31,8 +31,8 @@ let description = "My token description";
 // enabling subsequent login with it (in a new session) or performing operations in its context.
 let ksef_token = match client.new_ksef_token(true, permissions, description).await {
     Ok(token) => {
-        println!("    KSeF Token: {}", token.token);
-        println!("    Reference Number: {}", token.reference_number);
+        use secrecy::ExposeSecret;
+        println!("    KSeF Token: {}", token.token.expose_secret());
         token
     }
     Err(e) => {
@@ -126,6 +126,7 @@ The code below assumes that the client (`client`) is already logged in (e.g., us
 ```rust
 use ksef_client::prelude::KsefClient;
 use ksef_client::tokens::KsefTokenPermissions;
+use secrecy::ExposeSecret;
 
 async fn token_lifecycle_example(client: &mut KsefClient) -> Result<(), Box<dyn std::error::Error>> {
     println!("--- Starting Token Lifecycle ---");
@@ -142,8 +143,8 @@ async fn token_lifecycle_example(client: &mut KsefClient) -> Result<(), Box<dyn 
         enforcement_operations: false,
     };
 
-    let new_token = client.new_ksef_token(false, permissions, "Lifecycle test token").await?; // false - do not load as active auth token for this session
-    println!("   Generated token: {}", new_token.token);
+    let new_token = client.new_ksef_token(false, permissions, "Test lifecycle token").await?; // false - do not load as active auth token for this session
+    println!("   Generated token: {}", new_token.token.expose_secret());
     println!("   Reference number: {}", new_token.reference_number);
 
     // 2. Check status of newly created token

@@ -49,7 +49,7 @@ pub async fn get_active_sessions(
 ) -> Result<QuerySessionsResponse, KsefError> {
     let url = client.url_for(routes::AUTH_SESSIONS_PATH);
 
-    let access_token = &client.access_token.access_token;
+    let access_token = KsefClient::secret_str(&client.access_token.access_token);
 
     let mut req = client
         .client

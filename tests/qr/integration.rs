@@ -3,6 +3,7 @@ use chrono::Utc;
 use ksef_client::KsefClient;
 use ksef_client::certificates::{CertificateType, EnrollCertificateRequest, RevocationReason};
 use ksef_client::prelude::*;
+use secrecy::ExposeSecret;
 
 async fn submit_invoice_and_get_hash(
     client: &KsefClient,
@@ -114,7 +115,7 @@ async fn enroll_and_build_cert_qr(
             seller_nip,
             &serial,
             invoice_hash,
-            Some(csr_result.private_key_pem.as_str()),
+            Some(csr_result.private_key_pem.expose_secret().as_str()),
         )
         .map_err(|e| format!("Failed to build qr url from enrolled cert: {:?}", e))?;
 

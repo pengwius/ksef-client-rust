@@ -37,7 +37,7 @@ pub async fn get_auth_status(client: &mut KsefClient) -> Result<bool, KsefError>
             .client
             .get(&url)
             .header("Accept", "application/json")
-            .bearer_auth(&client.auth_token.authentication_token)
+            .bearer_auth(KsefClient::secret_str(&client.auth_token.authentication_token))
             .send()
             .await?;
 

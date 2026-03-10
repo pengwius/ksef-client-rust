@@ -1,12 +1,22 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;
+use secrecy::Secret;
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize, Default, Clone)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct AuthTokens {
-    pub authentication_token: String,
+    pub authentication_token: Secret<String>,
     pub reference_number: String,
+}
+
+impl Default for AuthTokens {
+    fn default() -> Self {
+        Self {
+            authentication_token: Secret::new(String::new()),
+            reference_number: String::new(),
+        }
+    }
 }
 
 #[derive(Deserialize)]
@@ -49,7 +59,7 @@ pub async fn submit_xades_auth_request(
         serde_json::from_value(auth_response).map_err(KsefError::JsonError)?;
 
     Ok(AuthTokens {
-        authentication_token: auth_tokens.authentication_token.token,
+        authentication_token: Secret::new(auth_tokens.authentication_token.token),
         reference_number: auth_tokens.reference_number,
     })
 }

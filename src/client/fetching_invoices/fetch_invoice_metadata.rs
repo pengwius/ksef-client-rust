@@ -1,6 +1,7 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Clone)]
@@ -527,7 +528,7 @@ pub async fn fetch_invoice_metadata(
     let url = client.url_for(routes::INVOICES_QUERY_METADATA_PATH);
     let http = &client.client;
 
-    let token = &client.access_token.access_token;
+    let token = KsefClient::secret_str(&client.access_token.access_token);
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,

@@ -10,6 +10,7 @@ use openssl::hash::MessageDigest;
 use openssl::md::MdRef;
 use openssl::pkey::PKey;
 use openssl::rsa::Padding;
+use secrecy::Secret;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize)]
@@ -84,8 +85,12 @@ pub async fn submit_ksef_token_auth_request(
     let pem = String::from_utf8(pem_bytes)
         .map_err(|e| KsefError::Unexpected(format!("UTF-8 error: {}", e)))?;
 
-    let encrypted_token =
-        encrypt_token(&token, challenge.timestamp_ms, &pem).map_err(KsefError::OpenSslError)?;
+    let encrypted_token = encrypt_token(
+        KsefClient::secret_str(&token),
+        challenge.timestamp_ms,
+        &pem,
+    )
+    .map_err(KsefError::OpenSslError)?;
 
     let context_type_str = match context_type {
         ContextIdentifierType::Nip => "Nip",
@@ -120,7 +125,7 @@ pub async fn submit_ksef_token_auth_request(
 
     let parsed: AuthResponse = resp.json().await.map_err(KsefError::RequestError)?;
     let tokens = AuthTokens {
-        authentication_token: parsed.authentication_token.token,
+        authentication_token: Secret::new(parsed.authentication_token.token),
         reference_number: parsed.reference_number,
     };
 

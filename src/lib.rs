@@ -2,6 +2,7 @@ mod client;
 
 pub use client::KsefClient;
 pub use client::error::KsefError;
+pub use secrecy;
 
 pub mod auth {
     pub use crate::client::traits::auth::KsefAuth;

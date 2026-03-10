@@ -13,7 +13,7 @@ pub async fn get_ksef_token_status(
         token_reference_number
     ));
 
-    let access_token = &client.access_token.access_token;
+    let access_token = KsefClient::secret_str(&client.access_token.access_token);
 
     let resp = client
         .client

@@ -192,7 +192,7 @@ pub async fn grant_subunit_permissions(
     request: GrantSubunitPermissionsRequest,
 ) -> Result<crate::client::permissions::get_operation_status::OperationStatusResponse, KsefError> {
     let url = client.url_for(routes::PERMISSIONS_SUBUNITS_GRANTS_PATH);
-    let access_token = &client.access_token.access_token;
+    let access_token = KsefClient::secret_str(&client.access_token.access_token);
 
     let mut req_to_send = request.clone();
     if let crate::client::permissions::grant_subunit_permissions::SubunitContextIdentifierType::InternalId =

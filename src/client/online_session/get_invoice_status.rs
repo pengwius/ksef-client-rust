@@ -1,6 +1,7 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;
+use secrecy::ExposeSecret;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -49,7 +50,7 @@ pub async fn get_invoice_status(
         invoice_reference_number
     ));
 
-    let access_token = &client.access_token.access_token;
+    let access_token = client.access_token.access_token.expose_secret();
     if access_token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,

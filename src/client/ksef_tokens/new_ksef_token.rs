@@ -1,17 +1,29 @@
 use crate::client::routes;
 use crate::client::{KsefClient, KsefError};
 use crate::prelude::ContextIdentifierType;
+use secrecy::Secret;
 use serde::Deserialize;
 
-#[derive(Deserialize, Default, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct KsefToken {
     #[serde(rename = "referenceNumber")]
     pub reference_number: String,
-    pub token: String,
+    pub token: Secret<String>,
     #[serde(skip)]
     pub context_type: Option<ContextIdentifierType>,
     #[serde(skip)]
     pub context_value: Option<String>,
+}
+
+impl Default for KsefToken {
+    fn default() -> Self {
+        Self {
+            reference_number: String::default(),
+            token: Secret::new(String::new()),
+            context_type: None,
+            context_value: None,
+        }
+    }
 }
 
 #[derive(Default)]
@@ -57,13 +69,14 @@ pub async fn new_ksef_token(
     })
     .to_string();
 
+    let token = KsefClient::secret_str(&client.access_token.access_token);
     let resp = client
         .client
         .post(&url)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body(body)
-        .bearer_auth(&client.access_token.access_token)
+        .bearer_auth(token)
         .send()
         .await?;
 

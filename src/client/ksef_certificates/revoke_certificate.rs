@@ -31,7 +31,7 @@ pub async fn revoke_certificate(
         revocation_reason: reason,
     };
 
-    let access_token = &client.access_token.access_token;
+    let access_token = KsefClient::secret_str(&client.access_token.access_token);
 
     let resp = client
         .client

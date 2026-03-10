@@ -1,5 +1,6 @@
 use ksef_client::prelude::*;
 mod common;
+use secrecy::ExposeSecret;
 
 #[tokio::test]
 async fn test_access_token_retrieval() {
@@ -8,11 +9,11 @@ async fn test_access_token_retrieval() {
     let tokens = client.access_token();
 
     assert!(
-        !tokens.access_token.is_empty(),
+        !tokens.access_token.expose_secret().is_empty(),
         "Access token should not be empty after authorization"
     );
     assert!(
-        !tokens.refresh_token.is_empty(),
+        !tokens.refresh_token.expose_secret().is_empty(),
         "Refresh token should not be empty after authorization"
     );
 }
@@ -23,7 +24,7 @@ async fn test_access_token_refresh() {
 
     let initial_access_token = client.access_token().access_token.clone();
     assert!(
-        !initial_access_token.is_empty(),
+        !initial_access_token.expose_secret().is_empty(),
         "Initial access token required for refresh test"
     );
 
@@ -32,13 +33,15 @@ async fn test_access_token_refresh() {
         Ok(_) => {
             let new_tokens = client.access_token();
             assert!(
-                !new_tokens.access_token.is_empty(),
+                !new_tokens.access_token.expose_secret().is_empty(),
                 "New access token should not be empty"
             );
             println!(
                 "Token refreshed. Old: {}..., New: {}...",
-                &initial_access_token[..10.min(initial_access_token.len())],
-                &new_tokens.access_token[..10.min(new_tokens.access_token.len())]
+                &initial_access_token.expose_secret()
+                    [..10.min(initial_access_token.expose_secret().len())],
+                &new_tokens.access_token.expose_secret()
+                    [..10.min(new_tokens.access_token.expose_secret().len())]
             );
         }
         Err(e) => {

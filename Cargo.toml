@@ -25,6 +25,7 @@ regex = "1.10"
 base64 = "0.22"
 zip = "8.2"
 async-trait = "0.1.89"
+secrecy = { version = "0.8", features = ["serde"] }
 
 [[bin]]
 name = "certgen"

@@ -205,7 +205,7 @@ pub async fn grant_eu_entity_permissions(
     request: GrantEuEntityPermissionsRequest,
 ) -> Result<GrantEuEntityPermissionsResponse, KsefError> {
     let url = client.url_for(routes::PERMISSIONS_EU_ENTITIES_GRANTS_PATH);
-    let access_token = &client.access_token.access_token;
+    let access_token = KsefClient::secret_str(&client.access_token.access_token);
 
     let resp = client
         .client

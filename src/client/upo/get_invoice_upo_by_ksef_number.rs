@@ -48,7 +48,7 @@ pub async fn get_invoice_upo(
 
     let url = client.url_for(&path);
 
-    let access_token = &client.access_token.access_token;
+    let access_token = KsefClient::secret_str(&client.access_token.access_token);
     if access_token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,

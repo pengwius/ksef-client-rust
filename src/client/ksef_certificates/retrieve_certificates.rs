@@ -34,7 +34,7 @@ pub async fn retrieve_certificates(
         certificate_serial_numbers: serial_numbers,
     };
 
-    let access_token = &client.access_token.access_token;
+    let access_token = KsefClient::secret_str(&client.access_token.access_token);
 
     let resp = client
         .client

@@ -95,7 +95,7 @@ pub async fn get_authorizations_permissions(
     request: GetAuthorizationsPermissionsRequest,
 ) -> Result<GetAuthorizationsPermissionsResponse, KsefError> {
     let url = client.url_for(routes::PERMISSIONS_QUERY_AUTHORIZATIONS_GRANTS_PATH);
-    let access_token = &client.access_token.access_token;
+    let access_token = KsefClient::secret_str(&client.access_token.access_token);
 
     let mut req = client
         .client

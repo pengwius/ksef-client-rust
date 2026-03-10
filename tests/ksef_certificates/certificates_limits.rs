@@ -1,5 +1,6 @@
 use crate::common;
 use ksef_client::prelude::*;
+use secrecy::ExposeSecret;
 use serde_json::json;
 
 #[tokio::test]
@@ -41,7 +42,7 @@ async fn test_get_certificates_limits() {
                 let resp = client
                     .client
                     .post(&url)
-                    .bearer_auth(&client.access_token.access_token)
+                    .bearer_auth(client.access_token.access_token.expose_secret())
                     .json(&body)
                     .send()
                     .await;

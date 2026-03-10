@@ -2,6 +2,7 @@ use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::models::{Encryption, FormCode};
 use crate::client::routes;
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -188,7 +189,7 @@ pub async fn open_batch_session(
     let url = client.url_for(routes::SESSIONS_BATCH_PATH);
     let http = &client.client;
 
-    let token = &client.access_token.access_token;
+    let token = KsefClient::secret_str(&client.access_token.access_token);
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,

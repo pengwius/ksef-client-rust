@@ -22,7 +22,7 @@ pub async fn revoke_common_permission(
         .client
         .delete(&url)
         .header("Accept", "application/json")
-        .bearer_auth(access_token)
+        .bearer_auth(KsefClient::secret_str(access_token))
         .send()
         .await
         .map_err(KsefError::RequestError)?;
@@ -127,7 +127,7 @@ pub async fn get_common_permissions(client: &KsefClient) -> Result<Value, KsefEr
         .client
         .get(&url)
         .header("Accept", "application/json")
-        .bearer_auth(access_token)
+        .bearer_auth(KsefClient::secret_str(access_token))
         .send()
         .await
         .map_err(KsefError::RequestError)?;

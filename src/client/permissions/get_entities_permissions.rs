@@ -1,6 +1,7 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;
+
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
@@ -45,7 +46,7 @@ pub async fn get_entities_permissions(
 ) -> Result<GetEntitiesPermissionsResponse, KsefError> {
     let url = client.url_for(routes::PERMISSIONS_QUERY_ENTITIES_GRANTS_PATH);
 
-    let token = &client.access_token.access_token;
+    let token = KsefClient::secret_str(&client.access_token.access_token);
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,

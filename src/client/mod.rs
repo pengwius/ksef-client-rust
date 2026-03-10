@@ -7,6 +7,8 @@ use crate::client::ksef_tokens::new_ksef_token::KsefToken;
 use crate::client::models::ContextIdentifier;
 use crate::client::models::Environment;
 use crate::client::xades::XadesSigner;
+use secrecy::ExposeSecret;
+use secrecy::Secret;
 use std::time::Duration;
 
 pub mod auth;
@@ -56,7 +58,7 @@ impl KsefClient {
             client,
             xades: XadesSigner::default(),
             auth_token: AuthTokens {
-                authentication_token: String::new(),
+                authentication_token: Secret::new(String::new()),
                 reference_number: String::new(),
             },
             access_token: AccessTokens::default(),
@@ -67,6 +69,10 @@ impl KsefClient {
     fn with_environment(mut self, environment: Environment) -> Self {
         self.environment = Some(environment);
         self
+    }
+
+    pub fn secret_str(secret: &secrecy::Secret<String>) -> &str {
+        secret.expose_secret()
     }
 
     pub fn url_for(&self, path: &str) -> String {

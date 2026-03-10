@@ -121,7 +121,7 @@ pub async fn open_online_session(
     let url = client.url_for(routes::SESSIONS_ONLINE_PATH);
     let http = &client.client;
 
-    let token = &client.access_token.access_token;
+    let token = KsefClient::secret_str(&client.access_token.access_token);
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,

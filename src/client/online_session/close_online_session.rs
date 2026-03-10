@@ -12,7 +12,7 @@ pub async fn close_online_session(
         session_reference_number
     ));
 
-    let access_token = &client.access_token.access_token;
+    let access_token = KsefClient::secret_str(&client.access_token.access_token);
     if access_token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,

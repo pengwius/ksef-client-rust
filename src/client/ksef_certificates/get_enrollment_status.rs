@@ -1,8 +1,9 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;
-use chrono::{DateTime, Utc};
+use secrecy::ExposeSecret;
 use serde::{Deserialize, Serialize};
+use chrono::{DateTime, Utc};
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -32,7 +33,7 @@ pub async fn get_enrollment_status(
         reference_number
     );
 
-    let access_token = &client.access_token.access_token;
+    let access_token = client.access_token.access_token.expose_secret();
     let timeout = Duration::from_secs(60);
     let interval = Duration::from_secs(2);
     let start = std::time::Instant::now();

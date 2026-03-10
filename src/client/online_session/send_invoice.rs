@@ -63,7 +63,7 @@ pub async fn send_invoice(
     ));
     let http = &client.client;
 
-    let token = &client.access_token.access_token;
+    let token = KsefClient::secret_str(&client.access_token.access_token);
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,

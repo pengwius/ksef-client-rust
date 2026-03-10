@@ -233,7 +233,7 @@ pub async fn get_persons_permissions(
 ) -> Result<GetPersonsPermissionsResponse, KsefError> {
     let url = client.url_for(routes::PERMISSIONS_QUERY_PERSONS_GRANTS_PATH);
 
-    let token = &client.access_token.access_token;
+    let token = KsefClient::secret_str(&client.access_token.access_token);
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,
