@@ -1,6 +1,8 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
-use crate::client::permissions::get_operation_status::get_operation_status;
+use crate::client::permissions::get_operation_status::{
+    OperationStatusResponse, get_operation_status,
+};
 use crate::client::routes;
 use serde::{Deserialize, Serialize};
 
@@ -109,6 +111,17 @@ pub struct SubunitContextIdentifier {
     pub value: String,
 }
 
+impl SubunitContextIdentifier {
+    fn normalize(&mut self) {
+        if let SubunitContextIdentifierType::InternalId = self.identifier_type {
+            if !self.value.contains('-') && self.value.len() > 10 {
+                let (parent, rest) = self.value.split_at(10);
+                self.value = format!("{}-{}", parent, rest);
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum SubunitContextIdentifierType {
     InternalId,
@@ -190,31 +203,12 @@ pub struct GrantSubunitPermissionsResponse {
 pub async fn grant_subunit_permissions(
     client: &KsefClient,
     request: GrantSubunitPermissionsRequest,
-) -> Result<crate::client::permissions::get_operation_status::OperationStatusResponse, KsefError> {
+) -> Result<OperationStatusResponse, KsefError> {
     let url = client.url_for(routes::PERMISSIONS_SUBUNITS_GRANTS_PATH);
     let access_token = KsefClient::secret_str(&client.access_token.access_token);
 
     let mut req_to_send = request.clone();
-    if let crate::client::permissions::grant_subunit_permissions::SubunitContextIdentifierType::InternalId =
-        req_to_send.context_identifier.identifier_type
-    {
-        if !req_to_send.context_identifier.value.contains('-') && req_to_send.context_identifier.value.len() > 10
-        {
-            let parent = req_to_send
-                .context_identifier
-                .value
-                .chars()
-                .take(10)
-                .collect::<String>();
-            let rest = req_to_send
-                .context_identifier
-                .value
-                .chars()
-                .skip(10)
-                .collect::<String>();
-            req_to_send.context_identifier.value = format!("{}-{}", parent, rest);
-        }
-    }
+    req_to_send.context_identifier.normalize();
 
     let resp = client
         .client
@@ -238,81 +232,71 @@ pub async fn grant_subunit_permissions(
     let max_attempts: usize = 10;
     let mut attempt: usize = 0;
     loop {
-        match get_operation_status(client, &parsed.reference_number).await {
-            Ok(op_status) => {
-                if let Some(code) = op_status.status_code() {
-                    if code != 100 {
-                        if code == 200 {
-                            return Ok(op_status);
-                        } else {
-                            if code == 410 {
-                                if let crate::client::permissions::grant_subunit_permissions::SubunitContextIdentifierType::InternalId = request.context_identifier.identifier_type {
-                                    let original_ctx = request.context_identifier.value.clone();
-                                    if original_ctx.len() >= 10 {
-                                        let parent_nip = original_ctx.chars().take(10).collect::<String>();
-                                        let mut retry_req = request.clone();
-                                        retry_req.context_identifier = crate::client::permissions::grant_subunit_permissions::SubunitContextIdentifier {
-                                            identifier_type: crate::client::permissions::grant_subunit_permissions::SubunitContextIdentifierType::Nip,
-                                            value: parent_nip.clone(),
-                                        };
-                                        let retry_resp = client
-                                            .client
-                                            .post(&url)
-                                            .header("Accept", "application/json")
-                                            .bearer_auth(access_token)
-                                            .json(&retry_req)
-                                            .send()
-                                            .await
-                                            .map_err(KsefError::RequestError)?;
-                                        let retry_status = retry_resp.status();
-                                        if !retry_status.is_success() {
-                                            let body = retry_resp.text().await.unwrap_or_default();
-                                            return Err(KsefError::from_api_response(retry_status.as_u16(), body));
-                                        }
-                                        let new_parsed: GrantSubunitPermissionsResponse = retry_resp.json().await.map_err(KsefError::RequestError)?;
-                                        parsed = new_parsed;
-                                        attempt = 0;
-                                        tokio::time::sleep(std::time::Duration::from_millis(500)).await;
-                                        continue;
-                                    }
-                                }
+        let op_status = get_operation_status(client, &parsed.reference_number).await?;
+
+        if let Some(code) = op_status.status_code() {
+            if code == 200 {
+                return Ok(op_status);
+            }
+
+            if code != 100 {
+                if code == 410 {
+                    if let SubunitContextIdentifierType::InternalId =
+                        request.context_identifier.identifier_type
+                    {
+                        let original_ctx = &request.context_identifier.value;
+                        if original_ctx.len() >= 10 {
+                            let parent_nip = original_ctx.chars().take(10).collect::<String>();
+                            let mut retry_req = request.clone();
+                            retry_req.context_identifier = SubunitContextIdentifier {
+                                identifier_type: SubunitContextIdentifierType::Nip,
+                                value: parent_nip,
+                            };
+                            let retry_resp = client
+                                .client
+                                .post(&url)
+                                .header("Accept", "application/json")
+                                .bearer_auth(access_token)
+                                .json(&retry_req)
+                                .send()
+                                .await
+                                .map_err(KsefError::RequestError)?;
+
+                            let retry_status = retry_resp.status();
+                            if !retry_status.is_success() {
+                                let body = retry_resp.text().await.unwrap_or_default();
+                                return Err(KsefError::from_api_response(
+                                    retry_status.as_u16(),
+                                    body,
+                                ));
                             }
-                            let message = op_status
-                                .status_message()
-                                .unwrap_or_else(|| op_status.raw.to_string());
-                            return Err(KsefError::ApplicationError(code as i32, message));
+                            let new_parsed: GrantSubunitPermissionsResponse =
+                                retry_resp.json().await.map_err(KsefError::RequestError)?;
+                            parsed = new_parsed;
+                            attempt = 0;
+                            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+                            continue;
                         }
                     }
-                } else {
-                    return Err(KsefError::InvalidResponse(format!(
-                        "Unexpected operation status payload: {}",
-                        op_status.raw
-                    )));
                 }
+                let message = op_status
+                    .status_message()
+                    .unwrap_or_else(|| op_status.raw.to_string());
+                return Err(KsefError::ApplicationError(code as i32, message));
             }
-            Err(err) => {
-                return Err(err);
-            }
+        } else {
+            return Err(KsefError::InvalidResponse(format!(
+                "Unexpected operation status payload: {}",
+                op_status.raw
+            )));
         }
 
         attempt += 1;
         if attempt >= max_attempts {
-            let final_status = get_operation_status(client, &parsed.reference_number).await?;
-            if let Some(code) = final_status.status_code() {
-                if code == 200 {
-                    return Ok(final_status);
-                } else {
-                    let message = final_status
-                        .status_message()
-                        .unwrap_or_else(|| final_status.raw.to_string());
-                    return Err(KsefError::ApplicationError(code as i32, message));
-                }
-            } else {
-                return Err(KsefError::InvalidResponse(format!(
-                    "Unexpected operation status payload on final attempt: {}",
-                    final_status.raw
-                )));
-            }
+            return Err(KsefError::Unexpected(format!(
+                "Operation status polling timed out after {} attempts",
+                max_attempts
+            )));
         }
 
         tokio::time::sleep(std::time::Duration::from_millis(500)).await;

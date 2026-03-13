@@ -156,3 +156,78 @@ pub async fn get_operation_status(
         details,
     })
 }
+
+pub async fn poll_operation_status(
+    client: &KsefClient,
+    reference_number: &str,
+    max_attempts: usize,
+    delay_ms: u64,
+) -> Result<OperationStatusResponse, KsefError> {
+    let mut attempt = 0;
+    loop {
+        let status = get_operation_status(client, reference_number).await?;
+
+        if let Some(code) = status.status_code() {
+            if code != 100 {
+                if code == 200 {
+                    return Ok(status);
+                } else {
+                    let msg = status
+                        .status_message()
+                        .unwrap_or_else(|| status.raw.to_string());
+                    return Err(KsefError::ApplicationError(code, msg));
+                }
+            }
+        } else {
+            return Err(KsefError::InvalidResponse(format!(
+                "Unexpected operation status payload: {}",
+                status.raw
+            )));
+        }
+
+        attempt += 1;
+        if attempt >= max_attempts {
+            return Err(KsefError::Unexpected(format!(
+                "Operation status polling timed out after {} attempts",
+                max_attempts
+            )));
+        }
+
+        tokio::time::sleep(std::time::Duration::from_millis(delay_ms)).await;
+    }
+}
+
+pub async fn process_status_response(
+    client: &KsefClient,
+    response_body: Value,
+    max_attempts: usize,
+    delay_ms: u64,
+) -> Result<OperationStatusResponse, KsefError> {
+    let reference_opt = response_body
+        .get("referenceNumber")
+        .and_then(|v| v.as_str().map(|s| s.to_string()))
+        .or_else(|| {
+            response_body
+                .get("reference_number")
+                .and_then(|v| v.as_str().map(|s| s.to_string()))
+        });
+
+    if let Some(reference_number) = reference_opt {
+        poll_operation_status(client, &reference_number, max_attempts, delay_ms).await
+    } else {
+        let op = OperationStatusResponse::from_value(response_body);
+        if let Some(code) = op.status_code() {
+            if code == 200 {
+                Ok(op)
+            } else {
+                let message = op.status_message().unwrap_or_else(|| op.raw.to_string());
+                Err(KsefError::ApplicationError(code, message))
+            }
+        } else {
+            Err(KsefError::InvalidResponse(format!(
+                "Unexpected operation status payload: {}",
+                op.raw
+            )))
+        }
+    }
+}

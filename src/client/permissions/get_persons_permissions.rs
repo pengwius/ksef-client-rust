@@ -2,7 +2,6 @@ use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -257,7 +256,7 @@ pub async fn get_persons_permissions(
     if let Some(body) = request_body {
         req = req.json(&body);
     } else {
-        req = req.json(&Value::Object(serde_json::Map::new()));
+        req = req.json(&serde_json::json!({}));
     }
 
     let resp = req.send().await.map_err(KsefError::RequestError)?;
