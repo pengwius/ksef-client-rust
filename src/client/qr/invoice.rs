@@ -12,6 +12,7 @@ pub fn build_invoice_verification_url(
         .as_ref()
         .map(|e| match e {
             Environment::Test => "https://qr-test.ksef.mf.gov.pl",
+            Environment::Demo => "https://qr-demo.ksef.mf.gov.pl",
             Environment::Prod => "https://qr.ksef.mf.gov.pl",
         })
         .unwrap_or("https://qr-test.ksef.mf.gov.pl");
