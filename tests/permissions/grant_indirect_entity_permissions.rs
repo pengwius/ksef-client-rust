@@ -1,6 +1,7 @@
 use crate::common;
+use ksef_client::prelude::*;
 
-use ksef_client::{
+use ksef_client::permissions::{
     GrantIndirectEntityPermissionsRequest, IndirectPermissionType, IndirectPersonById,
     IndirectSubjectDetails, IndirectSubjectDetailsType, IndirectSubjectIdentifier,
     IndirectSubjectIdentifierType, IndirectTargetIdentifier, IndirectTargetIdentifierType,

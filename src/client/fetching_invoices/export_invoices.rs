@@ -2,6 +2,8 @@ use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::fetching_invoices::fetch_invoice_metadata::{InvoiceMetadata, QueryCriteria};
 use crate::client::routes;
+use crate::client::traits::*;
+use crate::client::types::ReferenceNumber;
 use openssl::symm::{Cipher, decrypt};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
@@ -26,7 +28,7 @@ pub struct EncryptionInfo {
 #[derive(Debug, Deserialize)]
 pub struct ExportInvoicesResponse {
     #[serde(rename = "referenceNumber")]
-    pub reference_number: String,
+    pub reference_number: ReferenceNumber,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -118,7 +120,7 @@ pub async fn start_export_invoices(
     let url = client.url_for(routes::INVOICES_EXPORTS_PATH);
     let http = &client.client;
 
-    let token = &client.access_token.access_token;
+    let token = KsefClient::secret_str(&client.access_token.access_token);
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,
@@ -139,7 +141,7 @@ pub async fn start_export_invoices(
     if !status.is_success() {
         let code = status.as_u16();
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(code, body));
+        return Err(KsefError::from_api_response(code, body));
     }
 
     let parsed: ExportInvoicesResponse = resp.json().await?;
@@ -149,7 +151,7 @@ pub async fn start_export_invoices(
 
 pub async fn get_export_status(
     client: &KsefClient,
-    reference_number: &str,
+    reference_number: &ReferenceNumber,
 ) -> Result<ExportInvoicesStatusResponse, KsefError> {
     let url = client.url_for(&format!(
         "{}/{}",
@@ -158,7 +160,7 @@ pub async fn get_export_status(
     ));
     let http = &client.client;
 
-    let token = &client.access_token.access_token;
+    let token = KsefClient::secret_str(&client.access_token.access_token);
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,
@@ -178,7 +180,7 @@ pub async fn get_export_status(
     if !status.is_success() {
         let code = status.as_u16();
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(code, body));
+        return Err(KsefError::from_api_response(code, body));
     }
 
     let parsed: ExportInvoicesStatusResponse = resp.json().await?;
@@ -267,7 +269,7 @@ pub async fn export_invoices(
                 continue;
             }
             code => {
-                return Err(KsefError::ApiError(
+                return Err(KsefError::ApiErrorRaw(
                     code as u16,
                     format!(
                         "Export failed with status {}: {}",

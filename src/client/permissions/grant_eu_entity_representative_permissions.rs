@@ -180,7 +180,7 @@ pub async fn grant_eu_entity_representative_permissions(
     request: GrantEuEntityRepresentativePermissionsRequest,
 ) -> Result<GrantEuEntityRepresentativePermissionsResponse, KsefError> {
     let url = client.url_for(routes::PERMISSIONS_EU_ENTITIES_REPRESENTATIVE_GRANTS_PATH);
-    let access_token = &client.access_token.access_token;
+    let access_token = KsefClient::secret_str(&client.access_token.access_token);
 
     let resp = client
         .client
@@ -195,7 +195,7 @@ pub async fn grant_eu_entity_representative_permissions(
     let status = resp.status();
     if !status.is_success() {
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(status.as_u16(), body));
+        return Err(KsefError::from_api_response(status.as_u16(), body));
     }
 
     let parsed: GrantEuEntityRepresentativePermissionsResponse =

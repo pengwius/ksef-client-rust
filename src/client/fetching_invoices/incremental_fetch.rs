@@ -4,6 +4,7 @@ use crate::client::fetching_invoices::export_invoices::{ExportResult, InvoicePac
 use crate::client::fetching_invoices::fetch_invoice_metadata::{
     DateRangeBuilder, DateType, InvoiceMetadata, QueryCriteriaBuilder, SubjectType,
 };
+use crate::client::traits::*;
 use chrono::{DateTime, Utc};
 use std::collections::{HashMap, HashSet};
 use std::io::Read;
@@ -11,6 +12,12 @@ use std::io::Read;
 #[derive(Debug, Clone)]
 pub struct IncrementalFetchState {
     pub continuation_points: HashMap<String, DateTime<Utc>>,
+}
+
+impl Default for IncrementalFetchState {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl IncrementalFetchState {

@@ -2,7 +2,7 @@
 
 # Authentication
 
-Authentication can be performed using an XAdES signature or a KSeF token. A KSeF token can be generated after the first login with a qualified XAdES signature. for testing purposes, you can use a self-signed certificate generated with the [certgen](https://github.com/pengwius/ksef-client-rust/tree/main/certgen) tool or the `gen_selfsign_cert` method in the `xades` object of the `KsefClient` structure.
+Authentication can be performed using an XAdES signature or a KSeF token. A KSeF token can be generated after the first login with a qualified XAdES signature. For testing purposes, you can use a self-signed certificate generated with the [certgen](https://github.com/pengwius/ksef-client-rust/tree/main/certgen) tool or the `gen_selfsign_cert` method in the `xades` object of the `KsefClient` structure.
 
 __[Official Documentation](https://github.com/CIRFMF/ksef-docs/blob/main/uwierzytelnianie.md)__
 
@@ -17,9 +17,8 @@ You must prepare an XML document with the context identifier, identification met
 | `subject_type` | `SubjectIdentifierType` | Entity identification method. Can be `SubjectIdentifierType::CertificateSubject` or `SubjectIdentifierType::CertificateFingerprint`. |
 
 ```rust
-use ksef_client::{
-    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
-};
+use ksef_client::prelude::{ContextIdentifier, ContextIdentifierType, Environment, KsefClient};
+use ksef_client::auth::SubjectIdentifierType;
 
 // Initialize client
 let context = ContextIdentifier {
@@ -98,7 +97,8 @@ After the first login with an XAdES signature, you can generate a long-term KSeF
 // The load parameter determines if the generated token should be automatically loaded into the client state (self.ksef_token). The function always returns the generated token.
 let ksef_token = match client.new_ksef_token(true, Default::default(), "Test token").await {
     Ok(token) => {
-        println!("    KSeF Token: {:?}", token.token);
+        use secrecy::ExposeSecret;
+        println!("    KSeF Token: {}", token.token.expose_secret());
         token
     }
     Err(e) => {
@@ -113,10 +113,12 @@ let ksef_token = match client.new_ksef_token(true, Default::default(), "Test tok
 If you already have a generated token:
 
 ```rust
+use secrecy::Secret;
+
 // e.g., retrieve token from database
 let my_token_str = "......"; 
 let my_token = KsefToken {
-    token: my_token_str.to_string(),
+    token: Secret::new(my_token_str.to_string()),
     reference_number: "....".to_string(),
     ..Default::default()
 };
@@ -126,8 +128,9 @@ client.load_ksef_token(my_token);
 
 match client.authenticate_by_ksef_token().await {
     Ok(()) => {
+         use secrecy::ExposeSecret;
          let auth_token = client.auth_token();
-         println!("    Auth Token: {}", auth_token.authentication_token);
+         println!("    Auth Token: {}", auth_token.authentication_token.expose_secret());
     }
     Err(e) => {
         eprintln!("Unable to authenticate with KSeF token: {}", e);
@@ -164,10 +167,10 @@ Below is a complete code implementing the scenario:
 4. Login using the generated KSeF token.
 
 ```rust
-use ksef_client::{
-    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
-    KsefToken,
-};
+use ksef_client::prelude::{ContextIdentifier, ContextIdentifierType, Environment, KsefClient};
+use ksef_client::auth::SubjectIdentifierType;
+use ksef_client::tokens::KsefToken;
+use secrecy::{Secret, ExposeSecret};
 use std::time::Duration;
 use std::thread;
 
@@ -203,7 +206,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 5. Wait for login completion (get_auth_status polls cyclically)
     if client.get_auth_status().await? {
         println!("Successfully logged in via XAdES.");
-        println!("Access Token: {}", client.access_token().access_token);
+        println!("Access Token: {}", client.access_token().access_token.expose_secret());
     } else {
         println!("Login failed.");
         return Ok(());
@@ -213,11 +216,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- 2. Generate KSeF Token ---");
     // Generate token and load it into client immediately
     let new_token = client.new_ksef_token(true, Default::default(), "Test token").await?;
-    println!("Generated new KSeF token: {}", new_token.token);
+    println!("Generated new KSeF token: {}", new_token.token.expose_secret());
     println!("Token reference number: {}", new_token.reference_number);
 
     // Here you would normally save the token to a database
-    let saved_token_string = new_token.token.clone();
+    let saved_token_string = new_token.token.expose_secret().clone();
     let saved_token_ref = new_token.reference_number.clone();
 
 
@@ -233,7 +236,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Reconstruct token object (normally from database)
     let ksef_token = KsefToken {
-        token: saved_token_string,
+        token: Secret::new(saved_token_string),
         reference_number: saved_token_ref,
         ..Default::default()
     };
@@ -248,7 +251,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Check status
     if client2.get_auth_status().await? {
         println!("Successfully logged in via KSeF Token.");
-        println!("Access Token (token session): {}", client2.access_token().access_token);
+        println!("Access Token (token session): {}", client2.access_token().access_token.expose_secret());
     } else {
         println!("Token login failed.");
     }

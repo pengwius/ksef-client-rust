@@ -1,8 +1,11 @@
 use crate::common;
+use ksef_client::prelude::*;
+use ksef_client::types::ReferenceNumber;
 
-use ksef_client::{
-    InvoicePayload, OpenBatchSessionRequestBuilder, calculate_invoice_hash, create_zip,
-    encrypt_zip_parts, split_zip,
+use ksef_client::invoices::InvoicePayload;
+use ksef_client::sessions::{
+    OpenBatchSessionRequestBuilder, calculate_invoice_hash, create_zip, encrypt_zip_parts,
+    split_zip,
 };
 use openssl::symm::{Cipher, decrypt};
 use std::io::Cursor;
@@ -166,7 +169,10 @@ async fn test_batch_session_initialization() {
         }
     }
 
-    match client.close_batch_session(&response.reference_number).await {
+    match client
+        .close_batch_session(ReferenceNumber::new(&response.reference_number))
+        .await
+    {
         Ok(()) => {}
         Err(e) => {
             panic!("Failed to close batch session: {:?}", e);

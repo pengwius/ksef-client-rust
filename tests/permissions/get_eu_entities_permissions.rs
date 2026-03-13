@@ -1,7 +1,8 @@
 use crate::common;
+use ksef_client::prelude::*;
 
-use ksef_client::GetEuEntitiesPermissionsRequest;
 use ksef_client::KsefError;
+use ksef_client::permissions::GetEuEntitiesPermissionsRequest;
 
 #[tokio::test]
 async fn test_get_eu_entities_permissions() {

@@ -17,9 +17,8 @@ Należy przygotować dokument XML z identyfikatorem kontekstu, sposobem identyfi
 | `subject_type` | `SubjectIdentifierType` | Sposób identyfikacji podmiotu. Może przyjąć `SubjectIdentifierType::CertificateSubject` lub `SubjectIdentifierType::CertificateFingerprint`. |
 
 ```rust
-use ksef_client::{
-    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
-};
+use ksef_client::prelude::{ContextIdentifier, ContextIdentifierType, Environment, KsefClient};
+use ksef_client::auth::SubjectIdentifierType;
 
 // Inicjalizacja klienta
 let context = ContextIdentifier {
@@ -100,7 +99,8 @@ Po pierwszym logowaniu podpisem XAdES można wygenerować długoterminowy token 
 // Parametr load określa, czy wygenerowany token ma być automatycznie załadowany do stanu klienta (self.ksef_token). Funkcja też zawsze zwraca wygenerowany token.
 let ksef_token = match client.new_ksef_token(true, Default::default(), "Test token").await {
     Ok(token) => {
-        println!("    KSeF Token: {:?}", token.token);
+        use secrecy::ExposeSecret;
+        println!("    KSeF Token: {}", token.token.expose_secret());
         token
     }
     Err(e) => {
@@ -115,10 +115,12 @@ let ksef_token = match client.new_ksef_token(true, Default::default(), "Test tok
 Jeżeli posiadamy już wygenerowany token:
 
 ```rust
+use secrecy::Secret;
+
 // np. pobranie tokena z bazy danych
 let my_token_str = "......"; 
 let my_token = KsefToken {
-    token: my_token_str.to_string(),
+    token: Secret::new(my_token_str.to_string()),
     reference_number: "....".to_string(),
     ..Default::default()
 };
@@ -128,8 +130,9 @@ client.load_ksef_token(my_token);
 
 match client.authenticate_by_ksef_token().await {
     Ok(()) => {
+         use secrecy::ExposeSecret;
          let auth_token = client.auth_token();
-         println!("    Auth Token: {}", auth_token.authentication_token);
+         println!("    Auth Token: {}", auth_token.authentication_token.expose_secret());
     }
     Err(e) => {
         eprintln!("Unable to authenticate with KSeF token: {}", e);
@@ -166,10 +169,10 @@ Poniżej znajduje się kompletny kod realizujący scenariusz:
 4. Logowanie za pomocą wygenerowanego tokena KSeF.
 
 ```rust
-use ksef_client::{
-    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
-    KsefToken,
-};
+use ksef_client::prelude::{ContextIdentifier, ContextIdentifierType, Environment, KsefClient};
+use ksef_client::auth::SubjectIdentifierType;
+use ksef_client::tokens::KsefToken;
+use secrecy::{Secret, ExposeSecret};
 use std::time::Duration;
 use std::thread;
 
@@ -205,7 +208,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 5. Czekanie na zakończenie procesu logowania (get_auth_status odpytuje cyklicznie)
     if client.get_auth_status().await? {
         println!("Zalogowano pomyślnie przez XAdES.");
-        println!("Access Token: {}", client.access_token().access_token);
+        println!("Access Token: {}", client.access_token().access_token.expose_secret());
     } else {
         println!("Błąd logowania.");
         return Ok(());
@@ -215,11 +218,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n--- 2. Generowanie Tokena KSeF ---");
     // Generujemy token i ładujemy go od razu do klienta
     let new_token = client.new_ksef_token(true, Default::default(), "Test token").await?;
-    println!("Wygenerowano nowy token KSeF: {}", new_token.token);
+    println!("Wygenerowano nowy token KSeF: {}", new_token.token.expose_secret());
     println!("Reference number tokena: {}", new_token.reference_number);
 
     // Tutaj normalnie zapisalibyśmy token do bazy danych
-    let saved_token_string = new_token.token.clone();
+    let saved_token_string = new_token.token.expose_secret().clone();
     let saved_token_ref = new_token.reference_number.clone();
 
 
@@ -235,7 +238,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Odtwarzamy obiekt tokena (normalnie z bazy danych)
     let ksef_token = KsefToken {
-        token: saved_token_string,
+        token: Secret::new(saved_token_string),
         reference_number: saved_token_ref,
         ..Default::default()
     };
@@ -250,7 +253,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Sprawdzamy status
     if client2.get_auth_status().await? {
         println!("Zalogowano pomyślnie przez Token KSeF.");
-        println!("Access Token (sesja z tokena): {}", client2.access_token().access_token);
+        println!("Access Token (sesja z tokena): {}", client2.access_token().access_token.expose_secret());
     } else {
         println!("Błąd logowania tokenem.");
     }

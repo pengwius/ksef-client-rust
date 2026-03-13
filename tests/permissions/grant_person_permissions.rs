@@ -1,8 +1,9 @@
 use crate::common;
-use ksef_client::{
+use ksef_client::permissions::{
     GrantPersonPermissionsRequest, GrantSubjectIdentifierType, PersonById, PersonPermissionType,
     SubjectDetails, SubjectDetailsType, SubjectIdentifier,
 };
+use ksef_client::prelude::*;
 
 #[tokio::test]
 async fn test_grant_person_permissions() {

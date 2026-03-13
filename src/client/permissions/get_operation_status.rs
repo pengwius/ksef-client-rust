@@ -1,6 +1,7 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;
+use secrecy::ExposeSecret;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -121,7 +122,7 @@ pub async fn get_operation_status(
         reference_number
     ));
 
-    let token = &client.access_token.access_token;
+    let token = client.access_token.access_token.expose_secret();
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,
@@ -141,7 +142,7 @@ pub async fn get_operation_status(
     let status = resp.status();
     if !status.is_success() {
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(status.as_u16(), body));
+        return Err(KsefError::from_api_response(status.as_u16(), body));
     }
 
     let parsed_value: Value = resp.json().await.map_err(KsefError::RequestError)?;
@@ -154,4 +155,79 @@ pub async fn get_operation_status(
         message,
         details,
     })
+}
+
+pub async fn poll_operation_status(
+    client: &KsefClient,
+    reference_number: &str,
+    max_attempts: usize,
+    delay_ms: u64,
+) -> Result<OperationStatusResponse, KsefError> {
+    let mut attempt = 0;
+    loop {
+        let status = get_operation_status(client, reference_number).await?;
+
+        if let Some(code) = status.status_code() {
+            if code != 100 {
+                if code == 200 {
+                    return Ok(status);
+                } else {
+                    let msg = status
+                        .status_message()
+                        .unwrap_or_else(|| status.raw.to_string());
+                    return Err(KsefError::ApplicationError(code, msg));
+                }
+            }
+        } else {
+            return Err(KsefError::InvalidResponse(format!(
+                "Unexpected operation status payload: {}",
+                status.raw
+            )));
+        }
+
+        attempt += 1;
+        if attempt >= max_attempts {
+            return Err(KsefError::Unexpected(format!(
+                "Operation status polling timed out after {} attempts",
+                max_attempts
+            )));
+        }
+
+        tokio::time::sleep(std::time::Duration::from_millis(delay_ms)).await;
+    }
+}
+
+pub async fn process_status_response(
+    client: &KsefClient,
+    response_body: Value,
+    max_attempts: usize,
+    delay_ms: u64,
+) -> Result<OperationStatusResponse, KsefError> {
+    let reference_opt = response_body
+        .get("referenceNumber")
+        .and_then(|v| v.as_str().map(|s| s.to_string()))
+        .or_else(|| {
+            response_body
+                .get("reference_number")
+                .and_then(|v| v.as_str().map(|s| s.to_string()))
+        });
+
+    if let Some(reference_number) = reference_opt {
+        poll_operation_status(client, &reference_number, max_attempts, delay_ms).await
+    } else {
+        let op = OperationStatusResponse::from_value(response_body);
+        if let Some(code) = op.status_code() {
+            if code == 200 {
+                Ok(op)
+            } else {
+                let message = op.status_message().unwrap_or_else(|| op.raw.to_string());
+                Err(KsefError::ApplicationError(code, message))
+            }
+        } else {
+            Err(KsefError::InvalidResponse(format!(
+                "Unexpected operation status payload: {}",
+                op.raw
+            )))
+        }
+    }
 }

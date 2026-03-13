@@ -1,6 +1,7 @@
 use crate::common;
+use ksef_client::prelude::*;
 
-use ksef_client::{
+use ksef_client::permissions::{
     EntitiesContextIdentifier, EntityIdentifier, EntityIdentifierType, EntityPermission,
     EntityPermissionType, EntitySubjectDetails, GetEntitiesPermissionsRequest,
     GrantEntityPermissionsRequest,

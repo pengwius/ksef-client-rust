@@ -1,6 +1,7 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;
+use secrecy::ExposeSecret;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
@@ -43,7 +44,7 @@ pub async fn get_subordinate_entities_roles(
 ) -> Result<GetSubordinateEntitiesRolesResponse, KsefError> {
     let url = client.url_for(routes::PERMISSIONS_QUERY_SUBORDINATE_ENTITIES_ROLES_PATH);
 
-    let token = &client.access_token.access_token;
+    let token = client.access_token.access_token.expose_secret();
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,
@@ -120,7 +121,7 @@ pub async fn get_subordinate_entities_roles(
             attempted_body,
             resp_body
         );
-        return Err(KsefError::ApiError(status.as_u16(), resp_body));
+        return Err(KsefError::from_api_response(status.as_u16(), resp_body));
     }
 
     let parsed: GetSubordinateEntitiesRolesResponse =

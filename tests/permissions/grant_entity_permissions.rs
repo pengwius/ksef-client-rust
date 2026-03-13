@@ -1,9 +1,9 @@
 use crate::common;
-
-use ksef_client::{
+use ksef_client::permissions::{
     EntityIdentifier, EntityIdentifierType, EntityPermission, EntityPermissionType,
     EntitySubjectDetails, GrantEntityPermissionsRequest,
 };
+use ksef_client::prelude::*;
 
 #[tokio::test]
 async fn test_grant_entity_permissions() {

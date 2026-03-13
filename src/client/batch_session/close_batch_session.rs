@@ -2,6 +2,7 @@ use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;
 
+
 pub async fn close_batch_session(
     client: &KsefClient,
     reference_number: &str,
@@ -10,7 +11,7 @@ pub async fn close_batch_session(
     let url = client.url_for(&path);
     let http = &client.client;
 
-    let token = &client.access_token.access_token;
+    let token = KsefClient::secret_str(&client.access_token.access_token);
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,
@@ -30,7 +31,7 @@ pub async fn close_batch_session(
     if !status.is_success() {
         let code = status.as_u16();
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(code, body));
+        return Err(KsefError::from_api_response(code, body));
     }
 
     Ok(())

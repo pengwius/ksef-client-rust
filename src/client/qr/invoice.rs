@@ -1,5 +1,5 @@
-use crate::Environment;
 use crate::client::KsefClient;
+use crate::prelude::Environment;
 
 pub fn build_invoice_verification_url(
     client: &KsefClient,
@@ -12,6 +12,7 @@ pub fn build_invoice_verification_url(
         .as_ref()
         .map(|e| match e {
             Environment::Test => "https://qr-test.ksef.mf.gov.pl",
+            Environment::Demo => "https://qr-demo.ksef.mf.gov.pl",
             Environment::Prod => "https://qr.ksef.mf.gov.pl",
         })
         .unwrap_or("https://qr-test.ksef.mf.gov.pl");
@@ -47,7 +48,7 @@ pub fn build_invoice_verification_url(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{ContextIdentifier, ContextIdentifierType};
+    use crate::prelude::{ContextIdentifier, ContextIdentifierType};
 
     #[test]
     fn test_normalize_hash_and_build_url_test_env() {

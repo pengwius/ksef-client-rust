@@ -1,8 +1,8 @@
+use ksef_client::prelude::*;
 mod common;
 
-use ksef_client::{
-    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
-};
+use ksef_client::auth::SubjectIdentifierType;
+use secrecy::ExposeSecret;
 
 #[tokio::test]
 async fn test_auth_token_request_generation() {
@@ -82,7 +82,7 @@ async fn test_authentication_submission() {
     match client.authenticate_by_xades_signature(signed_xml).await {
         Ok(_) => {
             let auth_token = client.auth_token();
-            assert!(!auth_token.authentication_token.is_empty());
+            assert!(!auth_token.authentication_token.expose_secret().is_empty());
             assert!(!auth_token.reference_number.is_empty());
         }
         Err(e) => {

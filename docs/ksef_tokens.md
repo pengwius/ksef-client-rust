@@ -14,7 +14,7 @@ Wszystkie poniższe operacje (generowanie, pobieranie listy, unieważnianie) wym
 ### 1. Generowanie Tokena KSeF
 
 ```rust
-use ksef_client::KsefTokenPermissions;
+use ksef_client::tokens::KsefTokenPermissions;
 
 let permissions = KsefTokenPermissions {
     invoice_read: true,
@@ -31,7 +31,8 @@ let description = "Opis mojego tokena";
 // umożliwiając późniejsze logowanie się nim (w nowej sesji) lub wykonywanie operacji w jego kontekście.
 let ksef_token = match client.new_ksef_token(true, permissions, description).await {
     Ok(token) => {
-        println!("    KSeF Token: {}", token.token);
+        use secrecy::ExposeSecret;
+        println!("    KSeF Token: {}", token.token.expose_secret());
         token
     }
     Err(e) => {
@@ -84,9 +85,11 @@ match client.get_ksef_tokens().await {
 ### 4. Pobieranie szczegółów konkretnego tokena
 
 ```rust
-let ksef_token_reference_number = &ksef_token.reference_number;
+use ksef_client::types::ReferenceNumber;
 
-match client.get_ksef_token_status(ksef_token_reference_number.as_str()).await {
+let ksef_token_reference_number = ReferenceNumber::new(ksef_token.reference_number.clone());
+
+match client.get_ksef_token_status(&ksef_token_reference_number).await {
     Ok(token_status) => {
         println!(
             "    KSeF Token Status\n{}",
@@ -105,9 +108,11 @@ match client.get_ksef_token_status(ksef_token_reference_number.as_str()).await {
 Tokeny, które nie są już potrzebne lub zostały skompromitowane, powinny zostać unieważnione.
 
 ```rust
-let ksef_token_reference_number = &ksef_token.reference_number;
+use ksef_client::types::ReferenceNumber;
 
-match client.revoke_ksef_token(ksef_token_reference_number.as_str()).await {
+let ksef_token_reference_number = ReferenceNumber::new(ksef_token.reference_number.clone());
+
+match client.revoke_ksef_token(&ksef_token_reference_number).await {
     Ok(()) => {
         println!("    KSeF token revoked successfully.");
     }
@@ -123,7 +128,9 @@ match client.revoke_ksef_token(ksef_token_reference_number.as_str()).await {
 Poniższy kod zakłada, że klient (`client`) jest już zalogowany (np. certyfikatem XAdES) i posiada uprawnienia do zarządzania poświadczeniami (`CredentialsManage`).
 
 ```rust
-use ksef_client::{KsefClient, KsefTokenPermissions};
+use ksef_client::prelude::KsefClient;
+use ksef_client::tokens::KsefTokenPermissions;
+use secrecy::ExposeSecret;
 
 async fn token_lifecycle_example(client: &mut KsefClient) -> Result<(), Box<dyn std::error::Error>> {
     println!("--- Rozpoczęcie cyklu życia tokena ---");
@@ -141,7 +148,7 @@ async fn token_lifecycle_example(client: &mut KsefClient) -> Result<(), Box<dyn 
     };
 
     let new_token = client.new_ksef_token(false, permissions, "Token testowy cyklu życia").await?; // false - nie ładujemy go jako aktywnego tokena autoryzacyjnego tej sesji
-    println!("   Wygenerowano token: {}", new_token.token);
+    println!("   Wygenerowano token: {}", new_token.token.expose_secret());
     println!("   Numer referencyjny: {}", new_token.reference_number);
 
     // 2. Sprawdzenie statusu nowo utworzonego tokena

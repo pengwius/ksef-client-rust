@@ -1,9 +1,10 @@
 use crate::common;
-use ksef_client::{
+use ksef_client::permissions::{
     AuthorizationAuthorizedIdentifier, AuthorizationPermissionType, AuthorizationSubjectDetails,
     AuthorizationSubjectIdentifier, AuthorizationSubjectIdentifierType,
     GetAuthorizationsPermissionsRequest, GrantAuthorizationPermissionsRequest, QueryType,
 };
+use ksef_client::prelude::*;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -67,9 +68,11 @@ async fn test_revoke_authorizations_permission() {
                     "Get permissions found {} entries",
                     resp.authorization_grants.len()
                 );
-                if let Some(perm) = resp.authorization_grants.iter().find(|p| {
-                    p.authorized_entity_identifier.value == target_nip
-                }) {
+                if let Some(perm) = resp
+                    .authorization_grants
+                    .iter()
+                    .find(|p| p.authorized_entity_identifier.value == target_nip)
+                {
                     println!("Found permission ID: {}", perm.id);
                     permission_id = perm.id.clone();
                     found = true;

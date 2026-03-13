@@ -1,6 +1,6 @@
 [package]
 name = "ksef-client"
-version = "0.1.5"
+version = "0.2.0"
 edition = "2024"
 
 authors = ["pengwius <pengwius@protonmail.ch>"]
@@ -13,7 +13,7 @@ keywords = ["ksef", "faktury", "e-invoices", "poland", "client"]
 
 [dependencies]
 thiserror = "2.0"
-clap = { version = "4.5", features = ["derive"] }
+clap = { version = "4.5", features = ["derive"], optional = true }
 openssl = "0.10"
 chrono = { version = "0.4", features = ["serde"] }
 rand = "0.10"
@@ -24,7 +24,17 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs"] }
 regex = "1.10"
 base64 = "0.22"
 zip = "8.2"
+async-trait = "0.1.89"
+secrecy = { version = "0.8", features = ["serde"] }
+
+[dev-dependencies]
+ksef-client = { path = ".", features = ["testing-utils"] }
+
+[features]
+default = []
+testing-utils = ["dep:clap"]
 
 [[bin]]
 name = "certgen"
 path = "certgen/certgen.rs"
+required-features = ["testing-utils"]

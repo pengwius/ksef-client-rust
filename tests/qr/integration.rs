@@ -1,6 +1,9 @@
 use crate::common;
 use chrono::Utc;
-use ksef_client::{CertificateType, EnrollCertificateRequest, KsefClient, RevocationReason};
+use ksef_client::KsefClient;
+use ksef_client::certificates::{CertificateType, EnrollCertificateRequest, RevocationReason};
+use ksef_client::prelude::*;
+use secrecy::ExposeSecret;
 
 async fn submit_invoice_and_get_hash(
     client: &KsefClient,
@@ -26,8 +29,8 @@ async fn submit_invoice_and_get_hash(
 
     let status = client
         .get_invoice_status(
-            &submit_result.session_reference_number,
-            &submit_result.invoice_reference_number,
+            submit_result.session_reference_number.clone(),
+            submit_result.invoice_reference_number.clone(),
         )
         .await
         .map_err(|e| format!("Failed to get invoice status: {:?}", e))?;
@@ -112,7 +115,7 @@ async fn enroll_and_build_cert_qr(
             seller_nip,
             &serial,
             invoice_hash,
-            Some(csr_result.private_key_pem.as_str()),
+            Some(csr_result.private_key_pem.expose_secret().as_str()),
         )
         .map_err(|e| format!("Failed to build qr url from enrolled cert: {:?}", e))?;
 

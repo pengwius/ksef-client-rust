@@ -104,9 +104,12 @@ let req = FetchInvoiceMetadataRequestBuilder::new()
 Jeżeli znasz `ksefNumber` (numer KSeF) faktury, możesz pobrać jej treść
 
 ```rust
-let ksef_number = /* numer KSeF faktury jako String */;
+use ksef_client::types::KsefNumber;
 
-let invoice = client.fetch_invoice(&ksef_number).await?;
+let ksef_number_str = /* numer KSeF faktury jako String */;
+let ksef_number = KsefNumber::new(ksef_number_str);
+
+let invoice = client.fetch_invoice(ksef_number).await?;
 let xml_bytes = invoice.content; // Vec<u8>
 let xml_text = String::from_utf8_lossy(&xml_bytes);
 println!("Invoice XML:\n{}", xml_text);

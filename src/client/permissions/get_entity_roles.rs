@@ -35,7 +35,7 @@ pub async fn get_entity_roles(
 ) -> Result<GetEntityRolesResponse, KsefError> {
     let url = client.url_for(routes::PERMISSIONS_QUERY_ENTITIES_ROLES_PATH);
 
-    let token = &client.access_token.access_token;
+    let token = KsefClient::secret_str(&client.access_token.access_token);
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,
@@ -75,7 +75,7 @@ pub async fn get_entity_roles(
             page_size,
             resp_body
         );
-        return Err(KsefError::ApiError(status.as_u16(), resp_body));
+        return Err(KsefError::from_api_response(status.as_u16(), resp_body));
     }
 
     let parsed: GetEntityRolesResponse = resp.json().await.map_err(KsefError::RequestError)?;

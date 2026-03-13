@@ -67,6 +67,8 @@ wysłanych części oraz łączny rozmiar pliku ZIP.
 Możesz także pracować bezpośrednio z poszczególnymi elementami składowymi:
 
 ```rust
+use ksef_client::types::ReferenceNumber;
+
 let zip = create_zip(&invoices)?;
 let parts = split_zip(&zip.content, 50 * 1024 * 1024); // domyślny podział
 let enc = client.generate_encryption_data().await?;
@@ -81,5 +83,5 @@ let open_req = OpenBatchSessionRequestBuilder::new()
 
 let response = client.open_batch_session(open_req).await?;
 client.upload_batch_parts(&response, &encrypted).await?;
-client.close_batch_session(&response.reference_number).await?;
+client.close_batch_session(ReferenceNumber::new(response.reference_number.as_str())).await?;
 ```

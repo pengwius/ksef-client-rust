@@ -1,5 +1,6 @@
 use crate::common;
-use ksef_client::PersonsPermissionsRequest;
+use ksef_client::permissions::PersonsPermissionsRequest;
+use ksef_client::prelude::*;
 
 #[tokio::test]
 async fn test_get_persons_permissions() {

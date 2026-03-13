@@ -1,7 +1,8 @@
 use chrono::Utc;
 use clap::Parser;
-use ksef_client::{
-    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
+use ksef_client::auth::SubjectIdentifierType;
+use ksef_client::prelude::{
+    ContextIdentifier, ContextIdentifierType, Environment, KsefAuth, KsefClient,
 };
 use std::fs;
 use std::path::PathBuf;
@@ -166,10 +167,7 @@ async fn main() -> ExitCode {
 
     let auth_tokens = client.auth_token();
 
-    println!(
-        "    AuthenticationToken: {}",
-        auth_tokens.authentication_token
-    );
+    println!("    AuthenticationToken: <redacted>");
     println!("    ReferenceNumber: {}", auth_tokens.reference_number);
 
     println!("[8] Requesting authentication status (polling)...");
@@ -199,8 +197,14 @@ async fn main() -> ExitCode {
 
     let access_tokens = client.access_token();
 
-    println!("    AccessToken: {}", access_tokens.access_token);
-    println!("    RefreshToken: {}", access_tokens.refresh_token);
+    println!(
+        "    AccessToken: <redacted> (valid until: {})",
+        access_tokens.access_token_valid_until
+    );
+    println!(
+        "    RefreshToken: <redacted> (valid until: {})",
+        access_tokens.refresh_token_valid_until
+    );
 
     println!("Finished successfully.");
     ExitCode::SUCCESS

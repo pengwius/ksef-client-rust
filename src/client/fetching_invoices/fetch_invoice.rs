@@ -1,6 +1,7 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;
+use crate::client::types::KsefNumber;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -11,12 +12,12 @@ pub struct FetchInvoiceResponse {
 
 pub async fn fetch_invoice(
     client: &KsefClient,
-    ksef_number: &str,
+    ksef_number: &KsefNumber,
 ) -> Result<FetchInvoiceResponse, KsefError> {
     let url = client.url_for(&format!("{}/{}", routes::INVOICES_PATH, ksef_number));
     let http = &client.client;
 
-    let token = &client.access_token.access_token;
+    let token = KsefClient::secret_str(&client.access_token.access_token);
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,
@@ -36,7 +37,7 @@ pub async fn fetch_invoice(
     if !status.is_success() {
         let code = status.as_u16();
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(code, body));
+        return Err(KsefError::from_api_response(code, body));
     }
 
     let hash = resp

@@ -1,12 +1,9 @@
 use crate::common;
-
-use ksef_client::{
-    AuthorizationPermissionType,
-    AuthorizationSubjectDetails,
-    AuthorizationSubjectIdentifier,
-    AuthorizationSubjectIdentifierType,
-    GrantAuthorizationPermissionsRequest,
+use ksef_client::permissions::{
+    AuthorizationPermissionType, AuthorizationSubjectDetails, AuthorizationSubjectIdentifier,
+    AuthorizationSubjectIdentifierType, GrantAuthorizationPermissionsRequest,
 };
+use ksef_client::prelude::*;
 
 #[tokio::test]
 async fn test_grant_authorization_permissions() {

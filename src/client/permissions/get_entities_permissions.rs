@@ -1,8 +1,8 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;
+
 use serde::{Deserialize, Serialize};
-use serde_json::{Map, Value};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -10,6 +10,18 @@ pub struct EntitiesContextIdentifier {
     #[serde(rename = "type")]
     pub identifier_type: String,
     pub value: String,
+}
+
+impl EntitiesContextIdentifier {
+    fn normalize(&mut self) {
+        if self.identifier_type == "InternalId" && !self.value.contains('-') {
+            let digits_only: String = self.value.chars().filter(|c| c.is_ascii_digit()).collect();
+            if digits_only.len() > 10 {
+                let (nip, rest) = digits_only.split_at(10);
+                self.value = format!("{}-{}", nip, rest);
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -45,7 +57,7 @@ pub async fn get_entities_permissions(
 ) -> Result<GetEntitiesPermissionsResponse, KsefError> {
     let url = client.url_for(routes::PERMISSIONS_QUERY_ENTITIES_GRANTS_PATH);
 
-    let token = &client.access_token.access_token;
+    let token = KsefClient::secret_str(&client.access_token.access_token);
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,
@@ -67,33 +79,14 @@ pub async fn get_entities_permissions(
         req = req.query(&[("pageSize", size.to_string())]);
     }
 
-    if let Some(ref body) = request_body {
-        let mut body_value = serde_json::to_value(body).unwrap_or(Value::Object(Map::new()));
-
-        if let Some(ctx_id_val) = body_value.get_mut("contextIdentifier") {
-            if let Some(id_type_val) = ctx_id_val.get("type") {
-                if id_type_val == "InternalId" {
-                    if let Some(v) = ctx_id_val.get_mut("value") {
-                        if let Some(s) = v.as_str() {
-                            if !s.contains('-') {
-                                let digits_only: String =
-                                    s.chars().filter(|c| c.is_ascii_digit()).collect();
-                                if digits_only.len() > 10 {
-                                    let (nip, rest) = digits_only.split_at(10);
-                                    let hyphenated = format!("{}-{}", nip, rest);
-                                    *v = Value::String(hyphenated);
-                                }
-                            } else {
-                            }
-                        }
-                    }
-                }
-            }
+    if let Some(body) = &request_body {
+        let mut body_clone = body.clone();
+        if let Some(ctx_id) = &mut body_clone.context_identifier {
+            ctx_id.normalize();
         }
-
-        req = req.json(&body_value);
+        req = req.json(&body_clone);
     } else {
-        req = req.json(&Value::Object(Map::new()));
+        req = req.json(&serde_json::json!({}));
     }
 
     let attempted_body = match &request_body {
@@ -123,7 +116,7 @@ pub async fn get_entities_permissions(
             attempted_body,
             resp_body
         );
-        return Err(KsefError::ApiError(status.as_u16(), resp_body));
+        return Err(KsefError::from_api_response(status.as_u16(), resp_body));
     }
 
     let parsed: GetEntitiesPermissionsResponse =

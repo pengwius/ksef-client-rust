@@ -1,10 +1,11 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;
+use crate::client::types::ReferenceNumber;
 
 pub async fn close_online_session(
     client: &KsefClient,
-    session_reference_number: &str,
+    session_reference_number: &ReferenceNumber,
 ) -> Result<(), KsefError> {
     let url = client.url_for(&format!(
         "{}/{}/close",
@@ -12,7 +13,7 @@ pub async fn close_online_session(
         session_reference_number
     ));
 
-    let access_token = &client.access_token.access_token;
+    let access_token = KsefClient::secret_str(&client.access_token.access_token);
     if access_token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,
@@ -32,7 +33,7 @@ pub async fn close_online_session(
     let status = resp.status();
     if !status.is_success() {
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(status.as_u16(), body));
+        return Err(KsefError::from_api_response(status.as_u16(), body));
     }
 
     Ok(())

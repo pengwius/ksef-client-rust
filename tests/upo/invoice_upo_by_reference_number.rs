@@ -1,7 +1,8 @@
 use crate::common;
+use ksef_client::prelude::*;
 
 use base64::{Engine as _, engine::general_purpose};
-use ksef_client::{GetInvoiceUpoResponse, InvoiceIdentifier, KsefClient};
+use ksef_client::upo::{GetInvoiceUpoResponse, InvoiceIdentifier};
 use openssl::sha::sha256;
 
 #[tokio::test]
@@ -17,8 +18,8 @@ async fn integration_upo_by_invoice_reference() {
 
     let status = client
         .get_invoice_status(
-            &submit_result.session_reference_number,
-            &submit_result.invoice_reference_number,
+            submit_result.session_reference_number.clone(),
+            submit_result.invoice_reference_number.clone(),
         )
         .await
         .expect("Failed to get invoice status");
@@ -34,8 +35,8 @@ async fn integration_upo_by_invoice_reference() {
 
     let upo_resp: GetInvoiceUpoResponse = client
         .get_invoice_upo(
-            &submit_result.session_reference_number,
-            InvoiceIdentifier::InvoiceReference(invoice_ref.clone()),
+            submit_result.session_reference_number.clone(),
+            InvoiceIdentifier::InvoiceReference(invoice_ref.to_string()),
         )
         .await
         .expect("Failed to fetch invoice UPO by invoice reference (get_invoice_upo)");

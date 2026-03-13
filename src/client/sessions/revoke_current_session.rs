@@ -5,7 +5,7 @@ use crate::client::routes;
 pub async fn revoke_current_session(client: &KsefClient) -> Result<(), KsefError> {
     let url = client.url_for(routes::AUTH_SESSIONS_CURRENT_PATH);
 
-    let access_token = &client.access_token.access_token;
+    let access_token = KsefClient::secret_str(&client.access_token.access_token);
 
     let resp = client
         .client
@@ -19,7 +19,7 @@ pub async fn revoke_current_session(client: &KsefClient) -> Result<(), KsefError
     let status = resp.status();
     if !status.is_success() {
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(status.as_u16(), body));
+        return Err(KsefError::from_api_response(status.as_u16(), body));
     }
 
     Ok(())

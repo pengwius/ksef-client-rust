@@ -1,6 +1,7 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Clone)]
@@ -20,6 +21,12 @@ pub struct FetchInvoiceMetadataRequestBuilder {
     query: Option<QueryCriteria>,
     page_offset: Option<i32>,
     page_size: Option<i32>,
+}
+
+impl Default for FetchInvoiceMetadataRequestBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl FetchInvoiceMetadataRequestBuilder {
@@ -101,6 +108,12 @@ pub struct QueryCriteriaBuilder {
     form_type: Option<FormType>,
     invoice_types: Option<Vec<InvoiceType>>,
     has_attachment: Option<bool>,
+}
+
+impl Default for QueryCriteriaBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl QueryCriteriaBuilder {
@@ -242,6 +255,12 @@ pub struct DateRangeBuilder {
     from: Option<String>,
     to: Option<String>,
     restrict_to_permanent_storage_hwm_date: Option<bool>,
+}
+
+impl Default for DateRangeBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl DateRangeBuilder {
@@ -509,7 +528,7 @@ pub async fn fetch_invoice_metadata(
     let url = client.url_for(routes::INVOICES_QUERY_METADATA_PATH);
     let http = &client.client;
 
-    let token = &client.access_token.access_token;
+    let token = KsefClient::secret_str(&client.access_token.access_token);
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,
@@ -536,7 +555,7 @@ pub async fn fetch_invoice_metadata(
     if !status.is_success() {
         let code = status.as_u16();
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(code, body));
+        return Err(KsefError::from_api_response(code, body));
     }
 
     let parsed: FetchInvoiceMetadataResponse = resp.json().await?;

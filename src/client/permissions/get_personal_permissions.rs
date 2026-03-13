@@ -114,7 +114,7 @@ pub async fn get_personal_permissions(
 ) -> Result<GetPersonalPermissionsResponse, KsefError> {
     let url = client.url_for(routes::PERMISSIONS_QUERY_PERSONAL_GRANTS_PATH);
 
-    let token = &client.access_token.access_token;
+    let token = KsefClient::secret_str(&client.access_token.access_token);
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,
@@ -145,7 +145,7 @@ pub async fn get_personal_permissions(
     let status = resp.status();
     if !status.is_success() {
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(status.as_u16(), body));
+        return Err(KsefError::from_api_response(status.as_u16(), body));
     }
 
     let parsed: GetPersonalPermissionsResponse =

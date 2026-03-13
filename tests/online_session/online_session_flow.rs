@@ -1,6 +1,8 @@
 use crate::common;
+use ksef_client::prelude::*;
+use ksef_client::types::ReferenceNumber;
 
-use ksef_client::OpenOnlineSessionRequestBuilder;
+use ksef_client::sessions::OpenOnlineSessionRequestBuilder;
 
 #[tokio::test]
 async fn test_online_session_flow() {
@@ -36,7 +38,7 @@ async fn test_online_session_flow() {
 
     let send_result = client
         .send_invoice(
-            &response.reference_number,
+            ReferenceNumber::new(&response.reference_number),
             invoice_xml.as_bytes(),
             &encryption_data,
         )
@@ -50,7 +52,10 @@ async fn test_online_session_flow() {
     };
 
     let status = client
-        .get_invoice_status(&response.reference_number, &invoice_reference_number)
+        .get_invoice_status(
+            ReferenceNumber::new(&response.reference_number),
+            ReferenceNumber::new(&invoice_reference_number),
+        )
         .await
         .expect("Failed to get invoice status");
 
@@ -59,7 +64,7 @@ async fn test_online_session_flow() {
     assert!(status.invoice_status.code == 200);
 
     match client
-        .close_online_session(&response.reference_number)
+        .close_online_session(ReferenceNumber::new(&response.reference_number))
         .await
     {
         Ok(()) => {}
@@ -94,8 +99,8 @@ async fn test_submit_online_automated() {
 
     let status = client
         .get_invoice_status(
-            &result.session_reference_number,
-            &result.invoice_reference_number,
+            result.session_reference_number.clone(),
+            result.invoice_reference_number.clone(),
         )
         .await
         .expect("Failed to get invoice status");

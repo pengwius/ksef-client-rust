@@ -14,7 +14,7 @@ All operations below (generating, listing, revoking) require prior authenticatio
 ### 1. Generating a KSeF Token
 
 ```rust
-use ksef_client::KsefTokenPermissions;
+use ksef_client::tokens::KsefTokenPermissions;
 
 let permissions = KsefTokenPermissions {
     invoice_read: true,
@@ -31,8 +31,8 @@ let description = "My token description";
 // enabling subsequent login with it (in a new session) or performing operations in its context.
 let ksef_token = match client.new_ksef_token(true, permissions, description).await {
     Ok(token) => {
-        println!("    KSeF Token: {}", token.token);
-        println!("    Reference Number: {}", token.reference_number);
+        use secrecy::ExposeSecret;
+        println!("    KSeF Token: {}", token.token.expose_secret());
         token
     }
     Err(e) => {
@@ -85,9 +85,11 @@ match client.get_ksef_tokens().await {
 ### 4. Retrieving details of a specific token
 
 ```rust
-let ksef_token_reference_number = &ksef_token.reference_number;
+use ksef_client::types::ReferenceNumber;
 
-match client.get_ksef_token_status(ksef_token_reference_number.as_str()).await {
+let ksef_token_reference_number = ReferenceNumber::new(ksef_token.reference_number.clone());
+
+match client.get_ksef_token_status(&ksef_token_reference_number).await {
     Ok(token_status) => {
         println!(
             "    KSeF Token Status\n{}",
@@ -106,9 +108,11 @@ match client.get_ksef_token_status(ksef_token_reference_number.as_str()).await {
 Tokens that are no longer needed or have been compromised should be revoked.
 
 ```rust
-let ksef_token_reference_number = &ksef_token.reference_number;
+use ksef_client::types::ReferenceNumber;
 
-match client.revoke_ksef_token(ksef_token_reference_number.as_str()).await {
+let ksef_token_reference_number = ReferenceNumber::new(ksef_token.reference_number.clone());
+
+match client.revoke_ksef_token(&ksef_token_reference_number).await {
     Ok(()) => {
         println!("    KSeF token revoked successfully.");
     }
@@ -124,7 +128,9 @@ match client.revoke_ksef_token(ksef_token_reference_number.as_str()).await {
 The code below assumes that the client (`client`) is already logged in (e.g., using an XAdES certificate) and possesses permissions to manage credentials (`CredentialsManage`).
 
 ```rust
-use ksef_client::{KsefClient, KsefTokenPermissions};
+use ksef_client::prelude::KsefClient;
+use ksef_client::tokens::KsefTokenPermissions;
+use secrecy::ExposeSecret;
 
 async fn token_lifecycle_example(client: &mut KsefClient) -> Result<(), Box<dyn std::error::Error>> {
     println!("--- Starting Token Lifecycle ---");
@@ -141,8 +147,8 @@ async fn token_lifecycle_example(client: &mut KsefClient) -> Result<(), Box<dyn 
         enforcement_operations: false,
     };
 
-    let new_token = client.new_ksef_token(false, permissions, "Lifecycle test token").await?; // false - do not load as active auth token for this session
-    println!("   Generated token: {}", new_token.token);
+    let new_token = client.new_ksef_token(false, permissions, "Test lifecycle token").await?; // false - do not load as active auth token for this session
+    println!("   Generated token: {}", new_token.token.expose_secret());
     println!("   Reference number: {}", new_token.reference_number);
 
     // 2. Check status of newly created token

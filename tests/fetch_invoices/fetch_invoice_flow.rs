@@ -1,8 +1,10 @@
 use crate::common;
-use ksef_client::{
+use ksef_client::invoices::{
     DateRangeBuilder, DateType, FetchInvoiceMetadataRequestBuilder, IncrementalFetchState,
     InvoicePayload, QueryCriteriaBuilder, SubjectType,
 };
+use ksef_client::prelude::*;
+use ksef_client::types::KsefNumber;
 use std::io::Read;
 
 #[tokio::test]
@@ -19,8 +21,8 @@ async fn test_fetch_invoice_flow() {
 
     let online_session_status = client
         .get_invoice_status(
-            &online_session_result.session_reference_number,
-            &online_session_result.invoice_reference_number,
+            online_session_result.session_reference_number.clone(),
+            online_session_result.invoice_reference_number.clone(),
         )
         .await
         .expect("Failed to get invoice status");
@@ -105,7 +107,7 @@ async fn test_fetch_invoice_flow() {
     }
 
     let fetch_resp = client
-        .fetch_invoice(&ksef_number)
+        .fetch_invoice(KsefNumber::new(ksef_number))
         .await
         .expect("Failed to fetch invoice content");
 

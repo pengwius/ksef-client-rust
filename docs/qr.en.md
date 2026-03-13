@@ -14,8 +14,7 @@ You need:
 - invoice hash — the invoice hash (Base64). You get this hash from the KSeF response after a successful invoice submission or by fetching the invoice
 
 ```rust
-use ksef_client::KsefClient;
-use ksef_client::{ContextIdentifier, ContextIdentifierType, Environment};
+use ksef_client::prelude::{KsefClient, ContextIdentifier, ContextIdentifierType, Environment};
 
 let context = ContextIdentifier {
     id_type: ContextIdentifierType::Nip,

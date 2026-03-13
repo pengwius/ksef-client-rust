@@ -1,6 +1,6 @@
 use crate::common;
-use ksef_client::error::KsefError;
-use ksef_client::{CertificateType, EnrollCertificateRequest};
+use ksef_client::certificates::{CertificateType, EnrollCertificateRequest};
+use ksef_client::prelude::*;
 
 #[tokio::test]
 async fn test_get_enrollment_status() {

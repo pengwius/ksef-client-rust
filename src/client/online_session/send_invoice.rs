@@ -2,6 +2,7 @@ use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::online_session::encryption::{EncryptionData, encrypt_invoice, hash_invoice};
 use crate::client::routes;
+use crate::client::types::ReferenceNumber;
 use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 use serde::{Deserialize, Serialize};
 
@@ -31,7 +32,7 @@ pub struct SendInvoiceResponse {
 
 pub async fn send_invoice(
     client: &KsefClient,
-    session_reference_number: &str,
+    session_reference_number: &ReferenceNumber,
     invoice_xml: &[u8],
     encryption_data: &EncryptionData,
 ) -> Result<SendInvoiceResponse, KsefError> {
@@ -63,7 +64,7 @@ pub async fn send_invoice(
     ));
     let http = &client.client;
 
-    let token = &client.access_token.access_token;
+    let token = KsefClient::secret_str(&client.access_token.access_token);
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,
@@ -84,7 +85,7 @@ pub async fn send_invoice(
     if !status.is_success() {
         let code = status.as_u16();
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(code, body));
+        return Err(KsefError::from_api_response(code, body));
     }
 
     let parsed: SendInvoiceResponse = resp.json().await?;

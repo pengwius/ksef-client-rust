@@ -5,10 +5,11 @@ use openssl::hash::MessageDigest;
 use openssl::pkey::PKey;
 use openssl::rsa::Rsa;
 use openssl::x509::{X509NameBuilder, X509ReqBuilder};
+use secrecy::Secret;
 
 pub struct CsrResult {
     pub csr_base64: String,
-    pub private_key_pem: String,
+    pub private_key_pem: Secret<String>,
 }
 
 pub fn generate_csr(enrollment_data: &EnrollmentData) -> Result<CsrResult, KsefError> {
@@ -92,6 +93,6 @@ pub fn generate_csr(enrollment_data: &EnrollmentData) -> Result<CsrResult, KsefE
 
     Ok(CsrResult {
         csr_base64,
-        private_key_pem,
+        private_key_pem: Secret::new(private_key_pem),
     })
 }

@@ -1,14 +1,16 @@
-use crate::ContextIdentifierType;
 use crate::client::KsefClient;
 use crate::client::auth::xades_auth::AuthTokens;
 use crate::client::error::KsefError;
 use crate::client::get_public_key_certificates::PublicKeyCertificateUsage;
 use crate::client::routes;
+use crate::client::traits::*;
+use crate::prelude::ContextIdentifierType;
 use base64::{Engine as _, engine::general_purpose};
 use openssl::hash::MessageDigest;
 use openssl::md::MdRef;
 use openssl::pkey::PKey;
 use openssl::rsa::Padding;
+use secrecy::Secret;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize)]
@@ -83,8 +85,12 @@ pub async fn submit_ksef_token_auth_request(
     let pem = String::from_utf8(pem_bytes)
         .map_err(|e| KsefError::Unexpected(format!("UTF-8 error: {}", e)))?;
 
-    let encrypted_token =
-        encrypt_token(&token, challenge.timestamp_ms, &pem).map_err(KsefError::OpenSslError)?;
+    let encrypted_token = encrypt_token(
+        KsefClient::secret_str(&token),
+        challenge.timestamp_ms,
+        &pem,
+    )
+    .map_err(KsefError::OpenSslError)?;
 
     let context_type_str = match context_type {
         ContextIdentifierType::Nip => "Nip",
@@ -114,12 +120,12 @@ pub async fn submit_ksef_token_auth_request(
     let status = resp.status();
     if !status.is_success() {
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(status.as_u16(), body));
+        return Err(KsefError::from_api_response(status.as_u16(), body));
     }
 
     let parsed: AuthResponse = resp.json().await.map_err(KsefError::RequestError)?;
     let tokens = AuthTokens {
-        authentication_token: parsed.authentication_token.token,
+        authentication_token: Secret::new(parsed.authentication_token.token),
         reference_number: parsed.reference_number,
     };
 

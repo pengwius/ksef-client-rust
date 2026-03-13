@@ -36,7 +36,7 @@ let csr_result = match client.generate_csr(&enrollment_data) {
 ### 4. Wysyłanie żądania
 
 ```rust
-use ksef_client::{EnrollCertificateRequest, CertificateType};
+use ksef_client::certificates::{EnrollCertificateRequest, CertificateType};
 
 let request = EnrollCertificateRequest {
     certificate_name: "Nazwa Certyfikatu".to_string(),
@@ -105,7 +105,7 @@ Argumenty metody `get_certificate_metadata_list`:
 - `page_offset` - numer strony wyników (opcjonalnie)
 
 ```rust
-use ksef_client::GetCertificateMetadataListRequest;
+use ksef_client::certificates::GetCertificateMetadataListRequest;
 
 let query = GetCertificateMetadataListRequest {
     certificate_serial_number: Some("numer_seryjny".to_string()),
@@ -137,7 +137,7 @@ Jako powód unieważnienia (`RevocationReason`) możemy podać:
 - `Superseded` - zastąpienie przez inny certyfikat
 
 ```rust
-use ksef_client::RevocationReason;
+use ksef_client::certificates::RevocationReason;
 
 match client.revoke_certificate(&serial, RevocationReason::Unspecified).await {
     Ok(()) => {

@@ -7,9 +7,13 @@ __[Oficjalna Dokumentacja](https://api-test.ksef.mf.gov.pl/docs/v2/index.html#ta
 ### Pobieranie UPO za pomocą numeru KSeF
 
 ```rust
+use ksef_client::types::ReferenceNumber;
+
+let session_reference_number = ReferenceNumber::new("20231115-SE-...");
+
 let upo: GetInvoiceUpoResponse = client
     .get_invoice_upo(
-        &session_reference_number, // numer referencyjny sesji
+        session_reference_number, // numer referencyjny sesji
         InvoiceIdentifier::KsefNumber(ksef_number.clone()), // numer KSeF faktury
     )
     .await
@@ -19,9 +23,13 @@ let upo: GetInvoiceUpoResponse = client
 ### Pobieranie UPO za pomocą numeru referencyjnego
 
 ```rust
+use ksef_client::types::ReferenceNumber;
+
+let session_reference_number = ReferenceNumber::new("20231115-SE-...");
+
 let upo: GetInvoiceUpoResponse = client
     .get_invoice_upo(
-        &session_reference_number, // numer referencyjny sesji
+        session_reference_number, // numer referencyjny sesji
         InvoiceIdentifier::InvoiceReference(invoice_ref.clone()), // numer referencyjny faktury
     )
     .await

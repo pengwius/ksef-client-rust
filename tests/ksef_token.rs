@@ -1,9 +1,9 @@
+use ksef_client::prelude::*;
 mod common;
 
-use ksef_client::{
-    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, KsefTokenPermissions,
-    SubjectIdentifierType,
-};
+use ksef_client::auth::SubjectIdentifierType;
+use ksef_client::tokens::KsefTokenPermissions;
+use secrecy::ExposeSecret;
 
 #[tokio::test]
 async fn test_ksef_token_lifecycle() {
@@ -47,7 +47,12 @@ async fn test_ksef_token_lifecycle() {
         return;
     }
 
-    if client.access_token().access_token.is_empty() {
+    if client
+        .access_token()
+        .access_token
+        .expose_secret()
+        .is_empty()
+    {
         println!("No access token available, skipping KSeF token tests.");
         return;
     }
@@ -71,7 +76,7 @@ async fn test_ksef_token_lifecycle() {
     {
         Ok(token) => {
             assert!(
-                !token.token.is_empty(),
+                !token.token.expose_secret().is_empty(),
                 "Generated token should not be empty"
             );
             assert!(
@@ -114,7 +119,7 @@ async fn test_ksef_token_lifecycle() {
     match client.authenticate_by_ksef_token().await {
         Ok(()) => {
             let auth_token = client.auth_token();
-            assert!(!auth_token.authentication_token.is_empty());
+            assert!(!auth_token.authentication_token.expose_secret().is_empty());
             println!("Authentication with KSeF token successful");
         }
         Err(e) => panic!("Failed to authenticate with KSeF token: {:?}", e),

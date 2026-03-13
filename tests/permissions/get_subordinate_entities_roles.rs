@@ -1,6 +1,7 @@
 use crate::common;
+use ksef_client::prelude::*;
 
-use ksef_client::{
+use ksef_client::permissions::{
     GrantSubunitPermissionsRequest, SubunitContextIdentifier, SubunitContextIdentifierType,
     SubunitPersonById, SubunitSubjectDetails, SubunitSubjectDetailsType, SubunitSubjectIdentifier,
     SubunitSubjectIdentifierType,

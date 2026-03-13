@@ -43,13 +43,13 @@ pub async fn get_auth_challenge(client: &KsefClient) -> Result<AuthChallenge, Ks
         } else {
             format!("Retry-After: {}. Body: {}", retry_after_owned, body)
         };
-        return Err(KsefError::ApiError(429, details));
+        return Err(KsefError::from_api_response(429, details));
     }
 
     if !status.is_success() {
         let code = status.as_u16();
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(code, body));
+        return Err(KsefError::from_api_response(code, body));
     }
 
     let parsed: AuthChallengeResponse = resp.json().await?;
@@ -63,8 +63,7 @@ pub async fn get_auth_challenge(client: &KsefClient) -> Result<AuthChallenge, Ks
 
 #[cfg(test)]
 mod tests {
-    use crate::Environment;
-    use crate::{ContextIdentifier, ContextIdentifierType};
+    use crate::prelude::{ContextIdentifier, ContextIdentifierType, Environment};
 
     use super::*;
 

@@ -49,7 +49,7 @@ pub async fn get_active_sessions(
 ) -> Result<QuerySessionsResponse, KsefError> {
     let url = client.url_for(routes::AUTH_SESSIONS_PATH);
 
-    let access_token = &client.access_token.access_token;
+    let access_token = KsefClient::secret_str(&client.access_token.access_token);
 
     let mut req = client
         .client
@@ -66,7 +66,7 @@ pub async fn get_active_sessions(
     let status = resp.status();
     if !status.is_success() {
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(status.as_u16(), body));
+        return Err(KsefError::from_api_response(status.as_u16(), body));
     }
 
     let parsed: QuerySessionsResponse = resp.json().await.map_err(KsefError::RequestError)?;

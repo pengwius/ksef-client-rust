@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Environment {
     Test,
+    Demo,
     Prod,
 }
 
@@ -10,6 +11,7 @@ impl Environment {
     pub fn base_url(&self) -> &'static str {
         match self {
             Environment::Test => "https://api-test.ksef.mf.gov.pl/api",
+            Environment::Demo => "https://api-demo.ksef.mf.gov.pl/api",
             Environment::Prod => "https://api.ksef.mf.gov.pl/api",
         }
     }

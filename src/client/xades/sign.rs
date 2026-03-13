@@ -91,9 +91,7 @@ fn insert_signature_into_enveloped(
     };
 
     let root_name = if let Some(start) = body.find('<') {
-        if let Some(end) = body[start + 1..]
-            .find([' ', '>', '\t', '\n', '\r', '/'])
-        {
+        if let Some(end) = body[start + 1..].find([' ', '>', '\t', '\n', '\r', '/']) {
             let name = &body[start + 1..start + 1 + end];
             name.to_string()
         } else {
@@ -226,9 +224,10 @@ fn canonicalize_inclusive(s: &str) -> String {
 fn canonicalize_common(s: &str, strip_unused: bool) -> String {
     let mut out = s.trim().to_string();
     if out.starts_with("<?xml")
-        && let Some(idx) = out.find("?>") {
-            out = out[(idx + 2)..].trim().to_string();
-        }
+        && let Some(idx) = out.find("?>")
+    {
+        out = out[(idx + 2)..].trim().to_string();
+    }
 
     let tag_re =
         Regex::new(r#"<([^\s/>]+)((?:\s+[^\s=/>]+=(?:'[^']*'|"[^"]*"))*)\s*(/?)>"#).unwrap();
@@ -249,10 +248,9 @@ fn canonicalize_common(s: &str, strip_unused: bool) -> String {
                 .unwrap_or("")
                 .to_string();
 
-            if strip_unused
-                && (k == "xmlns:xsi" || k == "xmlns:xsd") {
-                    continue;
-                }
+            if strip_unused && (k == "xmlns:xsi" || k == "xmlns:xsd") {
+                continue;
+            }
 
             attrs.push((k, v));
         }
@@ -299,13 +297,14 @@ fn canonicalize_common(s: &str, strip_unused: bool) -> String {
 
 fn remove_existing_signature(xml: &str) -> String {
     if let Some(start) = xml.find("<Signature")
-        && let Some(end) = xml[start..].find("</Signature>") {
-            let end_pos = start + end + "</Signature>".len();
-            let mut cleaned = String::with_capacity(xml.len() - (end_pos - start));
-            cleaned.push_str(&xml[..start]);
-            cleaned.push_str(&xml[end_pos..]);
-            return cleaned;
-        }
+        && let Some(end) = xml[start..].find("</Signature>")
+    {
+        let end_pos = start + end + "</Signature>".len();
+        let mut cleaned = String::with_capacity(xml.len() - (end_pos - start));
+        cleaned.push_str(&xml[..start]);
+        cleaned.push_str(&xml[end_pos..]);
+        return cleaned;
+    }
     xml.to_string()
 }
 

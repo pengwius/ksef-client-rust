@@ -1,6 +1,6 @@
 use crate::common;
-use ksef_client::error::KsefError;
-use ksef_client::{CertificateType, EnrollCertificateRequest, RevocationReason};
+use ksef_client::certificates::{CertificateType, EnrollCertificateRequest, RevocationReason};
+use ksef_client::prelude::*;
 
 #[tokio::test]
 async fn test_retrieve_certificates() {

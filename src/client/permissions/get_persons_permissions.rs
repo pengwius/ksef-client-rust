@@ -2,7 +2,6 @@ use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -233,7 +232,7 @@ pub async fn get_persons_permissions(
 ) -> Result<GetPersonsPermissionsResponse, KsefError> {
     let url = client.url_for(routes::PERMISSIONS_QUERY_PERSONS_GRANTS_PATH);
 
-    let token = &client.access_token.access_token;
+    let token = KsefClient::secret_str(&client.access_token.access_token);
     if token.is_empty() {
         return Err(KsefError::ApplicationError(
             0,
@@ -257,7 +256,7 @@ pub async fn get_persons_permissions(
     if let Some(body) = request_body {
         req = req.json(&body);
     } else {
-        req = req.json(&Value::Object(serde_json::Map::new()));
+        req = req.json(&serde_json::json!({}));
     }
 
     let resp = req.send().await.map_err(KsefError::RequestError)?;
@@ -265,7 +264,7 @@ pub async fn get_persons_permissions(
     let status = resp.status();
     if !status.is_success() {
         let body = resp.text().await.unwrap_or_default();
-        return Err(KsefError::ApiError(status.as_u16(), body));
+        return Err(KsefError::from_api_response(status.as_u16(), body));
     }
 
     let parsed: GetPersonsPermissionsResponse =

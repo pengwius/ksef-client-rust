@@ -1,3 +1,4 @@
+use crate::client::traits::*;
 use crate::client::error::KsefError;
 use openssl::encrypt::Encrypter;
 use openssl::hash::MessageDigest;

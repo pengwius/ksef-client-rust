@@ -1,10 +1,11 @@
 use crate::common;
+use ksef_client::prelude::*;
+use ksef_client::types::ReferenceNumber;
 
 use std::time::Duration;
 
-use ksef_client::{
-    ContextIdentifier, ContextIdentifierType, Environment, KsefClient, SubjectIdentifierType,
-};
+use ksef_client::auth::SubjectIdentifierType;
+use ksef_client::prelude::{ContextIdentifier, ContextIdentifierType, Environment, KsefClient};
 
 async fn authorize_with_nip(nip: &str) -> KsefClient {
     let context = ContextIdentifier {
@@ -70,7 +71,7 @@ async fn test_revoke_other_session_by_reference() {
     );
 
     client1
-        .revoke_session(&ref2)
+        .revoke_session(ReferenceNumber::new(&ref2))
         .await
         .expect("client1 failed to revoke client2 session by reference");
 
