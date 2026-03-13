@@ -15,7 +15,7 @@ Dodaj do swojego `Cargo.toml`:
 
 ```toml
 [dependencies]
-ksef-client = "0.1"
+ksef-client = "0.2"
 ```
 
 ## Dokumentacja
