@@ -2,7 +2,7 @@
 
 # Authentication
 
-Authentication can be performed using an XAdES signature or a KSeF token. A KSeF token can be generated after the first login with a qualified XAdES signature. for testing purposes, you can use a self-signed certificate generated with the [certgen](https://github.com/pengwius/ksef-client-rust/tree/main/certgen) tool or the `gen_selfsign_cert` method in the `xades` object of the `KsefClient` structure.
+Authentication can be performed using an XAdES signature or a KSeF token. A KSeF token can be generated after the first login with a qualified XAdES signature. For testing purposes, you can use a self-signed certificate generated with the [certgen](https://github.com/pengwius/ksef-client-rust/tree/main/certgen) tool or the `gen_selfsign_cert` method in the `xades` object of the `KsefClient` structure.
 
 __[Official Documentation](https://github.com/CIRFMF/ksef-docs/blob/main/uwierzytelnianie.md)__
 

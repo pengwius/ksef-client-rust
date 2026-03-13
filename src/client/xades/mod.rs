@@ -12,7 +12,6 @@ pub struct XadesSigner {
     pkcs12: Option<ParsedPkcs12_2>,
 }
 
-
 impl XadesSigner {
     pub fn gen_selfsign_cert(
         &mut self,

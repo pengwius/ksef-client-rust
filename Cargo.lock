@@ -912,6 +912,7 @@ dependencies = [
  "base64",
  "chrono",
  "clap",
+ "ksef-client",
  "openssl",
  "rand 0.10.0",
  "regex",
