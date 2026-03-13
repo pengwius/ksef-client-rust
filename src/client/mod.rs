@@ -26,6 +26,7 @@ pub mod qr;
 mod routes;
 pub mod sessions;
 pub mod traits;
+pub mod types;
 pub mod upo;
 pub mod xades;
 

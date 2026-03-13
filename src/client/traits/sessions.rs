@@ -17,6 +17,7 @@ use crate::client::online_session::open_online_session::{
 use crate::client::online_session::send_invoice::SendInvoiceResponse;
 use crate::client::sessions;
 use crate::client::sessions::QuerySessionsResponse;
+use crate::client::types::ReferenceNumber;
 use async_trait::async_trait;
 
 #[async_trait]
@@ -28,7 +29,7 @@ pub trait KsefSessions {
 
     async fn revoke_current_session(&self) -> Result<(), KsefError>;
 
-    async fn revoke_session(&self, reference_number: &str) -> Result<(), KsefError>;
+    async fn revoke_session(&self, reference_number: ReferenceNumber) -> Result<(), KsefError>;
 
     async fn open_online_session(
         &self,
@@ -46,7 +47,8 @@ pub trait KsefSessions {
         parts: &[EncryptedBatchPart],
     ) -> Result<(), KsefError>;
 
-    async fn close_batch_session(&self, reference_number: &str) -> Result<(), KsefError>;
+    async fn close_batch_session(&self, reference_number: ReferenceNumber)
+    -> Result<(), KsefError>;
 
     async fn submit_batch(
         &self,
@@ -58,18 +60,21 @@ pub trait KsefSessions {
 
     async fn send_invoice(
         &self,
-        reference_number: &str,
+        reference_number: ReferenceNumber,
         invoice_xml: &[u8],
         encryption_data: &EncryptionData,
     ) -> Result<SendInvoiceResponse, KsefError>;
 
     async fn get_invoice_status(
         &self,
-        session_reference_number: &str,
-        invoice_reference_number: &str,
+        session_reference_number: ReferenceNumber,
+        invoice_reference_number: ReferenceNumber,
     ) -> Result<GetInvoiceStatusResponse, KsefError>;
 
-    async fn close_online_session(&self, reference_number: &str) -> Result<(), KsefError>;
+    async fn close_online_session(
+        &self,
+        reference_number: ReferenceNumber,
+    ) -> Result<(), KsefError>;
 
     async fn generate_encryption_data(&self) -> Result<EncryptionData, KsefError>;
 }
@@ -87,8 +92,8 @@ impl KsefSessions for KsefClient {
         sessions::revoke_current_session::revoke_current_session(self).await
     }
 
-    async fn revoke_session(&self, reference_number: &str) -> Result<(), KsefError> {
-        sessions::revoke_session::revoke_session(self, reference_number).await
+    async fn revoke_session(&self, reference_number: ReferenceNumber) -> Result<(), KsefError> {
+        sessions::revoke_session::revoke_session(self, reference_number.as_str()).await
     }
 
     async fn open_online_session(
@@ -113,8 +118,12 @@ impl KsefSessions for KsefClient {
         batch_session::upload_batch_parts::upload_batch_parts(self, response, parts).await
     }
 
-    async fn close_batch_session(&self, reference_number: &str) -> Result<(), KsefError> {
-        batch_session::close_batch_session::close_batch_session(self, reference_number).await
+    async fn close_batch_session(
+        &self,
+        reference_number: ReferenceNumber,
+    ) -> Result<(), KsefError> {
+        batch_session::close_batch_session::close_batch_session(self, reference_number.as_str())
+            .await
     }
 
     async fn submit_batch(
@@ -131,13 +140,13 @@ impl KsefSessions for KsefClient {
 
     async fn send_invoice(
         &self,
-        reference_number: &str,
+        reference_number: ReferenceNumber,
         invoice_xml: &[u8],
         encryption_data: &EncryptionData,
     ) -> Result<SendInvoiceResponse, KsefError> {
         online_session::send_invoice::send_invoice(
             self,
-            reference_number,
+            &reference_number,
             invoice_xml,
             encryption_data,
         )
@@ -146,19 +155,22 @@ impl KsefSessions for KsefClient {
 
     async fn get_invoice_status(
         &self,
-        session_reference_number: &str,
-        invoice_reference_number: &str,
+        session_reference_number: ReferenceNumber,
+        invoice_reference_number: ReferenceNumber,
     ) -> Result<GetInvoiceStatusResponse, KsefError> {
         online_session::get_invoice_status::get_invoice_status(
             self,
-            session_reference_number,
-            invoice_reference_number,
+            session_reference_number.as_str(),
+            invoice_reference_number.as_str(),
         )
         .await
     }
 
-    async fn close_online_session(&self, reference_number: &str) -> Result<(), KsefError> {
-        online_session::close_online_session::close_online_session(self, reference_number).await
+    async fn close_online_session(
+        &self,
+        reference_number: ReferenceNumber,
+    ) -> Result<(), KsefError> {
+        online_session::close_online_session::close_online_session(self, &reference_number).await
     }
 
     async fn generate_encryption_data(&self) -> Result<EncryptionData, KsefError> {

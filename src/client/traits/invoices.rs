@@ -9,6 +9,7 @@ use crate::client::fetching_invoices::fetch_invoice_metadata::{
     FetchInvoiceMetadataRequest, FetchInvoiceMetadataResponse, QueryCriteria, SubjectType,
 };
 use crate::client::fetching_invoices::incremental_fetch::{FetchedInvoice, IncrementalFetchState};
+use crate::client::types::{KsefNumber, ReferenceNumber};
 use crate::client::upo;
 use crate::client::upo::get_invoice_upo_by_ksef_number::{
     GetInvoiceUpoResponse, InvoiceIdentifier,
@@ -19,7 +20,7 @@ use async_trait::async_trait;
 pub trait KsefInvoices {
     async fn get_invoice_upo(
         &self,
-        reference_number: &str,
+        reference_number: ReferenceNumber,
         identifier: InvoiceIdentifier,
     ) -> Result<GetInvoiceUpoResponse, KsefError>;
 
@@ -28,7 +29,10 @@ pub trait KsefInvoices {
         request: FetchInvoiceMetadataRequest,
     ) -> Result<FetchInvoiceMetadataResponse, KsefError>;
 
-    async fn fetch_invoice(&self, ksef_number: &str) -> Result<FetchInvoiceResponse, KsefError>;
+    async fn fetch_invoice(
+        &self,
+        ksef_number: KsefNumber,
+    ) -> Result<FetchInvoiceResponse, KsefError>;
 
     async fn start_export_invoices(
         &self,
@@ -37,7 +41,7 @@ pub trait KsefInvoices {
 
     async fn get_export_status(
         &self,
-        reference_number: &str,
+        reference_number: ReferenceNumber,
     ) -> Result<ExportInvoicesStatusResponse, KsefError>;
 
     async fn export_invoices(&self, query: QueryCriteria) -> Result<ExportResult, KsefError>;
@@ -55,10 +59,10 @@ pub trait KsefInvoices {
 impl KsefInvoices for KsefClient {
     async fn get_invoice_upo(
         &self,
-        reference_number: &str,
+        reference_number: ReferenceNumber,
         identifier: InvoiceIdentifier,
     ) -> Result<GetInvoiceUpoResponse, KsefError> {
-        upo::get_invoice_upo_by_ksef_number::get_invoice_upo(self, reference_number, identifier)
+        upo::get_invoice_upo_by_ksef_number::get_invoice_upo(self, &reference_number, identifier)
             .await
     }
 
@@ -69,8 +73,11 @@ impl KsefInvoices for KsefClient {
         fetching_invoices::fetch_invoice_metadata::fetch_invoice_metadata(self, request).await
     }
 
-    async fn fetch_invoice(&self, ksef_number: &str) -> Result<FetchInvoiceResponse, KsefError> {
-        fetching_invoices::fetch_invoice::fetch_invoice(self, ksef_number).await
+    async fn fetch_invoice(
+        &self,
+        ksef_number: KsefNumber,
+    ) -> Result<FetchInvoiceResponse, KsefError> {
+        fetching_invoices::fetch_invoice::fetch_invoice(self, &ksef_number).await
     }
 
     async fn start_export_invoices(
@@ -82,9 +89,9 @@ impl KsefInvoices for KsefClient {
 
     async fn get_export_status(
         &self,
-        reference_number: &str,
+        reference_number: ReferenceNumber,
     ) -> Result<ExportInvoicesStatusResponse, KsefError> {
-        fetching_invoices::export_invoices::get_export_status(self, reference_number).await
+        fetching_invoices::export_invoices::get_export_status(self, &reference_number).await
     }
 
     async fn export_invoices(&self, query: QueryCriteria) -> Result<ExportResult, KsefError> {

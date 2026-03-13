@@ -1,6 +1,7 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;
+use crate::client::types::KsefNumber;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -11,7 +12,7 @@ pub struct FetchInvoiceResponse {
 
 pub async fn fetch_invoice(
     client: &KsefClient,
-    ksef_number: &str,
+    ksef_number: &KsefNumber,
 ) -> Result<FetchInvoiceResponse, KsefError> {
     let url = client.url_for(&format!("{}/{}", routes::INVOICES_PATH, ksef_number));
     let http = &client.client;

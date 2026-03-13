@@ -36,7 +36,11 @@ match client.revoke_current_session().await {
 The function `revoke_session` revokes the specified session using its reference number (`reference_number`). You can obtain the reference number from the list of active sessions (`Session.reference_number`). Executing this operation may require appropriate permissions.
 
 ```rust
-match client.revoke_session("session_reference_number").await {
+use ksef_client::types::ReferenceNumber;
+
+let ref_num = ReferenceNumber::new("session_reference_number");
+
+match client.revoke_session(ref_num).await {
     Ok(()) => println!("Session revoked successfully"),
     Err(e) => panic!("Failed to revoke session: {:?}", e),
 }

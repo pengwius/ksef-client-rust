@@ -85,9 +85,11 @@ match client.get_ksef_tokens().await {
 ### 4. Retrieving details of a specific token
 
 ```rust
-let ksef_token_reference_number = &ksef_token.reference_number;
+use ksef_client::types::ReferenceNumber;
 
-match client.get_ksef_token_status(ksef_token_reference_number.as_str()).await {
+let ksef_token_reference_number = ReferenceNumber::new(ksef_token.reference_number.clone());
+
+match client.get_ksef_token_status(&ksef_token_reference_number).await {
     Ok(token_status) => {
         println!(
             "    KSeF Token Status\n{}",
@@ -106,9 +108,11 @@ match client.get_ksef_token_status(ksef_token_reference_number.as_str()).await {
 Tokens that are no longer needed or have been compromised should be revoked.
 
 ```rust
-let ksef_token_reference_number = &ksef_token.reference_number;
+use ksef_client::types::ReferenceNumber;
 
-match client.revoke_ksef_token(ksef_token_reference_number.as_str()).await {
+let ksef_token_reference_number = ReferenceNumber::new(ksef_token.reference_number.clone());
+
+match client.revoke_ksef_token(&ksef_token_reference_number).await {
     Ok(()) => {
         println!("    KSeF token revoked successfully.");
     }

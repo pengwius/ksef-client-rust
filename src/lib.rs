@@ -4,6 +4,10 @@ pub use client::KsefClient;
 pub use client::error::KsefError;
 pub use secrecy;
 
+pub mod types {
+    pub use crate::client::types::*;
+}
+
 pub mod auth {
     pub use crate::client::traits::auth::KsefAuth;
 
@@ -223,6 +227,8 @@ pub mod prelude {
     pub use crate::client::traits::sessions::KsefSessions;
     pub use crate::client::traits::tokens::KsefTokens;
     pub use crate::client::traits::utils::KsefUtils;
+
+    pub use crate::client::types::*;
 
     pub use crate::client::models::{ContextIdentifier, ContextIdentifierType, Environment};
 }

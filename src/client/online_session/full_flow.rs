@@ -6,11 +6,12 @@ use crate::client::online_session::open_online_session::{
     OpenOnlineSessionRequestBuilder, open_online_session,
 };
 use crate::client::online_session::send_invoice::send_invoice;
+use crate::client::types::ReferenceNumber;
 
 #[derive(Debug, Clone)]
 pub struct OnlineSubmissionResult {
-    pub session_reference_number: String,
-    pub invoice_reference_number: String,
+    pub session_reference_number: ReferenceNumber,
+    pub invoice_reference_number: ReferenceNumber,
 }
 
 pub async fn submit_online(
@@ -27,11 +28,11 @@ pub async fn submit_online(
         .build()?;
 
     let session_response = open_online_session(client, request).await?;
-    let session_reference_number = session_response.reference_number.clone();
+    let session_reference_number = ReferenceNumber::new(session_response.reference_number);
 
     let send_result =
         send_invoice(client, &session_reference_number, invoice, &encryption_data).await?;
-    let invoice_reference_number = send_result.reference_number;
+    let invoice_reference_number = ReferenceNumber::new(send_result.reference_number);
 
     close_online_session(client, &session_reference_number).await?;
 

@@ -2,6 +2,7 @@ use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::online_session::encryption::{EncryptionData, encrypt_invoice, hash_invoice};
 use crate::client::routes;
+use crate::client::types::ReferenceNumber;
 use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 use serde::{Deserialize, Serialize};
 
@@ -31,7 +32,7 @@ pub struct SendInvoiceResponse {
 
 pub async fn send_invoice(
     client: &KsefClient,
-    session_reference_number: &str,
+    session_reference_number: &ReferenceNumber,
     invoice_xml: &[u8],
     encryption_data: &EncryptionData,
 ) -> Result<SendInvoiceResponse, KsefError> {

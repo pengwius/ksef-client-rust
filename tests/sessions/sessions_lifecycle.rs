@@ -1,4 +1,5 @@
 use ksef_client::prelude::*;
+use ksef_client::types::ReferenceNumber;
 use std::time::Duration;
 
 use crate::common;
@@ -75,7 +76,10 @@ async fn test_revoke_session_by_reference() {
         "Expected two distinct session reference numbers"
     );
 
-    match client_a.revoke_session(&ref_b).await {
+    match client_a
+        .revoke_session(ReferenceNumber::new(ref_b.clone()))
+        .await
+    {
         Ok(()) => {
             println!("Client A revoked Client B's session (reference {})", ref_b);
         }
@@ -126,7 +130,7 @@ async fn test_two_session_lifecycle_revoke_other_and_self() {
     );
 
     client1
-        .revoke_session(&ref2)
+        .revoke_session(ReferenceNumber::new(&ref2))
         .await
         .expect("client1 failed to revoke client2 by reference");
 

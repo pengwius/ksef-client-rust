@@ -3,6 +3,7 @@ use crate::client::error::KsefError;
 use crate::client::fetching_invoices::fetch_invoice_metadata::{InvoiceMetadata, QueryCriteria};
 use crate::client::routes;
 use crate::client::traits::*;
+use crate::client::types::ReferenceNumber;
 use openssl::symm::{Cipher, decrypt};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
@@ -27,7 +28,7 @@ pub struct EncryptionInfo {
 #[derive(Debug, Deserialize)]
 pub struct ExportInvoicesResponse {
     #[serde(rename = "referenceNumber")]
-    pub reference_number: String,
+    pub reference_number: ReferenceNumber,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -150,7 +151,7 @@ pub async fn start_export_invoices(
 
 pub async fn get_export_status(
     client: &KsefClient,
-    reference_number: &str,
+    reference_number: &ReferenceNumber,
 ) -> Result<ExportInvoicesStatusResponse, KsefError> {
     let url = client.url_for(&format!(
         "{}/{}",

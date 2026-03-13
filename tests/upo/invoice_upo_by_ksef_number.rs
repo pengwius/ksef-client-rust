@@ -18,8 +18,8 @@ async fn integration_upo_by_ksef_number() {
 
     let status = client
         .get_invoice_status(
-            &submit_result.session_reference_number,
-            &submit_result.invoice_reference_number,
+            submit_result.session_reference_number.clone(),
+            submit_result.invoice_reference_number.clone(),
         )
         .await
         .expect("Failed to get invoice status");
@@ -39,7 +39,7 @@ async fn integration_upo_by_ksef_number() {
 
     let upo_resp: GetInvoiceUpoResponse = client
         .get_invoice_upo(
-            &submit_result.session_reference_number,
+            submit_result.session_reference_number.clone(),
             InvoiceIdentifier::KsefNumber(ksef_number.clone()),
         )
         .await

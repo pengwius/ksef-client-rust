@@ -43,6 +43,8 @@ println!(
 #### 2.1. Otwieranie sesji interaktywnej
 
 ```rust
+use ksef_client::types::ReferenceNumber;
+
 // Generowanie danych szyfrujących dla sesji interaktywnej
 let encryption_data = client
     .generate_encryption_data().await
@@ -57,7 +59,7 @@ let request = OpenOnlineSessionRequestBuilder::new()
     .expect("Failed to build OpenOnlineSessionRequest");
 
 let session_reference_number = match client.open_online_session(request).await {
-    Ok(response) => response.reference_number,
+    Ok(response) => ReferenceNumber::new(response.reference_number),
     Err(error) => {
         eprintln!("Failed to open online session: {}", error);
         return;
@@ -72,11 +74,11 @@ let issuer_nip = "5261234567"; // Identyfikator wystawcy faktury
 let invoice_xml = /* faktura XML FA(2) lub FA(3) */;
 
 let invoice_reference_number = match client.send_invoice(
-    &session_reference_number,
+    session_reference_number.clone(),
     invoice_xml.as_bytes(),
     &encryption_data,
 ).await {
-    Ok(response) => response.reference_number,
+    Ok(response) => ReferenceNumber::new(response.reference_number),
     Err(error) => {
         eprintln!("Failed to send invoice: {}", error);
         return;
@@ -88,7 +90,7 @@ let invoice_reference_number = match client.send_invoice(
 
 ```rust
 let status = client
-    .get_invoice_status(&session_reference_number, &invoice_reference_number).await
+    .get_invoice_status(session_reference_number.clone(), invoice_reference_number.clone()).await
     .expect("Failed to get invoice status");
 
 if status.invoice_status.code != 200 {
@@ -103,7 +105,7 @@ if status.invoice_status.code != 200 {
 #### 2.4. Zamknięcie sesji interaktywnej
 
 ```rust
-match client.close_online_session(&session_reference_number).await {
+match client.close_online_session(session_reference_number).await {
     Ok(()) => {}
     Err(e) => {
         panic!("Failed to close online session: {:?}", e);

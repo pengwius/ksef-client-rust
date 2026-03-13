@@ -29,8 +29,8 @@ async fn submit_invoice_and_get_hash(
 
     let status = client
         .get_invoice_status(
-            &submit_result.session_reference_number,
-            &submit_result.invoice_reference_number,
+            submit_result.session_reference_number.clone(),
+            submit_result.invoice_reference_number.clone(),
         )
         .await
         .map_err(|e| format!("Failed to get invoice status: {:?}", e))?;

@@ -7,10 +7,14 @@ __[Official Documentation](https://api-test.ksef.mf.gov.pl/docs/v2/index.html#ta
 ### Fetching UPO by KSeF Number
 
 ```rust
+use ksef_client::types::ReferenceNumber;
+
+let session_reference_number = ReferenceNumber::new("20231115-SE-...");
+
 let upo: GetInvoiceUpoResponse = client
     .get_invoice_upo(
-        &session_reference_number, // session reference number 
-        InvoiceIdentifier::KsefNumber(ksef_number.clone()), // invoice KSeF number
+        session_reference_number, // session reference number
+        InvoiceIdentifier::KsefNumber(ksef_number.clone()), // KSeF invoice number
     )
     .await
     .expect("Failed to fetch invoice UPO by KSeF number");
@@ -19,10 +23,14 @@ let upo: GetInvoiceUpoResponse = client
 ### Fetching UPO by Invoice Reference
 
 ```rust
+use ksef_client::types::ReferenceNumber;
+
+let session_reference_number = ReferenceNumber::new("20231115-SE-...");
+
 let upo: GetInvoiceUpoResponse = client
     .get_invoice_upo(
-        &session_reference_number, // session reference number 
-        InvoiceIdentifier::InvoiceReference(invoice_ref.clone()), // invoice reference number 
+        session_reference_number, // session reference number
+        InvoiceIdentifier::InvoiceReference(invoice_ref.clone()), // invoice reference number
     )
     .await
     .expect("Failed to fetch invoice UPO by invoice reference");

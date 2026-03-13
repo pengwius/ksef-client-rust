@@ -1,6 +1,7 @@
 use crate::client::KsefClient;
 use crate::client::error::KsefError;
 use crate::client::routes;
+use crate::client::types::ReferenceNumber;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -24,7 +25,7 @@ impl From<&str> for InvoiceIdentifier {
 
 pub async fn get_invoice_upo(
     client: &KsefClient,
-    reference_number: &str,
+    reference_number: &ReferenceNumber,
     identifier: InvoiceIdentifier,
 ) -> Result<GetInvoiceUpoResponse, KsefError> {
     let sessions_segment = routes::SESSIONS_PATH
