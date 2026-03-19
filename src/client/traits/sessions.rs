@@ -54,15 +54,24 @@ pub trait KsefSessions {
     ) -> Result<(), KsefError>;
 
     async fn close_batch_session(&self, reference_number: ReferenceNumber)
-    -> Result<(), KsefError>;
+        -> Result<(), KsefError>;
 
     async fn submit_batch(
         &self,
         invoices: &[InvoicePayload],
         max_part_size_bytes: Option<usize>,
+        system_code: Option<&str>,
+        schema_version: Option<&str>,
+        value: Option<&str>,
     ) -> Result<BatchSubmissionResult, KsefError>;
 
-    async fn submit_online(&self, invoice: &[u8]) -> Result<OnlineSubmissionResult, KsefError>;
+    async fn submit_online(
+        &self,
+        invoice: &[u8],
+        system_code: Option<&str>,
+        schema_version: Option<&str>,
+        value: Option<&str>,
+    ) -> Result<OnlineSubmissionResult, KsefError>;
 
     async fn send_invoice(
         &self,
@@ -160,12 +169,30 @@ impl KsefSessions for KsefClient {
         &self,
         invoices: &[InvoicePayload],
         max_part_size_bytes: Option<usize>,
+        system_code: Option<&str>,
+        schema_version: Option<&str>,
+        value: Option<&str>,
     ) -> Result<BatchSubmissionResult, KsefError> {
-        batch_session::full_flow::submit_batch(self, invoices, max_part_size_bytes, None, None, None).await
+        batch_session::full_flow::submit_batch(
+            self,
+            invoices,
+            max_part_size_bytes,
+            system_code,
+            schema_version,
+            value,
+        )
+        .await
     }
 
-    async fn submit_online(&self, invoice: &[u8]) -> Result<OnlineSubmissionResult, KsefError> {
-        online_session::full_flow::submit_online(self, invoice, None, None, None).await
+    async fn submit_online(
+        &self,
+        invoice: &[u8],
+        system_code: Option<&str>,
+        schema_version: Option<&str>,
+        value: Option<&str>,
+    ) -> Result<OnlineSubmissionResult, KsefError> {
+        online_session::full_flow::submit_online(self, invoice, system_code, schema_version, value)
+            .await
     }
 
     async fn send_invoice(

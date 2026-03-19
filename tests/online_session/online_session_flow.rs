@@ -82,7 +82,7 @@ async fn test_submit_online_automated() {
     let invoice_xml: String = common::generate_fa2_invoice(issuer_nip).await;
 
     let result = client
-        .submit_online(invoice_xml.as_bytes())
+        .submit_online(invoice_xml.as_bytes(), None, None, None)
         .await
         .expect("Failed to submit online session");
 
