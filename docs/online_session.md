@@ -23,8 +23,13 @@ samodzielnie, jeżeli chcesz mieć większą kontrolę.
 ```rust
 let invoice_xml = /* faktura XML FA(2) lub FA(3) */;
 
+// Możesz opcjonalnie nadpisać komponenty form-code:
+//   system_code: Option<&str> (np. "FA (3)" lub "FA (2)")
+//   schema_version: Option<&str> (np. "1-0E")
+//   value: Option<&str> (np. "FA")
+// Przekaż `None`, aby użyć wartości domyślnych z buildera (FA (3), 1-0E).
 let result = client
-    .submit_online(invoice_xml.as_bytes()).await
+    .submit_online(invoice_xml.as_bytes(), None, None, None).await
     .expect("Failed to submit online session");
 
 println!(
@@ -58,7 +63,11 @@ let request = OpenOnlineSessionRequestBuilder::new()
     .build()
     .expect("Failed to build OpenOnlineSessionRequest");
 
-let session_reference_number = match client.open_online_session(request).await {
+// Możesz skonfigurować builder (np. `.with_system_code(...)`) przed wywołaniem `build()`,
+// lub przekazać nadpisania form-code przy wywołaniu `open_online_session`.
+// Przykład nadpisania: `client.open_online_session(request, Some("FA (3)"), Some("1-0E"), Some("FA")).await`
+// Aby zachować domyślne wartości buildera, przekaż `None` dla każdego z pól.
+let session_reference_number = match client.open_online_session(request, None, None, None).await {
     Ok(response) => ReferenceNumber::new(response.reference_number),
     Err(error) => {
         eprintln!("Failed to open online session: {}", error);

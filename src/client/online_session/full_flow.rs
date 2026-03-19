@@ -17,15 +17,29 @@ pub struct OnlineSubmissionResult {
 pub async fn submit_online(
     client: &KsefClient,
     invoice: &[u8],
+    system_code: Option<&str>,
+    schema_version: Option<&str>,
+    value: Option<&str>,
 ) -> Result<OnlineSubmissionResult, KsefError> {
     let encryption_data = generate_encryption_data(client).await?;
 
-    let request = OpenOnlineSessionRequestBuilder::new()
+    let mut builder = OpenOnlineSessionRequestBuilder::new()
         .with_encryption(
             &encryption_data.encrypted_symmetric_key,
             &encryption_data.initialization_vector,
-        )
-        .build()?;
+        );
+
+    if let Some(code) = system_code {
+        builder = builder.with_system_code(code);
+    }
+    if let Some(version) = schema_version {
+        builder = builder.with_schema_version(version);
+    }
+    if let Some(v) = value {
+        builder = builder.with_value(v);
+    }
+
+    let request = builder.build()?;
 
     let session_response = open_online_session(client, request).await?;
     let session_reference_number = ReferenceNumber::new(session_response.reference_number);

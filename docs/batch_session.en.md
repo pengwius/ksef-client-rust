@@ -51,8 +51,13 @@ each ZIP part *before encryption*. When `None` is passed, a default limit of
 your application requires it.
 
 ```rust
+// You can optionally override the form-code components:
+//  system_code: Option<&str> (e.g. "FA (3)" or "FA (2)")
+// schema_version: Option<&str> (e.g. "1-0E")
+// value: Option<&str> (e.g. "FA")
+// Pass `None` to use the builder defaults (FA (3), 1-0E). 
 let result = client
-    .submit_batch(&invoices, Some(10 * 1024 * 1024)).await
+    .submit_batch(&invoices, Some(10 * 1024 * 1024), None, None, None).await
     .expect("Failed to submit batch");
 
 println!(
@@ -81,7 +86,7 @@ let open_req = OpenBatchSessionRequestBuilder::new()
     // ... add more parts ...
     .build()?;
 
-let response = client.open_batch_session(open_req).await?;
+let response = client.open_batch_session(open_req, None, None, None).await?;
 client.upload_batch_parts(&response, &encrypted).await?;
 client.close_batch_session(ReferenceNumber::new(response.reference_number.as_str())).await?;
 ```

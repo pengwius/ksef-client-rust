@@ -23,8 +23,13 @@ for more granular control.
 ```rust
 let invoice_xml = /* FA(2) or FA(3) XML invoice */;
 
+// You can optionally override the form-code components:
+//  system_code: Option<&str> (e.g. "FA (3)" or "FA (2)")
+// schema_version: Option<&str> (e.g. "1-0E")
+// value: Option<&str> (e.g. "FA")
+// Pass `None` to use the builder defaults (FA (3), 1-0E). 
 let result = client
-    .submit_online(invoice_xml.as_bytes()).await
+    .submit_online(invoice_xml.as_bytes(), None, None, None).await
     .expect("Failed to submit online session");
 
 println!(
@@ -58,7 +63,10 @@ let request = OpenOnlineSessionRequestBuilder::new()
     .build()
     .expect("Failed to build OpenOnlineSessionRequest");
 
-let session_reference_number = match client.open_online_session(request).await {
+// You can pass optional form-code overrides to `open_online_session`.
+// Example: client.open_online_session(request, Some("FA (3)"), Some("1-0E"), Some("FA")).await
+// To keep defaults from the builder, pass None for each value as shown below.
+let session_reference_number = match client.open_online_session(request, None, None, None).await {
     Ok(response) => ReferenceNumber::new(response.reference_number),
     Err(error) => {
         eprintln!("Failed to open online session: {}", error);

@@ -31,7 +31,7 @@ pub struct OpenOnlineSessionRequestBuilder {
 impl OpenOnlineSessionRequestBuilder {
     pub fn new() -> Self {
         Self {
-            system_code: Some("FA (2)".to_string()),
+            system_code: Some("FA (3)".to_string()),
             schema_version: Some("1-0E".to_string()),
             value: Some("FA".to_string()),
             encrypted_symmetric_key: None,

@@ -12,7 +12,7 @@ async fn integration_upo_by_ksef_number() {
 
     let invoice_xml: String = common::generate_fa2_invoice(&seller_nip).await;
     let submit_result = client
-        .submit_online(invoice_xml.as_bytes())
+        .submit_online(invoice_xml.as_bytes(), None, None, None)
         .await
         .expect("Failed to submit invoice");
 

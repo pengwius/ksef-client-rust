@@ -51,8 +51,13 @@ domyślny limit 50 * 1024 * 1024 bajtów (≈ 50 MiB). Możesz poda�
 jeśli Twoja aplikacja tego wymaga.
 
 ```rust
+// Możesz opcjonalnie nadpisać komponenty form-code:
+//   system_code: Option<&str> (np. "FA (3)" lub "FA (2)")
+//   schema_version: Option<&str> (np. "1-0E")
+//   value: Option<&str> (np. "FA")
+// Przekaż `None`, aby użyć wartości domyślnych z buildera (FA (3), 1-0E).
 let result = client
-    .submit_batch(&invoices, Some(10 * 1024 * 1024)).await
+    .submit_batch(&invoices, Some(10 * 1024 * 1024), None, None, None).await
     .expect("Failed to submit batch");
 
 println!(
@@ -81,7 +86,7 @@ let open_req = OpenBatchSessionRequestBuilder::new()
     // ... dodaj więcej części ...
     .build()?;
 
-let response = client.open_batch_session(open_req).await?;
+let response = client.open_batch_session(open_req, None, None, None).await?;
 client.upload_batch_parts(&response, &encrypted).await?;
 client.close_batch_session(ReferenceNumber::new(response.reference_number.as_str())).await?;
 ```

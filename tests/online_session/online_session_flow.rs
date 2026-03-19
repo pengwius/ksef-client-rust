@@ -22,7 +22,7 @@ async fn test_online_session_flow() {
         .expect("Failed to build OpenOnlineSessionRequest");
 
     let response = client
-        .open_online_session(request)
+        .open_online_session(request, None, None, None)
         .await
         .expect("Failed to open online session");
 

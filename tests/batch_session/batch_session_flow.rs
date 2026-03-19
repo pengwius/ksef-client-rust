@@ -142,7 +142,7 @@ async fn test_batch_session_initialization() {
         .expect("Failed to build OpenBatchSessionRequest");
 
     let response = client
-        .open_batch_session(request)
+        .open_batch_session(request, None, None, None)
         .await
         .expect("Failed to open batch session");
 
