@@ -23,7 +23,7 @@ async fn submit_invoice_and_get_hash(
         .unwrap_or_else(|| Utc::now().format("%d-%m-%Y").to_string());
 
     let submit_result = client
-        .submit_online(invoice_xml.as_bytes())
+        .submit_online(invoice_xml.as_bytes(), None, None, None)
         .await
         .map_err(|e| format!("Failed to submit invoice: {:?}", e))?;
 

@@ -34,11 +34,17 @@ pub trait KsefSessions {
     async fn open_online_session(
         &self,
         request: OpenOnlineSessionRequest,
+        system_code: Option<&str>,
+        schema_version: Option<&str>,
+        value: Option<&str>,
     ) -> Result<OpenOnlineSessionResponse, KsefError>;
 
     async fn open_batch_session(
         &self,
         request: OpenBatchSessionRequest,
+        system_code: Option<&str>,
+        schema_version: Option<&str>,
+        value: Option<&str>,
     ) -> Result<OpenBatchSessionResponse, KsefError>;
 
     async fn upload_batch_parts(
@@ -48,15 +54,24 @@ pub trait KsefSessions {
     ) -> Result<(), KsefError>;
 
     async fn close_batch_session(&self, reference_number: ReferenceNumber)
-    -> Result<(), KsefError>;
+        -> Result<(), KsefError>;
 
     async fn submit_batch(
         &self,
         invoices: &[InvoicePayload],
         max_part_size_bytes: Option<usize>,
+        system_code: Option<&str>,
+        schema_version: Option<&str>,
+        value: Option<&str>,
     ) -> Result<BatchSubmissionResult, KsefError>;
 
-    async fn submit_online(&self, invoice: &[u8]) -> Result<OnlineSubmissionResult, KsefError>;
+    async fn submit_online(
+        &self,
+        invoice: &[u8],
+        system_code: Option<&str>,
+        schema_version: Option<&str>,
+        value: Option<&str>,
+    ) -> Result<OnlineSubmissionResult, KsefError>;
 
     async fn send_invoice(
         &self,
@@ -98,15 +113,39 @@ impl KsefSessions for KsefClient {
 
     async fn open_online_session(
         &self,
-        request: OpenOnlineSessionRequest,
+        mut request: OpenOnlineSessionRequest,
+        system_code: Option<&str>,
+        schema_version: Option<&str>,
+        value: Option<&str>,
     ) -> Result<OpenOnlineSessionResponse, KsefError> {
+        if let Some(code) = system_code {
+            request.form_code.system_code = code.to_string();
+        }
+        if let Some(ver) = schema_version {
+            request.form_code.schema_version = ver.to_string();
+        }
+        if let Some(val) = value {
+            request.form_code.value = val.to_string();
+        }
         online_session::open_online_session::open_online_session(self, request).await
     }
 
     async fn open_batch_session(
         &self,
-        request: OpenBatchSessionRequest,
+        mut request: OpenBatchSessionRequest,
+        system_code: Option<&str>,
+        schema_version: Option<&str>,
+        value: Option<&str>,
     ) -> Result<OpenBatchSessionResponse, KsefError> {
+        if let Some(code) = system_code {
+            request.form_code.system_code = code.to_string();
+        }
+        if let Some(ver) = schema_version {
+            request.form_code.schema_version = ver.to_string();
+        }
+        if let Some(val) = value {
+            request.form_code.value = val.to_string();
+        }
         batch_session::open_batch_session::open_batch_session(self, request).await
     }
 
@@ -130,12 +169,30 @@ impl KsefSessions for KsefClient {
         &self,
         invoices: &[InvoicePayload],
         max_part_size_bytes: Option<usize>,
+        system_code: Option<&str>,
+        schema_version: Option<&str>,
+        value: Option<&str>,
     ) -> Result<BatchSubmissionResult, KsefError> {
-        batch_session::full_flow::submit_batch(self, invoices, max_part_size_bytes).await
+        batch_session::full_flow::submit_batch(
+            self,
+            invoices,
+            max_part_size_bytes,
+            system_code,
+            schema_version,
+            value,
+        )
+        .await
     }
 
-    async fn submit_online(&self, invoice: &[u8]) -> Result<OnlineSubmissionResult, KsefError> {
-        online_session::full_flow::submit_online(self, invoice).await
+    async fn submit_online(
+        &self,
+        invoice: &[u8],
+        system_code: Option<&str>,
+        schema_version: Option<&str>,
+        value: Option<&str>,
+    ) -> Result<OnlineSubmissionResult, KsefError> {
+        online_session::full_flow::submit_online(self, invoice, system_code, schema_version, value)
+            .await
     }
 
     async fn send_invoice(

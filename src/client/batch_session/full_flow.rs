@@ -20,6 +20,9 @@ pub async fn submit_batch(
     client: &KsefClient,
     invoices: &[InvoicePayload],
     max_part_size_bytes: Option<usize>,
+    system_code: Option<&str>,
+    schema_version: Option<&str>,
+    value: Option<&str>,
 ) -> Result<BatchSubmissionResult, KsefError> {
     let zip_result = create_zip(invoices)?;
     let total_size = zip_result.metadata.size;
@@ -41,6 +44,16 @@ pub async fn submit_batch(
             &encryption_data.encrypted_symmetric_key,
             &encryption_data.initialization_vector,
         );
+
+    if let Some(code) = system_code {
+        builder = builder.with_system_code(code);
+    }
+    if let Some(ver) = schema_version {
+        builder = builder.with_schema_version(ver);
+    }
+    if let Some(val) = value {
+        builder = builder.with_value(val);
+    }
 
     for part in encrypted_parts.iter() {
         builder =

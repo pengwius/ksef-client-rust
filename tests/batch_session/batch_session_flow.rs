@@ -142,7 +142,7 @@ async fn test_batch_session_initialization() {
         .expect("Failed to build OpenBatchSessionRequest");
 
     let response = client
-        .open_batch_session(request)
+        .open_batch_session(request, None, None, None)
         .await
         .expect("Failed to open batch session");
 
@@ -200,7 +200,7 @@ async fn test_submit_batch_automated() {
     ];
 
     let result = client
-        .submit_batch(&invoices, Some(10 * 1024 * 1024))
+        .submit_batch(&invoices, Some(10 * 1024 * 1024), None, None, None)
         .await
         .expect("Failed to submit batch");
 

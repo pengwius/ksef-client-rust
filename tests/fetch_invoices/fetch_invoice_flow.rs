@@ -15,7 +15,7 @@ async fn test_fetch_invoice_flow() {
     let online_session_invoice_xml: String = common::generate_fa2_invoice(nip).await;
 
     let online_session_result = client
-        .submit_online(online_session_invoice_xml.as_bytes())
+        .submit_online(online_session_invoice_xml.as_bytes(), None, None, None)
         .await
         .expect("Failed to submit online session");
 
@@ -44,7 +44,7 @@ async fn test_fetch_invoice_flow() {
     ];
 
     let batch_session_result = client
-        .submit_batch(&invoices, Some(10 * 1024 * 1024))
+        .submit_batch(&invoices, Some(10 * 1024 * 1024), None, None, None)
         .await
         .expect("Failed to submit batch");
 
