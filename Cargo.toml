@@ -13,7 +13,7 @@ keywords = ["ksef", "faktury", "e-invoices", "poland", "client"]
 
 [dependencies]
 thiserror = "2.0"
-clap = { version = "4.5", features = ["derive"], optional = true }
+clap = { version = "4.6", features = ["derive"], optional = true }
 openssl = "0.10"
 chrono = { version = "0.4", features = ["serde"] }
 rand = "0.10"
