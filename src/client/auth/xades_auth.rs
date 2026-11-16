@@ -70,7 +70,5 @@ pub async fn submit_xades_auth_request_and_load(
 ) -> Result<(), KsefError> {
     let tokens = submit_xades_auth_request(client, signed_xml).await?;
     client.auth_token = tokens;
-    // A new authentication operation: tokens redeemed for a previous one no longer apply.
-    client.access_token = crate::client::auth::get_access_token::AccessTokens::default();
     Ok(())
 }

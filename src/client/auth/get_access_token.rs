@@ -11,6 +11,8 @@ pub struct AccessTokens {
     pub access_token_valid_until: DateTime<Utc>,
     pub refresh_token: Secret<String>,
     pub refresh_token_valid_until: DateTime<Utc>,
+    /// Reference number of the authentication operation these tokens were redeemed for.
+    pub authentication_reference_number: String,
 }
 
 impl Default for AccessTokens {
@@ -20,6 +22,7 @@ impl Default for AccessTokens {
             access_token_valid_until: DateTime::<Utc>::default(),
             refresh_token: Secret::new(String::new()),
             refresh_token_valid_until: DateTime::<Utc>::default(),
+            authentication_reference_number: String::new(),
         }
     }
 }
@@ -52,7 +55,9 @@ pub async fn get_access_token(client: &KsefClient) -> Result<AccessTokens, KsefE
         .client
         .post(&url)
         .header("Accept", "application/json")
-        .bearer_auth(KsefClient::secret_str(&client.auth_token.authentication_token))
+        .bearer_auth(KsefClient::secret_str(
+            &client.auth_token.authentication_token,
+        ))
         .send()
         .await
         .map_err(KsefError::RequestError)?;
@@ -70,6 +75,7 @@ pub async fn get_access_token(client: &KsefClient) -> Result<AccessTokens, KsefE
         access_token_valid_until: parsed.access_token_obj.valid_until,
         refresh_token: Secret::new(parsed.refresh_token_obj.token),
         refresh_token_valid_until: parsed.refresh_token_obj.valid_until,
+        authentication_reference_number: client.auth_token.reference_number.clone(),
     })
 }
 
@@ -97,6 +103,10 @@ pub async fn refresh_access_token(client: &KsefClient) -> Result<AccessTokens, K
         access_token_valid_until: parsed.access_token_obj.valid_until,
         refresh_token: client.access_token.refresh_token.clone(),
         refresh_token_valid_until: client.access_token.refresh_token_valid_until,
+        authentication_reference_number: client
+            .access_token
+            .authentication_reference_number
+            .clone(),
     })
 }
 
@@ -105,10 +115,14 @@ pub async fn refresh_access_token(client: &KsefClient) -> Result<AccessTokens, K
 ///
 /// KSeF allows redeeming the tokens only once per authentication operation (a second attempt
 /// fails with exception 21301). `get_auth_status` already redeems them when authentication
-/// succeeds, so when tokens are present this returns `Ok(())` without calling the API.
-/// Starting a new authentication clears them.
+/// succeeds, so when the tokens of the current operation are present this returns `Ok(())`
+/// without calling the API. Tokens of a previous operation stay usable until the new ones are
+/// redeemed.
 pub async fn get_access_token_and_load(client: &mut KsefClient) -> Result<(), KsefError> {
-    if !KsefClient::secret_str(&client.access_token.access_token).is_empty() {
+    let redeemed = !KsefClient::secret_str(&client.access_token.access_token).is_empty();
+    if redeemed
+        && client.access_token.authentication_reference_number == client.auth_token.reference_number
+    {
         return Ok(());
     }
     let tokens = get_access_token(&*client).await?;
@@ -148,6 +162,23 @@ mod tests {
         assert_eq!(
             KsefClient::secret_str(&client.access_token.access_token),
             "redeemed"
+        );
+    }
+
+    #[tokio::test]
+    async fn tokens_of_a_previous_authentication_are_replaced() {
+        let mut client = client();
+        client.access_token.access_token = Secret::new("old".to_string());
+        client.access_token.authentication_reference_number = "20261116-AU-OLD".to_string();
+        client.auth_token.reference_number = "20261116-AU-NEW".to_string();
+        assert!(
+            get_access_token_and_load(&mut client).await.is_err(),
+            "the API is called for the new operation"
+        );
+        assert_eq!(
+            KsefClient::secret_str(&client.access_token.access_token),
+            "old",
+            "the old token stays usable meanwhile"
         );
     }
 

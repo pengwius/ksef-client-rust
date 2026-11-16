@@ -1,5 +1,4 @@
 use crate::client::KsefClient;
-use crate::client::auth::get_access_token::AccessTokens;
 use crate::client::auth::xades_auth::AuthTokens;
 use crate::client::error::KsefError;
 use crate::client::get_public_key_certificates::PublicKeyCertificateUsage;
@@ -131,8 +130,6 @@ pub async fn submit_ksef_token_auth_request(
     };
 
     client.auth_token = tokens.clone();
-    // A new authentication operation: tokens redeemed for a previous one no longer apply.
-    client.access_token = AccessTokens::default();
 
     Ok(tokens)
 }
