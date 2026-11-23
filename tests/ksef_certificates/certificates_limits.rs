@@ -5,7 +5,8 @@ use serde_json::json;
 
 #[tokio::test]
 async fn test_get_certificates_limits() {
-    let client: ksef_client::KsefClient = common::authorize_client().await;
+    let nip = common::generate_random_nip().await;
+    let client = common::authorize_client_for_nip(&nip).await;
 
     println!("Getting certificate limits...");
     match client.get_certificates_limits().await {

@@ -142,8 +142,8 @@ async fn test_generate_invoice_qr_code() {
 
 #[tokio::test]
 async fn test_generate_certificate_qr_code() {
-    let client: KsefClient = common::authorize_client().await;
-    let seller_nip = client.context.value.clone();
+    let seller_nip = common::generate_random_nip().await;
+    let client = common::authorize_client_for_nip(&seller_nip).await;
 
     let (_issue_date, invoice_hash) = submit_invoice_and_get_hash(&client, &seller_nip)
         .await

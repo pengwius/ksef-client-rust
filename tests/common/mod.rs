@@ -31,7 +31,10 @@ pub async fn generate_random_nip() -> String {
 
 #[allow(dead_code)]
 pub async fn authorize_client() -> KsefClient {
-    let nip = "5261234567";
+    authorize_client_for_nip("5261234567").await
+}
+
+pub async fn authorize_client_for_nip(nip: &str) -> KsefClient {
     let context = ContextIdentifier {
         id_type: ContextIdentifierType::Nip,
         value: nip.to_string(),
@@ -52,7 +55,7 @@ pub async fn authorize_client() -> KsefClient {
 
     client
         .xades
-        .gen_selfsign_cert(given_name, surname, serial_prefix, &nip, common_name)
+        .gen_selfsign_cert(given_name, surname, serial_prefix, nip, common_name)
         .expect("Failed to generate self-signed certificate");
 
     let signed_xml = client
