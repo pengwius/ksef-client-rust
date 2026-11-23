@@ -4,7 +4,8 @@ use ksef_client::prelude::*;
 
 #[tokio::test]
 async fn test_get_enrollment_status() {
-    let client: ksef_client::KsefClient = common::authorize_client().await;
+    let nip = common::generate_random_nip().await;
+    let client = common::authorize_client_for_nip(&nip).await;
 
     println!("Getting enrollment data...");
     let enrollment_data = match client.get_enrollment_data().await {

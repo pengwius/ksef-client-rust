@@ -23,8 +23,13 @@ pub trait KsefAuth {
 
     async fn authenticate_by_ksef_token(&mut self) -> Result<(), KsefError>;
 
+    /// Waits (polling, up to 120 s) until the current authentication operation finishes.
+    /// On success it also redeems the access and refresh tokens, so calling
+    /// [`KsefAuth::get_access_token`] afterwards is not needed (and is a no-op).
     async fn get_auth_status(&mut self) -> Result<bool, KsefError>;
 
+    /// Redeems the access tokens of the current authentication operation, unless they were
+    /// already redeemed (e.g. by [`KsefAuth::get_auth_status`]).
     async fn get_access_token(&mut self) -> Result<(), KsefError>;
 
     async fn refresh_access_token(&mut self) -> Result<(), KsefError>;
